@@ -1,0 +1,6785 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "keys",
+ "title": "The key names the server sends and their scan codes",
+ "kind": "input",
+ "scope": "keys",
+ "covers": "The key names the DOSBox-X server carries into the guest, and the scan set 1 make code each of them is sent as.",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0",
+   "name": "0",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "663"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 0 key is written 0 ).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "663",
+       "sha": "340594d428e9738835f53a093fce732518f809c3fd5d2e405211cf80fcf87f97"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x0B",
+     "of": "doc",
+     "text": "The make code of 0 ) is 0Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "663",
+       "sha": "340594d428e9738835f53a093fce732518f809c3fd5d2e405211cf80fcf87f97"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_0 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1639",
+       "sha": "4630456e56a8181b1c4bde6cea5862a96d84e815c023fcd76c85d93d36826809"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1639",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "1",
+   "name": "1",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "654"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 1 key is written 1 !.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "654",
+       "sha": "40f1c7c1499283d75eb8f8909773ea9791759a606b2b9d5e562b71fd545954b5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x02",
+     "of": "doc",
+     "text": "The make code of 1 ! is 02h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "654",
+       "sha": "40f1c7c1499283d75eb8f8909773ea9791759a606b2b9d5e562b71fd545954b5"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_1 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1630",
+       "sha": "a6b0c54cb2e755cab4a1dbd2feafeee21336b911076c6dde315484edb2cc438b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1630",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "2",
+   "name": "2",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "655"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 2 key is written 2 @.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "655",
+       "sha": "4ddb125b52dc77d356ac0f9412d1700990012a5de271d0609460d0d57268db99"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x03",
+     "of": "doc",
+     "text": "The make code of 2 @ is 03h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "655",
+       "sha": "4ddb125b52dc77d356ac0f9412d1700990012a5de271d0609460d0d57268db99"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_2 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1631",
+       "sha": "8e2ffa7183b4a137998d027b0a6d3996fc5e111420c6389978a2399c87c3c1fd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1631",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "3",
+   "name": "3",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "656"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 3 key is written 3 #.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "656",
+       "sha": "3f8e46d771f6ffac6e39421aeed1be9c52b4e0a7b34654b4be5c530f0da1e6de"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x04",
+     "of": "doc",
+     "text": "The make code of 3 # is 04h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "656",
+       "sha": "3f8e46d771f6ffac6e39421aeed1be9c52b4e0a7b34654b4be5c530f0da1e6de"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_3 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1632",
+       "sha": "5e56ce1d518eb4ee3554b07cebba85d4658c2979b23ee8e21f070c99eed5755a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1632",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "4",
+   "name": "4",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "657"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 4 key is written 4 $.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "657",
+       "sha": "d47e2e3aacb24874bcc067a449196b29bd833d69e98bac79776f38ca74b0972d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x05",
+     "of": "doc",
+     "text": "The make code of 4 $ is 05h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "657",
+       "sha": "d47e2e3aacb24874bcc067a449196b29bd833d69e98bac79776f38ca74b0972d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_4 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1633",
+       "sha": "cf3075d82cb8cffb1c421bce4f4105b2596e2900a9a57a7dea20086192c64ab4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1633",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "5",
+   "name": "5",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "658"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 5 key is written 5 %.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "658",
+       "sha": "35083dfb6ca6c3c46647c13161c58b5d314522dab8ec745d049f418812ac7618"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x06",
+     "of": "doc",
+     "text": "The make code of 5 % is 06h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "658",
+       "sha": "35083dfb6ca6c3c46647c13161c58b5d314522dab8ec745d049f418812ac7618"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_5 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1634",
+       "sha": "64e2c90f22d9fd5042cc974e5041b01a4b53459cd77407b2c64170c9f876c1fe"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1634",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "6",
+   "name": "6",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "659"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 6 key is written 6 ^.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "659",
+       "sha": "d825a04f2f48ac2be09c72f692ad38510073e1c65c3a59050a1990b8226ce716"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x07",
+     "of": "doc",
+     "text": "The make code of 6 ^ is 07h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "659",
+       "sha": "d825a04f2f48ac2be09c72f692ad38510073e1c65c3a59050a1990b8226ce716"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_6 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1635",
+       "sha": "acad6c25f098a19fffb2afe999c3c2fe4d6ef99455a5bddb14dc0b6cf6025552"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1635",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "7",
+   "name": "7",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "660"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 7 key is written 7 &.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "660",
+       "sha": "de84e5158910ffd9851fb7193fc298d131de2c9d0fcbbb398ca5e818b5b60f90"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x08",
+     "of": "doc",
+     "text": "The make code of 7 & is 08h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "660",
+       "sha": "de84e5158910ffd9851fb7193fc298d131de2c9d0fcbbb398ca5e818b5b60f90"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_7 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1636",
+       "sha": "ff887a6ffc75ed58e459e527450ad34cf624ae5ad582989fb2bec1c374a44d02"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1636",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "8",
+   "name": "8",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "661"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 8 key is written 8 *.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "661",
+       "sha": "cbdf06359f27c734746545cdcd8b9448d27f72671b8be4bb08cffc59913af8ad"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x09",
+     "of": "doc",
+     "text": "The make code of 8 * is 09h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "661",
+       "sha": "cbdf06359f27c734746545cdcd8b9448d27f72671b8be4bb08cffc59913af8ad"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_8 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1637",
+       "sha": "c8571be0d4699f6b90cb9fcde4973c1f44bf8341bc330a3e307397b465d7a393"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1637",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "9",
+   "name": "9",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "662"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_9"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the 9 key is written 9 (.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "662",
+       "sha": "4036da2dbb89d04f0f235035df23e043e052fece41cd939165bb91bdc907b98b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x0A",
+     "of": "doc",
+     "text": "The make code of 9 ( is 0Ah.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "662",
+       "sha": "4036da2dbb89d04f0f235035df23e043e052fece41cd939165bb91bdc907b98b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_9 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1638",
+       "sha": "31b396894caacb56aeb6aa0f5ee2fd79936d15e7dab009e4e7b52c36f70f4bca"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1638",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "a",
+   "name": "a",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "682"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_a"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the a key is written A.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "682",
+       "sha": "89b912684cf8b0821bf7f6bb3a10c54703dae42c09f1baf1e0275aa7da660c51"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x1E",
+     "of": "doc",
+     "text": "The make code of A is 1Eh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "682",
+       "sha": "89b912684cf8b0821bf7f6bb3a10c54703dae42c09f1baf1e0275aa7da660c51"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_a of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1667",
+       "sha": "65e6ad5382d1b66a6d21cea1dc98eb2eb95c54263d2f0bab217b3d676ac4e420"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1667",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "b",
+   "name": "b",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "700"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_b"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the b key is written B.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "700",
+       "sha": "4733aea564853b24d3e7c3cbb645a2d2cf4fde3db2a51bb41c8525608ce45f9e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x30",
+     "of": "doc",
+     "text": "The make code of B is 30h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "700",
+       "sha": "4733aea564853b24d3e7c3cbb645a2d2cf4fde3db2a51bb41c8525608ce45f9e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_b of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1690",
+       "sha": "2f94c8fd374fc0659b1b556037d4f4581be6c905d301a11a776e52132b7942a7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1690",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "backslash",
+   "name": "backslash",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "695"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_backslash"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the backslash key is written \\ |.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "695",
+       "sha": "372abcf471db12cab43b5e72a1fda89405452944d44e9f4c2899bc7f68adc50e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x2B",
+     "of": "doc",
+     "text": "The make code of \\ | is 2Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "695",
+       "sha": "372abcf471db12cab43b5e72a1fda89405452944d44e9f4c2899bc7f68adc50e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_backslash of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1685",
+       "sha": "6f404e0c17a67d561dc73ba105c92c2ed39649e387342b9fa8936f3a83dcedaa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1685",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "backspace",
+   "name": "backspace",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "666"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_backspace"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the backspace key is written Backspace.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "666",
+       "sha": "655492b44ce713c34895f3fa9d13a3121fd1c6b9af837bd224fbbecd8294abd2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x0E",
+     "of": "doc",
+     "text": "The make code of Backspace is 0Eh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "666",
+       "sha": "655492b44ce713c34895f3fa9d13a3121fd1c6b9af837bd224fbbecd8294abd2"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_backspace of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1645",
+       "sha": "157fc50a32107ffcffec0deb1def759048ff4bad7b53307df08c77a640d57e18"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1645",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "c",
+   "name": "c",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "698"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_c"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the c key is written C.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "698",
+       "sha": "d4c990e9ae348d693ed837a1cd5e581b79a6485c949468264f6ad76abac3eb2c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x2E",
+     "of": "doc",
+     "text": "The make code of C is 2Eh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "698",
+       "sha": "d4c990e9ae348d693ed837a1cd5e581b79a6485c949468264f6ad76abac3eb2c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_c of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1688",
+       "sha": "0177d4956ba2291124bf37d257c970093947f95caa606fb481d7c725c3f9f28c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1688",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "capslock",
+   "name": "capslock",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "662"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_capslock"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the capslock key is written CapsLock.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "662",
+       "sha": "4036da2dbb89d04f0f235035df23e043e052fece41cd939165bb91bdc907b98b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x3A",
+     "of": "doc",
+     "text": "The make code of CapsLock is 3Ah.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "662",
+       "sha": "4036da2dbb89d04f0f235035df23e043e052fece41cd939165bb91bdc907b98b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_capslock of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1707",
+       "sha": "dfd249599db83f6f9ce0bf6244e939bd92bf068c0e8b8366436f83c63c8803c0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1707",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "comma",
+   "name": "comma",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "655"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_comma"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the comma key is written , <.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "655",
+       "sha": "4ddb125b52dc77d356ac0f9412d1700990012a5de271d0609460d0d57268db99"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x33",
+     "of": "doc",
+     "text": "The make code of , < is 33h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "655",
+       "sha": "4ddb125b52dc77d356ac0f9412d1700990012a5de271d0609460d0d57268db99"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_comma of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1694",
+       "sha": "7f0dce46948e21210a19b99e7f073099e81e2d6f680cf436d2bc642d7d7bb641"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1694",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "d",
+   "name": "d",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "684"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_d"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the d key is written D.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "684",
+       "sha": "29ae978315b5ad5fd8c63934a2a1e29f0f2c45d90a10079142a007485f91eff0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x20",
+     "of": "doc",
+     "text": "The make code of D is 20h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "684",
+       "sha": "29ae978315b5ad5fd8c63934a2a1e29f0f2c45d90a10079142a007485f91eff0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_d of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1669",
+       "sha": "048853a426842dc92f8a995221d3d0662237523d9010668f5cc20a7a14e850fc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1669",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "delete",
+   "name": "delete",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "687"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_delete"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the delete key is written Del.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "687",
+       "sha": "88de572cc80e9d75091c0ec60781294fe360a8f56ff6591c92dae3b87073ec98"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x53",
+     "of": "doc",
+     "text": "The make code of Del is 53h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "687",
+       "sha": "88de572cc80e9d75091c0ec60781294fe360a8f56ff6591c92dae3b87073ec98"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_delete of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1776",
+       "sha": "db2002ba099755a6c6150e5b90b80d00721cc98797a76a1a6280d74ea4e74fa2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1776",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "down",
+   "name": "down",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "684"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_down"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the down key is written DownArrow.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "684",
+       "sha": "29ae978315b5ad5fd8c63934a2a1e29f0f2c45d90a10079142a007485f91eff0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x50",
+     "of": "doc",
+     "text": "The make code of DownArrow is 50h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "684",
+       "sha": "29ae978315b5ad5fd8c63934a2a1e29f0f2c45d90a10079142a007485f91eff0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_down of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1773",
+       "sha": "88beb5b6802ed913c6bcdf67c0d0d3f8591cec84805c46d1656ebccd6008b87e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1773",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "e",
+   "name": "e",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "670"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_e"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the e key is written E.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "670",
+       "sha": "e34eab564b140234c297a7a1cb7109640fc5a3a2089aaef438fc33964fa83947"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x12",
+     "of": "doc",
+     "text": "The make code of E is 12h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "670",
+       "sha": "e34eab564b140234c297a7a1cb7109640fc5a3a2089aaef438fc33964fa83947"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_e of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1650",
+       "sha": "c519921c5e51c8f073c4b675b3808e32e0527ee732ba20d35627d4b3d6772a86"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1650",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "end",
+   "name": "end",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "683"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_end"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the end key is written End.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "683",
+       "sha": "9544f25c3f8e5dc131b9ae98430e97757ced21ff60c94bbcaabbf4442ba42cd4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x4F",
+     "of": "doc",
+     "text": "The make code of End is 4Fh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "683",
+       "sha": "9544f25c3f8e5dc131b9ae98430e97757ced21ff60c94bbcaabbf4442ba42cd4"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_end of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1772",
+       "sha": "a025a87ccfb02e641a3390cc3c4c0be028c09aef04bdf210e0bf4725a2a2fb3a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1772",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "enter",
+   "name": "enter",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "680"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_enter"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the enter key is written Enter.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "680",
+       "sha": "52b849a1b20441937858402e2102f5def17fae609add900e585c4de0c90e8a41"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x1C",
+     "of": "doc",
+     "text": "The make code of Enter is 1Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "680",
+       "sha": "52b849a1b20441937858402e2102f5def17fae609add900e585c4de0c90e8a41"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_enter of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1661",
+       "sha": "0acd86447dc1c201273b2e25f019e9e340f5fa91f17d1f58ab82f23ce4d83c7a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1661",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "equals",
+   "name": "equals",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "665"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_equals"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the equals key is written = +.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "665",
+       "sha": "cb066d09929106df91ad09aa358d35fefa3f19e6fa1f8852089e736d8a76bee7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x0D",
+     "of": "doc",
+     "text": "The make code of = + is 0Dh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "665",
+       "sha": "cb066d09929106df91ad09aa358d35fefa3f19e6fa1f8852089e736d8a76bee7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_equals of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1642",
+       "sha": "0dbb4e1728ea2e10d3d37050f88810c233b59c3bff42f59c5a4fa6e98f60da62"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1642",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "esc",
+   "name": "esc",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "653"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_esc"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the esc key is written Esc.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "653",
+       "sha": "0725d7a2a670bbb9f0a845fad08d5dfd09752950a6032e09e43e360139ff9923"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x01",
+     "of": "doc",
+     "text": "The make code of Esc is 01h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "653",
+       "sha": "0725d7a2a670bbb9f0a845fad08d5dfd09752950a6032e09e43e360139ff9923"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_esc of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1629",
+       "sha": "e732ea2bd5e69219811769366b35d7211b47538f12e5686a4753af421e21dcd5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1629",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "escape",
+   "name": "escape",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "653"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_esc"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the escape key is written Esc.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "653",
+       "sha": "0725d7a2a670bbb9f0a845fad08d5dfd09752950a6032e09e43e360139ff9923"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x01",
+     "of": "doc",
+     "text": "The make code of Esc is 01h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "653",
+       "sha": "0725d7a2a670bbb9f0a845fad08d5dfd09752950a6032e09e43e360139ff9923"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_esc of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1629",
+       "sha": "e732ea2bd5e69219811769366b35d7211b47538f12e5686a4753af421e21dcd5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1629",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f",
+   "name": "f",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "685"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f key is written F.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "685",
+       "sha": "617d3f9c099c7a027e8081622c21dc40c8acde95d24edec43cbb46cd8cb51c8f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x21",
+     "of": "doc",
+     "text": "The make code of F is 21h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "685",
+       "sha": "617d3f9c099c7a027e8081622c21dc40c8acde95d24edec43cbb46cd8cb51c8f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1670",
+       "sha": "ab20657bf026ca7ad0bfb6ed7d10fca463eb217be588ea8af7afb226289fba9c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1670",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f1",
+   "name": "f1",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "663"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f1 key is written F1.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "663",
+       "sha": "340594d428e9738835f53a093fce732518f809c3fd5d2e405211cf80fcf87f97"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x3B",
+     "of": "doc",
+     "text": "The make code of F1 is 3Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "663",
+       "sha": "340594d428e9738835f53a093fce732518f809c3fd5d2e405211cf80fcf87f97"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f1 of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1709",
+       "sha": "85ae90f41bd8a283886539111d96fcb58a2c533c4353c027639a400bad7e4886"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1709",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f10",
+   "name": "f10",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "672"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f10 key is written F10.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "672",
+       "sha": "452ed6031a2c4f3fe5550c2e713197ff610e0fea07764831df24a30a56219612"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x44",
+     "of": "doc",
+     "text": "The make code of F10 is 44h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "672",
+       "sha": "452ed6031a2c4f3fe5550c2e713197ff610e0fea07764831df24a30a56219612"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f10 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1718",
+       "sha": "3c971fb529dab618b736f7c39f9e8c49493bf4b751a99a889bbc47697a29b9e9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1718",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f11",
+   "name": "f11",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "689"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "691"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "737-740"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f11"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the F11 key is written F11 at 57h, and an entry marked [Note1] F11 sits at 55h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "691",
+       "sha": "2e4630d4ba254d40a3c6c99485eab4a2123ebbfce749259d7effd887c3d6ef4d"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "689",
+       "sha": "582dc34d5e50e1808feb93fbb1912b2d0b384b6920c4452f388d45681f43b0b5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x57",
+     "of": "doc",
+     "text": "The table gives F11 the make code 57h; 55h is the [Note1] F11: the Cherry G80-0777's extra keys generate 55h-59h, and some other extended keyboards send 55h for F11.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "691",
+       "sha": "2e4630d4ba254d40a3c6c99485eab4a2123ebbfce749259d7effd887c3d6ef4d"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "689",
+       "sha": "582dc34d5e50e1808feb93fbb1912b2d0b384b6920c4452f388d45681f43b0b5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "737-740",
+       "sha": "bbe192bb326db2ee450fc33db1f241ff58679c5df448c48360cfea81e1d777ef"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f11 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1719",
+       "sha": "c91f9eabfdabbf7875823159c7b9eb2f70bc8b2abd50efab13d0a803ffa39916"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1719",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f12",
+   "name": "f12",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "692"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f12"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f12 key is written F12.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "692",
+       "sha": "57d87fa09bf63c7d82d7da7ea200dde89aeff66fc34042cc6c8cf8a7ef3f1410"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x58",
+     "of": "doc",
+     "text": "The make code of F12 is 58h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "692",
+       "sha": "57d87fa09bf63c7d82d7da7ea200dde89aeff66fc34042cc6c8cf8a7ef3f1410"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f12 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1720",
+       "sha": "d7a0491a5274cd020a041c2fec681f03dc950196b5ae6ee3b43d78cfd4777217"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1720",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f2",
+   "name": "f2",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "664"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f2 key is written F2.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "664",
+       "sha": "6672c649ded30d72918ce71e9713218cc49f9088644e782645c48ea6e37e7e66"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x3C",
+     "of": "doc",
+     "text": "The make code of F2 is 3Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "664",
+       "sha": "6672c649ded30d72918ce71e9713218cc49f9088644e782645c48ea6e37e7e66"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f2 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1710",
+       "sha": "c75c5ccfd49758f876f23a2861675268bb8eb33c42f93458cefc80ed5e1b5fb8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1710",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f3",
+   "name": "f3",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "665"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f3 key is written F3.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "665",
+       "sha": "cb066d09929106df91ad09aa358d35fefa3f19e6fa1f8852089e736d8a76bee7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x3D",
+     "of": "doc",
+     "text": "The make code of F3 is 3Dh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "665",
+       "sha": "cb066d09929106df91ad09aa358d35fefa3f19e6fa1f8852089e736d8a76bee7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f3 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1711",
+       "sha": "05a1ed20e5215c00c4164f5f9f620376a7d4b09e6810842547b334794374cfc5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1711",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f4",
+   "name": "f4",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "666"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f4 key is written F4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "666",
+       "sha": "655492b44ce713c34895f3fa9d13a3121fd1c6b9af837bd224fbbecd8294abd2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x3E",
+     "of": "doc",
+     "text": "The make code of F4 is 3Eh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "666",
+       "sha": "655492b44ce713c34895f3fa9d13a3121fd1c6b9af837bd224fbbecd8294abd2"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f4 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1712",
+       "sha": "500205e08d3aaee623f9dc9323a494903f3edcce0a1d5631e450352a5d7de931"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1712",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f5",
+   "name": "f5",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "667"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f5 key is written F5.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "667",
+       "sha": "51231b63d66ae6e6919fbc5cf9395494fadfc220f6c64474413b3ad7a8041e45"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x3F",
+     "of": "doc",
+     "text": "The make code of F5 is 3Fh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "667",
+       "sha": "51231b63d66ae6e6919fbc5cf9395494fadfc220f6c64474413b3ad7a8041e45"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f5 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1713",
+       "sha": "61f778d6089bc4be1b91e51dde4945f841b21d37eafe0cdfe3025621fbd99e5e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1713",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f6",
+   "name": "f6",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "668"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f6 key is written F6.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "668",
+       "sha": "6b37121bb785711ec525fd2e3c627ad817775678427933962fadd059cb0003cf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x40",
+     "of": "doc",
+     "text": "The make code of F6 is 40h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "668",
+       "sha": "6b37121bb785711ec525fd2e3c627ad817775678427933962fadd059cb0003cf"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f6 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1714",
+       "sha": "0a917364b7e175ca84f32b5deef4e83cd3aaaf6ac1f6a84e77fbb132bec5452d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1714",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f7",
+   "name": "f7",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "669"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f7 key is written F7.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "669",
+       "sha": "9b01fe0f5b6b8ff43b2c6fae74758ed778e313eb94a8512c71821516d78f2f3f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x41",
+     "of": "doc",
+     "text": "The make code of F7 is 41h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "669",
+       "sha": "9b01fe0f5b6b8ff43b2c6fae74758ed778e313eb94a8512c71821516d78f2f3f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f7 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1715",
+       "sha": "d5df007d5290591e187a4012d20cbe410bb033bc7c3855425be7cf968f338b11"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1715",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f8",
+   "name": "f8",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "670"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f8 key is written F8.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "670",
+       "sha": "e34eab564b140234c297a7a1cb7109640fc5a3a2089aaef438fc33964fa83947"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x42",
+     "of": "doc",
+     "text": "The make code of F8 is 42h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "670",
+       "sha": "e34eab564b140234c297a7a1cb7109640fc5a3a2089aaef438fc33964fa83947"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f8 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1716",
+       "sha": "438828bcbf6746e7a32d68e6d513c4bf9561cd5a77791ef436db6266d22e9cd8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1716",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "f9",
+   "name": "f9",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "671"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_f9"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the f9 key is written F9.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "671",
+       "sha": "d818ee9531e7021291370ac44e4ba32bfcc546f899866a9c088f79bd5ebaf219"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x43",
+     "of": "doc",
+     "text": "The make code of F9 is 43h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "671",
+       "sha": "d818ee9531e7021291370ac44e4ba32bfcc546f899866a9c088f79bd5ebaf219"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_f9 of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1717",
+       "sha": "bc03db7c4f0dbc51e7bede3ec08a3f1462536e97d1c94ed0e43242e13ca9c4f8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1717",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "g",
+   "name": "g",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "686"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_g"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the g key is written G.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "686",
+       "sha": "a35ace5aaeef620b713921a2494dcf97985daa496771f1f3ce61609d00d0a20a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x22",
+     "of": "doc",
+     "text": "The make code of G is 22h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "686",
+       "sha": "a35ace5aaeef620b713921a2494dcf97985daa496771f1f3ce61609d00d0a20a"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_g of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1671",
+       "sha": "17c28a61aa696c0185ca39dde9e3fa91447b4f6fe2b541d8c13967f7b3039c42"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1671",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "grave",
+   "name": "grave",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "693"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_grave"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the grave key is written ` ~.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "693",
+       "sha": "df7a747e8f6ca51590ad1f68db4bee50b99e731137ab13b842976fff534b3731"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x29",
+     "of": "doc",
+     "text": "The make code of ` ~ is 29h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "693",
+       "sha": "df7a747e8f6ca51590ad1f68db4bee50b99e731137ab13b842976fff534b3731"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_grave of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1680",
+       "sha": "0b75ac0487e9c655304227948dd95182ffca010f83101738ff6502cdd7a8a926"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1680",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "h",
+   "name": "h",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "687"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_h"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the h key is written H.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "687",
+       "sha": "88de572cc80e9d75091c0ec60781294fe360a8f56ff6591c92dae3b87073ec98"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x23",
+     "of": "doc",
+     "text": "The make code of H is 23h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "687",
+       "sha": "88de572cc80e9d75091c0ec60781294fe360a8f56ff6591c92dae3b87073ec98"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_h of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1672",
+       "sha": "03fb2cc3813ad2c2f9fa33c0566d051af66ec2a9047d53b87ece24e40faa110d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1672",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "home",
+   "name": "home",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "675"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_home"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the home key is written Home.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "675",
+       "sha": "93d9227b0531a1cbb5b2b82e7c0fdb701cec7d5de528b3185cd93ed94e758255"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x47",
+     "of": "doc",
+     "text": "The make code of Home is 47h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "675",
+       "sha": "93d9227b0531a1cbb5b2b82e7c0fdb701cec7d5de528b3185cd93ed94e758255"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_home of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1767",
+       "sha": "acab0144251a655b0e1574b5ea7c6585ce27817638d08e79762e2b548152c451"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1767",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "i",
+   "name": "i",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "675"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_i"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the i key is written I.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "675",
+       "sha": "93d9227b0531a1cbb5b2b82e7c0fdb701cec7d5de528b3185cd93ed94e758255"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x17",
+     "of": "doc",
+     "text": "The make code of I is 17h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "675",
+       "sha": "93d9227b0531a1cbb5b2b82e7c0fdb701cec7d5de528b3185cd93ed94e758255"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_i of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1655",
+       "sha": "d26c460e44df0310035f88418d6a406ef383eee8d47362e19333492244b8ceb7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1655",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "insert",
+   "name": "insert",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "686"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_insert"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the insert key is written Ins.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "686",
+       "sha": "a35ace5aaeef620b713921a2494dcf97985daa496771f1f3ce61609d00d0a20a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x52",
+     "of": "doc",
+     "text": "The make code of Ins is 52h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "686",
+       "sha": "a35ace5aaeef620b713921a2494dcf97985daa496771f1f3ce61609d00d0a20a"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_insert of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1775",
+       "sha": "182fb66b5508a2c0cdd2cec498b09bbc1dd4046c47c1a2569c5b77a697127df8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1775",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "j",
+   "name": "j",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "688"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_j"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the j key is written J.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "688",
+       "sha": "5d9a9a952c392e2474c746f840cb19cb408cc252fedecdcd6f82033254161c13"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x24",
+     "of": "doc",
+     "text": "The make code of J is 24h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "688",
+       "sha": "5d9a9a952c392e2474c746f840cb19cb408cc252fedecdcd6f82033254161c13"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_j of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1673",
+       "sha": "166d4f51b7d780a8e1acbb6d850dbca2575ef71c3a9393d068ba1d2c8b1311a1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1673",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "k",
+   "name": "k",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "689"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_k"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the k key is written K.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "689",
+       "sha": "582dc34d5e50e1808feb93fbb1912b2d0b384b6920c4452f388d45681f43b0b5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x25",
+     "of": "doc",
+     "text": "The make code of K is 25h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "689",
+       "sha": "582dc34d5e50e1808feb93fbb1912b2d0b384b6920c4452f388d45681f43b0b5"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_k of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1674",
+       "sha": "03382a26e49f90859b090c7bd2d6aa9735a544a7f2819d7a8551bf61e44277b7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1674",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "l",
+   "name": "l",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "690"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_l"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the l key is written L.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "690",
+       "sha": "c5e3757da87f751ec78803d17a0475d0631f83c0715390b32344a37023eeb5d2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x26",
+     "of": "doc",
+     "text": "The make code of L is 26h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "690",
+       "sha": "c5e3757da87f751ec78803d17a0475d0631f83c0715390b32344a37023eeb5d2"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_l of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1675",
+       "sha": "ce0a23de6ee83cb29660c559c73d970f0ca1543903c868cf0a75a4788d91f448"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1675",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "left",
+   "name": "left",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "679"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_left"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the left key is written LeftArrow.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "679",
+       "sha": "f58ea45bb333baaf5162ed81183731568c364b05887593e7d7ea1918c3633b0e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x4B",
+     "of": "doc",
+     "text": "The make code of LeftArrow is 4Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "679",
+       "sha": "f58ea45bb333baaf5162ed81183731568c364b05887593e7d7ea1918c3633b0e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_left of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1770",
+       "sha": "5bd2ea66d49c3f8c3d40b85e0503ae896a7bcb6bddcf2ef7241806390c174228"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1770",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "leftbracket",
+   "name": "leftbracket",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "678"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_leftbracket"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the leftbracket key is written [ {.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "678",
+       "sha": "44e156cc7c481e449bb4fcb322e436eca5104208e863793a8fe1d1eabb0affbe"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x1A",
+     "of": "doc",
+     "text": "The make code of [ { is 1Ah.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "678",
+       "sha": "44e156cc7c481e449bb4fcb322e436eca5104208e863793a8fe1d1eabb0affbe"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_leftbracket of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1659",
+       "sha": "21685234f4fd12bfd7b96b5ee326c03bc981b61019c0bd46f5a66b06ff8aa757"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1659",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "m",
+   "name": "m",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "654"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_m"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the m key is written M.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "654",
+       "sha": "40f1c7c1499283d75eb8f8909773ea9791759a606b2b9d5e562b71fd545954b5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x32",
+     "of": "doc",
+     "text": "The make code of M is 32h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "654",
+       "sha": "40f1c7c1499283d75eb8f8909773ea9791759a606b2b9d5e562b71fd545954b5"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_m of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1692",
+       "sha": "d2582169bb5c5f1efcb148060309b36fbea096d3cd2f33e09b98767bc3584c5f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1692",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "minus",
+   "name": "minus",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "664"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_minus"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the minus key is written - _.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "664",
+       "sha": "6672c649ded30d72918ce71e9713218cc49f9088644e782645c48ea6e37e7e66"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x0C",
+     "of": "doc",
+     "text": "The make code of - _ is 0Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "664",
+       "sha": "6672c649ded30d72918ce71e9713218cc49f9088644e782645c48ea6e37e7e66"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_minus of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1641",
+       "sha": "cd63e8d9016142733852da1edf490966111cbff49b9c05e12195c692d62fee7b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1641",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "n",
+   "name": "n",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "653"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_n"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the n key is written N.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "653",
+       "sha": "0725d7a2a670bbb9f0a845fad08d5dfd09752950a6032e09e43e360139ff9923"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x31",
+     "of": "doc",
+     "text": "The make code of N is 31h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "653",
+       "sha": "0725d7a2a670bbb9f0a845fad08d5dfd09752950a6032e09e43e360139ff9923"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_n of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1691",
+       "sha": "c9afa9d600850b1c5060185b47b5bad2d3c6bea9a7f93282e3e1f54d9ba96f0e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1691",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "o",
+   "name": "o",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "676"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_o"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the o key is written O.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "676",
+       "sha": "12bae76b48ed3f6ac1a4a91b155e94c6bf7f60292ab963103cd4ab32d007f109"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x18",
+     "of": "doc",
+     "text": "The make code of O is 18h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "676",
+       "sha": "12bae76b48ed3f6ac1a4a91b155e94c6bf7f60292ab963103cd4ab32d007f109"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_o of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1656",
+       "sha": "28488cc943e851fec28d1b776f66460f5a01c1878d18c8e1e5fef6549c886f34"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1656",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "p",
+   "name": "p",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "677"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_p"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the p key is written P.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "677",
+       "sha": "1da40f7e6f2b945e81518643f496781c308eb545355844dd39b6aa645adfff67"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x19",
+     "of": "doc",
+     "text": "The make code of P is 19h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "677",
+       "sha": "1da40f7e6f2b945e81518643f496781c308eb545355844dd39b6aa645adfff67"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_p of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1657",
+       "sha": "616fd1c8a9117af3075cf3c85f76d30edada1193808261311772cfa2245c2d39"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1657",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "pagedown",
+   "name": "pagedown",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "685"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_pagedown"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the pagedown key is written PgDn.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "685",
+       "sha": "617d3f9c099c7a027e8081622c21dc40c8acde95d24edec43cbb46cd8cb51c8f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x51",
+     "of": "doc",
+     "text": "The make code of PgDn is 51h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "685",
+       "sha": "617d3f9c099c7a027e8081622c21dc40c8acde95d24edec43cbb46cd8cb51c8f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_pagedown of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1774",
+       "sha": "0c0fca377f83ef49dd1ea14ab78d7da89a43625c786644caee36ab57f71caa1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1774",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "pageup",
+   "name": "pageup",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "677"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_pageup"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the pageup key is written PgUp.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "677",
+       "sha": "1da40f7e6f2b945e81518643f496781c308eb545355844dd39b6aa645adfff67"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x49",
+     "of": "doc",
+     "text": "The make code of PgUp is 49h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "677",
+       "sha": "1da40f7e6f2b945e81518643f496781c308eb545355844dd39b6aa645adfff67"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_pageup of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1769",
+       "sha": "1c57de96c29f3be2287d0713c1b73a155918bc3c4734a22baa2ba22892d69813"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1769",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "period",
+   "name": "period",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "656"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_period"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the period key is written . >.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "656",
+       "sha": "3f8e46d771f6ffac6e39421aeed1be9c52b4e0a7b34654b4be5c530f0da1e6de"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x34",
+     "of": "doc",
+     "text": "The make code of . > is 34h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "656",
+       "sha": "3f8e46d771f6ffac6e39421aeed1be9c52b4e0a7b34654b4be5c530f0da1e6de"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_period of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1695",
+       "sha": "73424e010d5319e3c22b0ed8a79f59e31ec56f695433343c098ab286c1ce207e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1695",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "q",
+   "name": "q",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "668"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_q"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the q key is written Q.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "668",
+       "sha": "6b37121bb785711ec525fd2e3c627ad817775678427933962fadd059cb0003cf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x10",
+     "of": "doc",
+     "text": "The make code of Q is 10h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "668",
+       "sha": "6b37121bb785711ec525fd2e3c627ad817775678427933962fadd059cb0003cf"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_q of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1648",
+       "sha": "31ad60c8a059b042b76fa696e1f3914e5bbb88717c3a5895c0341e319811121d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1648",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "quote",
+   "name": "quote",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "692"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_quote"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the quote key is written ' \".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "692",
+       "sha": "57d87fa09bf63c7d82d7da7ea200dde89aeff66fc34042cc6c8cf8a7ef3f1410"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x28",
+     "of": "doc",
+     "text": "The make code of ' \" is 28h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "692",
+       "sha": "57d87fa09bf63c7d82d7da7ea200dde89aeff66fc34042cc6c8cf8a7ef3f1410"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_quote of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1678",
+       "sha": "01984124c18a27af080c15a9881f159399c24a8f630baee7f0e9ef4a86a46472"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1678",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "r",
+   "name": "r",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "671"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_r"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the r key is written R.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "671",
+       "sha": "d818ee9531e7021291370ac44e4ba32bfcc546f899866a9c088f79bd5ebaf219"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x13",
+     "of": "doc",
+     "text": "The make code of R is 13h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "671",
+       "sha": "d818ee9531e7021291370ac44e4ba32bfcc546f899866a9c088f79bd5ebaf219"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_r of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1651",
+       "sha": "3838c81d88572c4fb7c83ee6e600d895d97070b8e1b29d37f477a28883ad5d48"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1651",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "return",
+   "name": "return",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "680"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_enter"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the return key is written Enter.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "680",
+       "sha": "52b849a1b20441937858402e2102f5def17fae609add900e585c4de0c90e8a41"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x1C",
+     "of": "doc",
+     "text": "The make code of Enter is 1Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "680",
+       "sha": "52b849a1b20441937858402e2102f5def17fae609add900e585c4de0c90e8a41"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_enter of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1661",
+       "sha": "0acd86447dc1c201273b2e25f019e9e340f5fa91f17d1f58ab82f23ce4d83c7a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1661",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "right",
+   "name": "right",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "681"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_right"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the right key is written RightArrow.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "681",
+       "sha": "0e586c64828a03da4d00e1bb05b26846dfff436f42345ca543443acf4895a7a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x4D",
+     "of": "doc",
+     "text": "The make code of RightArrow is 4Dh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "681",
+       "sha": "0e586c64828a03da4d00e1bb05b26846dfff436f42345ca543443acf4895a7a7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_right of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1771",
+       "sha": "c9dd74364d2559faecb5d6921194ad66bfb286e42c8a34d7baba26124b24eb92"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1771",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "rightbracket",
+   "name": "rightbracket",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "679"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_rightbracket"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the rightbracket key is written ] }.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "679",
+       "sha": "f58ea45bb333baaf5162ed81183731568c364b05887593e7d7ea1918c3633b0e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x1B",
+     "of": "doc",
+     "text": "The make code of ] } is 1Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "679",
+       "sha": "f58ea45bb333baaf5162ed81183731568c364b05887593e7d7ea1918c3633b0e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_rightbracket of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1660",
+       "sha": "ed0363c4268eecefd503fa4d5daa0071434997877cd5b1d7ee071f9bf01310a0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1660",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "s",
+   "name": "s",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "683"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_s"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the s key is written S.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "683",
+       "sha": "9544f25c3f8e5dc131b9ae98430e97757ced21ff60c94bbcaabbf4442ba42cd4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x1F",
+     "of": "doc",
+     "text": "The make code of S is 1Fh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "683",
+       "sha": "9544f25c3f8e5dc131b9ae98430e97757ced21ff60c94bbcaabbf4442ba42cd4"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_s of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1668",
+       "sha": "1bd9ad4d4528043089e132efdfe5ef8e488b6fe6a45807a72e6a94aeae9950b8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1668",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "semicolon",
+   "name": "semicolon",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "691"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_semicolon"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the semicolon key is written ; :.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "691",
+       "sha": "2e4630d4ba254d40a3c6c99485eab4a2123ebbfce749259d7effd887c3d6ef4d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x27",
+     "of": "doc",
+     "text": "The make code of ; : is 27h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "691",
+       "sha": "2e4630d4ba254d40a3c6c99485eab4a2123ebbfce749259d7effd887c3d6ef4d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_semicolon of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1677",
+       "sha": "4e26adc6b067ac486d2c3da57a2dc29f784dc5733b3327dbff105d2ca7d16644"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1677",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "slash",
+   "name": "slash",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "657"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_slash"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the slash key is written / ?.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "657",
+       "sha": "d47e2e3aacb24874bcc067a449196b29bd833d69e98bac79776f38ca74b0972d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x35",
+     "of": "doc",
+     "text": "The make code of / ? is 35h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "657",
+       "sha": "d47e2e3aacb24874bcc067a449196b29bd833d69e98bac79776f38ca74b0972d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_slash of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1696",
+       "sha": "6243698635a4ac65b09a67f7fe26d254bb16b3b6468a4f3f356ba466f1353968"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1696",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "space",
+   "name": "space",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "661"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_space"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the space key is written SpaceBar.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "661",
+       "sha": "cbdf06359f27c734746545cdcd8b9448d27f72671b8be4bb08cffc59913af8ad"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x39",
+     "of": "doc",
+     "text": "The make code of SpaceBar is 39h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "661",
+       "sha": "cbdf06359f27c734746545cdcd8b9448d27f72671b8be4bb08cffc59913af8ad"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_space of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1706",
+       "sha": "d3ae0d9ef07c0fa198c67629880602c94b7d759f2d6bb610eba9dccd6e385501"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1706",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "t",
+   "name": "t",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "672"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_t"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the t key is written T.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "672",
+       "sha": "452ed6031a2c4f3fe5550c2e713197ff610e0fea07764831df24a30a56219612"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x14",
+     "of": "doc",
+     "text": "The make code of T is 14h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "672",
+       "sha": "452ed6031a2c4f3fe5550c2e713197ff610e0fea07764831df24a30a56219612"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_t of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1652",
+       "sha": "215784f2b26fe541804700f5265588e33ce25f8721b32cacaab7db6eb3752167"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1652",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "tab",
+   "name": "tab",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "667"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_tab"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the tab key is written Tab.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "667",
+       "sha": "51231b63d66ae6e6919fbc5cf9395494fadfc220f6c64474413b3ad7a8041e45"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x0F",
+     "of": "doc",
+     "text": "The make code of Tab is 0Fh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "667",
+       "sha": "51231b63d66ae6e6919fbc5cf9395494fadfc220f6c64474413b3ad7a8041e45"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_tab of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1646",
+       "sha": "338082263198b549fbabee5cf181e4df89924b6c04cca3821166bcb2d7a87b48"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1646",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "u",
+   "name": "u",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "674"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_u"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the u key is written U.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "674",
+       "sha": "d8b2789ec77473b02973d25605415bdc9d9d1987b17fa4382a001f1e8e5bb828"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x16",
+     "of": "doc",
+     "text": "The make code of U is 16h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "674",
+       "sha": "d8b2789ec77473b02973d25605415bdc9d9d1987b17fa4382a001f1e8e5bb828"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_u of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1654",
+       "sha": "c2efda07a167d7b0ea1bab21e5aff0e8df7c4c099c29a3307d7658f7a9214aec"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1654",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "up",
+   "name": "up",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "676"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_up"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1879-1880"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the up key is written UpArrow.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "676",
+       "sha": "12bae76b48ed3f6ac1a4a91b155e94c6bf7f60292ab963103cd4ab32d007f109"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x48",
+     "of": "doc",
+     "text": "The make code of UpArrow is 48h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "676",
+       "sha": "12bae76b48ed3f6ac1a4a91b155e94c6bf7f60292ab963103cd4ab32d007f109"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_up of KEYBOARD_AddKey1, which the dispatcher calls for scan set 1 or keyb.cb_xlat; the case sets extend, so E0h precedes the make code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1768",
+       "sha": "0c65eb6b058ede63b93f14eb0caca0a177f39e27870e3cc48c91cf09d10d8299"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1880",
+       "sha": "c6988dca894f990f884c2f4ab10520ca30997d59792171191694cd84c075c47f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1768",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "v",
+   "name": "v",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "699"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_v"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the v key is written V.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "699",
+       "sha": "1a7fbf93e51c2873efb6e6539143d531309fc80e2d262ba457bed67631b98d49"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x2F",
+     "of": "doc",
+     "text": "The make code of V is 2Fh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "699",
+       "sha": "1a7fbf93e51c2873efb6e6539143d531309fc80e2d262ba457bed67631b98d49"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_v of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1689",
+       "sha": "ea8a9d2892fb25e7a5d4aab7f0fee8db066e4c5c296b1f290b001616639dbbc3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1689",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "w",
+   "name": "w",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "669"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_w"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the w key is written W.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "669",
+       "sha": "9b01fe0f5b6b8ff43b2c6fae74758ed778e313eb94a8512c71821516d78f2f3f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x11",
+     "of": "doc",
+     "text": "The make code of W is 11h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "669",
+       "sha": "9b01fe0f5b6b8ff43b2c6fae74758ed778e313eb94a8512c71821516d78f2f3f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_w of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1649",
+       "sha": "731bf595365fadc5fa612bbf4a40063c4721427013826be1034a7e180c820d01"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1649",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "x",
+   "name": "x",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "697"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_x"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the x key is written X.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "697",
+       "sha": "77be2f46bf41bb31edda36fb468179bf4053afeed3633e6750ed0542ce1bdf2b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x2D",
+     "of": "doc",
+     "text": "The make code of X is 2Dh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "697",
+       "sha": "77be2f46bf41bb31edda36fb468179bf4053afeed3633e6750ed0542ce1bdf2b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_x of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1687",
+       "sha": "eaf2f40cbd9b0c3f1b6469f55d1defc9740222b0e3304b1d1754cbcb742fac17"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1687",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "y",
+   "name": "y",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "673"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_y"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the y key is written Y.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "673",
+       "sha": "deeecaf09d4afebb0d82afa590442926af119f3e09b687516176eccb7c5256a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x15",
+     "of": "doc",
+     "text": "The make code of Y is 15h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "673",
+       "sha": "deeecaf09d4afebb0d82afa590442926af119f3e09b687516176eccb7c5256a7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_y of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1653",
+       "sha": "dee987baeab3994b3c84295947cb49b98f1e722c26d0c5fd1b10393c390cd794"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1653",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "z",
+   "name": "z",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "696"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AddKey1",
+     "case": [
+      "KBD_z"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the list's make code table the z key is written Z.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "696",
+       "sha": "bd68ba8a17303bc35925ff18a65da7d6d86bb2e37c12d759704cabca68bd59fc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "value 0x2C",
+     "of": "doc",
+     "text": "The make code of Z is 2Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "696",
+       "sha": "bd68ba8a17303bc35925ff18a65da7d6d86bb2e37c12d759704cabca68bd59fc"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X answers it as KBD_z of KEYBOARD_AddKey1, which the dispatcher calls when keyb.cb_xlat is set or the scan set is 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1686",
+       "sha": "28b550332c293fea9e1b22a6460296bb499c8c822f038b136f13d343815b416d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1917-1924",
+       "sha": "33b97cfbac20584c6d9bc786d777277066ce95ae185181ad18ef9654d80175cf"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1686",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1616",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "1606-1607",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "mouse-left",
+   "name": "left",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The DOSBox-X mouse code cites no document for its button numbers."
+    },
+    {
+     "where": "maker",
+     "gave": "No maker document names a PC mouse button; the button is a name of the server's own input table."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Not searched: a mouse button is not a part a datasheet numbers."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Not searched: a mouse button is not a part a datasheet numbers."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's make code table writes [Note2] left mouse as 7Eh, a scan code of the Schneider/Amstrad PC1512 keyboards' mouse, not this button."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1218-1221"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1233"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1241-1246"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X gives button 0 to the left button: it sets bit 0 of mouse.buttons and queues MOUSE_LEFT_PRESSED, doing nothing if bit 0 is already set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1243-1246",
+       "sha": "151404617843e2e6e0d56a22ad493eee3e49155a44c489aff6d9caaf4d58a348"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the machine is not a PC-98 and the keyboard AUX port is active, button 0 sets bit 0 of mouse.buttons and sends the state to KEYBOARD_AUX_Event.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1218",
+       "sha": "6b35fb63c43f4c15e673302a697b0ff2f90fad772e5854fe2344a5bab916b573"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1220-1221",
+       "sha": "f0b31e01fa06adcae7cbe95d85b7acf8436fb8a24ca53c3259e267b752a74adb"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1233",
+       "sha": "b183579f7acbb4c3fbf1e94173749599687faaef0509b23359de57042d3d283e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "Mouse_ButtonPressed reaches button 0 through a case 0 in each of its two switches on button.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1219-1220",
+       "sha": "34e793e059c7d751bc4685f2252b0b34e6bfbb4fb2228d98afa82b87379570b3"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1241-1243",
+       "sha": "e9888946119aa91b0bf4e5c897922bbef485f9b347f27c8f9e99e33121a28c6a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "mouse-right",
+   "name": "right",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The DOSBox-X mouse code cites no document for its button numbers."
+    },
+    {
+     "where": "maker",
+     "gave": "No maker document names a PC mouse button; the button is a name of the server's own input table."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Not searched: a mouse button is not a part a datasheet numbers."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Not searched: a mouse button is not a part a datasheet numbers."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's make code table writes [Note2] right mouse as 7Dh, a scan code of the Schneider/Amstrad PC1512 keyboards' mouse, not this button."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1218"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1219"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1223-1224"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1233"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1241"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1250-1253"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X gives button 1 to the right button: it sets bit 1 of mouse.buttons and queues MOUSE_RIGHT_PRESSED, doing nothing if bit 1 is already set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1250-1253",
+       "sha": "4fd88b9689485ecc8ab5f422780e82e763999d2353e2633574ad12ab64f47542"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the machine is not a PC-98 and the keyboard AUX port is active, button 1 sets bit 1 of mouse.buttons and sends the state to KEYBOARD_AUX_Event.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1218",
+       "sha": "6b35fb63c43f4c15e673302a697b0ff2f90fad772e5854fe2344a5bab916b573"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1223-1224",
+       "sha": "0f1b2e09d037539946be68bd8d56a57af7383405fcada04e0de9cfefdf3f5b59"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1233",
+       "sha": "b183579f7acbb4c3fbf1e94173749599687faaef0509b23359de57042d3d283e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "Mouse_ButtonPressed reaches button 1 through a case 1 in each of its two switches on button.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1219",
+       "sha": "79efe03245de7b24a2640de6874218d2466b4ebe3c236571167aa453a237f07a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1223",
+       "sha": "ddfa42b136e1b547d0a9af1ce54cbac24fc7ce030124b9651eed0a2c467d50f0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1241",
+       "sha": "79efe03245de7b24a2640de6874218d2466b4ebe3c236571167aa453a237f07a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1250",
+       "sha": "ddfa42b136e1b547d0a9af1ce54cbac24fc7ce030124b9651eed0a2c467d50f0"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "mouse-middle",
+   "name": "middle",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The DOSBox-X mouse code cites no document for its button numbers."
+    },
+    {
+     "where": "maker",
+     "gave": "No maker document names a PC mouse button; the button is a name of the server's own input table."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Not searched: a mouse button is not a part a datasheet numbers."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Not searched: a mouse button is not a part a datasheet numbers."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's make code table has no middle mouse code; its Note2 names only the PC1512's left and right buttons."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1218"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1219"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1226-1227"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1233"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1241"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1257-1260"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X gives button 2 to the middle button: it sets bit 2 of mouse.buttons and queues MOUSE_MIDDLE_PRESSED, doing nothing if bit 2 is already set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1257-1260",
+       "sha": "6869ac6765bf327b5d09c091b54a97136ca87cc1cd118dc13fb9e976b5b5e13c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the machine is not a PC-98 and the keyboard AUX port is active, button 2 sets bit 2 of mouse.buttons and sends the state to KEYBOARD_AUX_Event.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1218",
+       "sha": "6b35fb63c43f4c15e673302a697b0ff2f90fad772e5854fe2344a5bab916b573"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1226-1227",
+       "sha": "8ad4abf67200ae12a66d43ee26faef3619ddc79d5733376a81ef2bfd4a1a6afa"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1233",
+       "sha": "b183579f7acbb4c3fbf1e94173749599687faaef0509b23359de57042d3d283e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "Mouse_ButtonPressed reaches button 2 through a case 2 in each of its two switches on button.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1219",
+       "sha": "79efe03245de7b24a2640de6874218d2466b4ebe3c236571167aa453a237f07a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1226",
+       "sha": "7b43fb6985e707d8661ca10fa99bf90fac1b4c3b5a4240e4c79f22532fe12bc6"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1241",
+       "sha": "79efe03245de7b24a2640de6874218d2466b4ebe3c236571167aa453a237f07a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1257",
+       "sha": "7b43fb6985e707d8661ca10fa99bf90fac1b4c3b5a4240e4c79f22532fe12bc6"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  }
+ ]
+}
