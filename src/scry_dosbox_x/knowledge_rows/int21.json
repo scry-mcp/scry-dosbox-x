@@ -41923,22 +41923,37 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "3",
-     "text": "The case sets the system code page and stores registers at src/dos/dos.cpp:3086-3117, logging at 3071, 3076 and 3079.",
+     "text": "The case never reads DX; it stores BX as the loaded code page at src/dos/dos.cpp:3086, logging the refusals at 3071 and 3079.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "3071",
-       "sha": "f0c1c93ea5bcc554b954e13e959e9dd2f95f1f3b3fdceb8953d7b1dceed0efaf"
+       "lines": "3065-3076",
+       "sha": "6b543607f55d545e26c529de9c2fe7e057c12cd1ee0e1e740a570577c79de3ce"
       },
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "3086",
-       "sha": "58789f94f05a4514d5b65f87cc53f9c0c0c44700844ca83f07cabe5f89756667"
+       "lines": "3077-3086",
+       "sha": "64c52573f379c7930a94f503883d9cd27976e283676522d01a4f322baf54060f"
       },
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "3112-3118",
-       "sha": "8f261c0a4ee922da76ad48968e7ddd36611b8718020857c64c57e1e7e2448cbd"
+       "lines": "3088-3091",
+       "sha": "b6e803240144eddbdece03ff7e539b5490a5aa14f0fae0d24ddc95ec69929ba7"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "3093-3099",
+       "sha": "fdd06af5453c55dc6ab62873ddf8fe73894f9c412b7e3ad8360eed01adebce5a"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "3100-3106",
+       "sha": "0a4ab43e35b780899acdf6675aed4d3f6090cdd3590c1d56653e0be2cf095970"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "3108-3119",
+       "sha": "b681f9800eade57a5010eac31952591f6724398ec54cd6f9b1a527cf9b26581a"
       }
      ]
     },

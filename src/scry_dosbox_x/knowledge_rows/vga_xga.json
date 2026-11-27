@@ -13038,12 +13038,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x82E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the V-position keeps its value.",
+     "text": "A write at 82E9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the V-position keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13153,12 +13163,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x86E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Current X-Position keeps its value.",
+     "text": "A write at 86E9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Current X-Position keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13314,12 +13334,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x8EE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Destination X-Position/Diagonal Step Constant keeps its value.",
+     "text": "A write at 8EE9 falls to XGA_Write's default branch; on the Trio64 (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Destination X-Position/Diagonal Step Constant keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13455,12 +13485,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x92E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Line Error Term keeps its value.",
+     "text": "A write at 92E9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Line Error Term keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13587,12 +13627,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x96E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Major Axis Pixel Count keeps its value.",
+     "text": "A write at 96E9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Major Axis count keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13703,12 +13753,22 @@
      "n": "3",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x9EE8 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Short Stroke Vector Transfer keeps its value.",
+     "text": "A write at 9EE8 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Short Stroke register keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13802,12 +13862,22 @@
      "n": "3",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port x9EE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Short Stroke Vector Transfer keeps its value.",
+     "text": "A write at 9EE9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Short Stroke register keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -13934,12 +14004,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port xA6E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Foreground Color keeps its value.",
+     "text": "A write at A6E9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Foreground Color keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -14071,12 +14151,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port xAAE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Bitplane Write Mask keeps its value.",
+     "text": "A write at AAE9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Bitplane Write Mask keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -14212,12 +14302,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port xAEE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Bitplane Read Mask keeps its value.",
+     "text": "A write at AEE9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Bitplane Read Mask keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -14344,12 +14444,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port xB2E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Color Compare keeps its value.",
+     "text": "A write at B2E9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Color Compare keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -14464,12 +14574,22 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port xBEE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the BEE8h registers keep their values.",
+     "text": "A write at BEE9 falls to XGA_Write's default branch; on the Trio64 (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the BEE8h registers keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",
@@ -14605,12 +14725,22 @@
      "n": "4",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port xBAE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Foreground Mix keeps its value.",
+     "text": "A write at BAE9 falls to XGA_Write's default branch; on the Trio64V+ (below ViRGE) it logs at src/hardware/vga_xga.cpp:3028 and stores nothing, so the Foreground Mix keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3010-3019",
-       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
+       "lines": "3004-3011",
+       "sha": "07246d206a4946fad7d5fa6409cc3b15e2192a0fbe20a31be17340f431c6c16e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_xga.cpp",
+       "lines": "3022-3029",
+       "sha": "801519e1f42702553f520f752f960960c9d13ae9b338fdd37ddefe443f558d1a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "189-193",
+       "sha": "e1cf7b41e34dd2146b34e4f1a3193d40375632641ba8c94c6656731890b3396a"
       }
      ],
      "vs": "differs",

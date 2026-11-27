@@ -4448,7 +4448,7 @@
      "n": "7",
      "on": "when",
      "of": "dosbox-x",
-     "text": "DOSBox-X sets the speaker flag off as the row says, and logs a warning when an SB16 with DMA running gets the command.",
+     "text": "On an SB16 with a DMA transfer running, DOSBox-X logs a warning that disabling the speaker does not affect SB16 audio output.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/sblaster.cpp",
@@ -4456,8 +4456,7 @@
        "sha": "ed100d07e8241e82d8c09dd02722755151cdbda3b93a76a66ae755dade89d1b4"
       }
      ],
-     "vs": "differs",
-     "row": "5"
+     "vs": "extra"
     },
     {
      "n": "8",
@@ -4506,6 +4505,12 @@
      "lines": "2366",
      "as": "unfollowed",
      "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2366",
+     "as": "unfollowed",
+     "row": "5"
     }
    ]
   },
