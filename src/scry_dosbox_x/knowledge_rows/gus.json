@@ -16,7 +16,6 @@
   "GUS-Lowlevel-Toolkit-222.raw.txt": [
    "683-775",
    "1353-1377",
-   "1381",
    "1385-1417",
    "1425-1461",
    "1465-1509",
@@ -60,7 +59,8 @@
    "1295-1301",
    "1099",
    "1101",
-   "1303-1341"
+   "1303-1341",
+   "1379-1381"
   ]
  },
  "closed": [
@@ -360,7 +360,7 @@
    "regions": [
     {
      "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
-     "lines": "1381"
+     "lines": "1379-1381"
     },
     {
      "ref": "dosbox-x:src/hardware/gus.cpp",
@@ -386,8 +386,8 @@
      "quotes": [
       {
        "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
-       "lines": "1381",
-       "sha": "3c2d4ea7a6d9ffc2240c66ca4a0e3b630fdaa1c325d078fe72ec8e7377f1e114"
+       "lines": "1379-1381",
+       "sha": "d815e7ecfc52580deb64c1d8cdc0e08344e63cb200134c4ed39df0a8eb839906"
       }
      ]
     },
@@ -917,7 +917,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "8",
-     "text": "With register 5 selected, the write only logs the value and clears no IRQ.",
+     "text": "With register 5 selected, the write only logs the value at src/hardware/gus.cpp:1726 and clears no IRQ.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/gus.cpp",
@@ -932,7 +932,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "9",
-     "text": "With register 6 selected, the write only logs the value and enables neither decode.",
+     "text": "With register 6 selected, the write only logs the value at src/hardware/gus.cpp:1722 and enables neither decode.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/gus.cpp",
@@ -1651,8 +1651,8 @@
       },
       {
        "ref": "dosbox-x:src/hardware/gus.cpp",
-       "lines": "853",
-       "sha": "85f4f1dd80f3908ab270a754c4eaae756fd662729bdcd215eef27c6a8a7c2833"
+       "lines": "850-860",
+       "sha": "d0fbe9c0c57cc6f68633f35f31fc00d0ba516fcc7060c40ea2e691a5f7ab413c"
       }
      ]
     }
@@ -1808,8 +1808,8 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/gus.cpp",
-       "lines": "852",
-       "sha": "9ed2b891d623dd0127727d2971a4f5b128d823df7226824b075011fea50bbb5b"
+       "lines": "850-857",
+       "sha": "fbb589fdc275d4ccf98e47c538a1d240dc471206b4fb2709634b5ff27281d59d"
       }
      ]
     },
@@ -1926,6 +1926,16 @@
        "ref": "dosbox-x:src/hardware/gus.cpp",
        "lines": "1565-1566",
        "sha": "5176617559941d08935e19a5c570923314bd79eaf2916df77feacc3460850e8f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1850-1853",
+       "sha": "dd412b3f4a09540e9e2a6536a3f831168bee2f4ec88cf68f3f9a370131d41b6c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1861-1871",
+       "sha": "cd6c2b6ed8ed920be3fe2e1f5bb570251725308071f823708e17f24debcf6947"
       }
      ],
      "vs": "extra"

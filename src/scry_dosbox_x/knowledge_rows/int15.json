@@ -2679,8 +2679,8 @@
      "n": "20",
      "on": "out AH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case has no store of a status in AH: AH changes only as the high byte of a whole-AX store.",
+     "vs": "differs",
+     "text": "The case stores AL, AX, BX, CX and DX and sets CF at src/ints/bios.cpp:6773-6799, logging at 6802; AH has no status store.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -4082,8 +4082,8 @@
      "n": "16",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case never sets CF.",
+     "vs": "differs",
+     "text": "The case stores AX at src/ints/bios.cpp:6878, logging at 6879, and never sets CF.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -4097,8 +4097,8 @@
      "n": "17",
      "on": "out AH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case stores no status in AH: AH is only the high byte of the size stored in AX.",
+     "vs": "differs",
+     "text": "The case stores AX at src/ints/bios.cpp:6878, logging at 6879, so AH only holds the size's high byte.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -4112,8 +4112,8 @@
      "n": "18",
      "on": "out AH=80h",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case stores no status in AH: AH is only the high byte of the size stored in AX.",
+     "vs": "differs",
+     "text": "The case stores AX at src/ints/bios.cpp:6878, logging at 6879, so AH only holds the size's high byte.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -4127,8 +4127,8 @@
      "n": "19",
      "on": "out AH=86h",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case stores no status in AH: AH is only the high byte of the size stored in AX.",
+     "vs": "differs",
+     "text": "The case stores AX at src/ints/bios.cpp:6878, logging at 6879, so AH only holds the size's high byte.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -5950,8 +5950,8 @@
      "n": "14",
      "on": "out DX",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case never stores DX.",
+     "vs": "differs",
+     "text": "The case sets CF at src/ints/bios.cpp:7100 after the log at 7099 and never stores DX.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -6563,8 +6563,8 @@
      "n": "12",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case never sets CF.",
+     "vs": "differs",
+     "text": "The case writes the keyboard port and stores BX and AH at src/ints/bios.cpp:6978-6988, logging at 6982; it never sets CF.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -7250,8 +7250,8 @@
      "n": "8",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case never sets CF.",
+     "vs": "differs",
+     "text": "The case stores BH and AH at src/ints/bios.cpp:7043-7048, logging at 7045, and never sets CF.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",
@@ -15368,7 +15368,7 @@
      ]
     },
     {
-     "n": "17",
+     "n": "16",
      "on": "in BP",
      "of": "dosbox-x",
      "vs": "differs",
@@ -15403,7 +15403,7 @@
      "row": "7"
     },
     {
-     "n": "18",
+     "n": "17",
      "on": "out AH",
      "of": "dosbox-x",
      "vs": "differs",
@@ -15438,7 +15438,7 @@
      "row": "12"
     },
     {
-     "n": "19",
+     "n": "18",
      "on": "out AH",
      "of": "dosbox-x",
      "vs": "extra",
@@ -15457,7 +15457,7 @@
      ]
     },
     {
-     "n": "20",
+     "n": "19",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",

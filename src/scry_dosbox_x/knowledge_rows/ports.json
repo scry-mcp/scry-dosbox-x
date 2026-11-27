@@ -33966,7 +33966,7 @@
      "n": "35",
      "on": "is",
      "of": "doc",
-     "text": "The remaining values fall to 2.2 or 3.3 MB/s, several marked with a question mark.",
+     "text": "The remaining values fall to 2.9 (DDh), 2.5 (EEh) and 2.2 or 3.3 MB/s (FFh), several marked with a question mark.",
      "quotes": [
       {
        "ref": "rbil61:PORTS.B",
@@ -40153,8 +40153,13 @@
      "quotes": [
       {
        "ref": "rbil61:PORTS.B",
-       "lines": "8441",
-       "sha": "10779250220c72bd0e98caaf6ab91e4c9a711ce6633885f496b5c12963ad2d5d"
+       "lines": "8432-8438",
+       "sha": "f856e77954364f2f8a785069a4c1f67fc792d7bc0d984d008c7f33b032c8e076"
+      },
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "8441-8442",
+       "sha": "5c2a0aace8816aa945bd5432101e469415974ca9703145d5d154cdebd14e7a36"
       }
      ]
     },
@@ -40206,7 +40211,7 @@
      "n": "S",
      "on": "write",
      "of": "dosbox-x",
-     "text": "With the floppy controller at 03F0h, a one-byte write reaches fdc_baseio_w's default branch, which stores nothing.",
+     "text": "With the floppy controller at 03F0h, a one-byte write reaches fdc_baseio_w's default branch, which stores nothing and only logs at src/hardware/floppy.cpp:2623.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -40221,7 +40226,7 @@
      "n": "T",
      "on": "write",
      "of": "dosbox-x",
-     "text": "With the floppy controller at 03F1h, a one-byte write reaches fdc_baseio_w's default branch, which stores nothing.",
+     "text": "With the floppy controller at 03F1h, a one-byte write reaches fdc_baseio_w's default branch, which stores nothing and only logs at src/hardware/floppy.cpp:2623.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",

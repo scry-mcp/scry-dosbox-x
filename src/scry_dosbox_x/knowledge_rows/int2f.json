@@ -106,7 +106,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The case stores no status in AL, which keeps the 0x00 that selected it.",
+     "text": "The case stores no status in AL, which keeps the 0x00 that selected it; it only logs at src/dos/dos_misc.cpp:313.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -243,7 +243,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The case never reads DS:DI.",
+     "text": "The case never reads DS:DI; it only logs at src/dos/dos_misc.cpp:313.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -258,7 +258,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "3",
-     "text": "The case stores no register, so AX, BX, SI and ES keep their values.",
+     "text": "The case stores no register, so AX, BX, SI and ES keep their values; it only logs at src/dos/dos_misc.cpp:313.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -426,7 +426,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The case reads no request header at ES:BX: its only use of BX is the debug log line.",
+     "text": "The case reads no request header at ES:BX: its only use of BX is the debug log line at src/dos/dos_misc.cpp:313.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -441,7 +441,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "3",
-     "text": "The case updates no request header: it stores nothing.",
+     "text": "The case updates no request header: it stores nothing and only logs at src/dos/dos_misc.cpp:313.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -456,7 +456,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "4",
-     "text": "The case stores no flags word.",
+     "text": "The case stores no flags word; it only logs at src/dos/dos_misc.cpp:313.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -1279,8 +1279,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.K",
-       "lines": "4664",
-       "sha": "1a2c7045f39664c70c72808e476ea9a1ea131ab8669da841b1410b8f91a77302"
+       "lines": "4663-4664",
+       "sha": "32eba4d5b4a2ccd760d9030b49b15f4000641edee9abb25159bc4002ddf2daef"
       }
      ]
     },
@@ -1292,8 +1292,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.K",
-       "lines": "4665",
-       "sha": "29e0bff9a624f3829c412b42d8404909ac17c62e8a576da31125da736dd86f1b"
+       "lines": "4663-4665",
+       "sha": "b69bae5166d5cf47102f61360e5fb801820c977c95296f058bf8d56b652f5211"
       }
      ]
     },
@@ -2253,7 +2253,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "3",
-     "text": "The case issues no broadcast of its own: it logs and returns false.",
+     "text": "The case issues no broadcast of its own: it logs at src/dos/dos_misc.cpp:569 and returns false.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -2268,7 +2268,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "5",
-     "text": "The case stores no return register: it logs and returns false.",
+     "text": "The case stores no return register: it logs at src/dos/dos_misc.cpp:569 and returns false.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6055,7 +6055,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The case does not test CX: it only prints CX in a debug line.",
+     "text": "The case does not test CX: it only prints CX in a debug line at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6070,7 +6070,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "3",
-     "text": "The case stores no AX: it keeps the 0x4A10 that selected it.",
+     "text": "The case stores no AX: it keeps the 0x4A10 that selected it; it only logs at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6085,7 +6085,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "4",
-     "text": "The case stores no DX and no BX.",
+     "text": "The case stores no DX and no BX; it only logs at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6100,7 +6100,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "5",
-     "text": "The case stores no DI and no SI.",
+     "text": "The case stores no DI and no SI; it only logs at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6115,7 +6115,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "6",
-     "text": "The case stores no CX.",
+     "text": "The case stores no CX; it only logs at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6130,7 +6130,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "7",
-     "text": "The case stores no BP.",
+     "text": "The case stores no BP; it only logs at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6145,7 +6145,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "9",
-     "text": "The case stores no DS.",
+     "text": "The case stores no DS; it only logs at src/dos/dos_misc.cpp:938.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6366,7 +6366,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The case stores no AX: it keeps the 0x4A11 that selected it.",
+     "text": "The case stores no AX: it keeps the 0x4A11 that selected it; it only logs at src/dos/dos_misc.cpp:941.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6381,7 +6381,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "3",
-     "text": "The case stores no BX.",
+     "text": "The case stores no BX; it only logs at src/dos/dos_misc.cpp:941.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6396,7 +6396,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "4",
-     "text": "The case stores no CL.",
+     "text": "The case stores no CL; it only logs at src/dos/dos_misc.cpp:941.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6411,7 +6411,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "5",
-     "text": "The case stores no CH.",
+     "text": "The case stores no CH; it only logs at src/dos/dos_misc.cpp:941.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6426,7 +6426,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "6",
-     "text": "The case stores no DX, so no version number and no bit 15.",
+     "text": "The case stores no DX, so no version number and no bit 15; it only logs at src/dos/dos_misc.cpp:941.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6441,7 +6441,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "7",
-     "text": "The case stores no DX, so it stores no bit 15 either.",
+     "text": "The case stores no DX, so it stores no bit 15 either; it only logs at src/dos/dos_misc.cpp:941.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6770,9 +6770,9 @@
      "n": "10",
      "on": "out AX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "5",
-     "text": "The case stores no status in AX, which keeps the 0x4A17 that selected it.",
+     "text": "The case reads guest memory with MEM_StrCopy at src/dos/dos_misc.cpp:946 before logging at 947; AX is not stored.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -6785,9 +6785,9 @@
      "n": "11",
      "on": "does",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "6",
-     "text": "The case runs no code for AX=4A21h.",
+     "text": "The case reads guest memory with MEM_StrCopy at src/dos/dos_misc.cpp:946 before logging at 947, so it does run code.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",
@@ -11641,14 +11641,24 @@
      "n": "27",
      "on": "out SI:DI",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "24",
-     "text": "The canonical structure has no system use length at 40h and no 220 bytes at 41h.",
+     "text": "The branch reads and writes guest memory at src/dos/dos_mscdex.cpp:912-925, logging at 909; the structure has no system use length.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
-       "lines": "908-926",
-       "sha": "c4982a93c98f4ab33618ea5772ba772c42fe94b293fc7aa3bee6f52d67ce4830"
+       "lines": "909",
+       "sha": "4afe72831fc17a84d167b53889b74b691c236172bffe9643ed7c27cab0429b71"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "912-919",
+       "sha": "e212c67f659a47b7652dc0bb03a431e1635eb3217e9658f773b3c894d1986609"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "920-925",
+       "sha": "d4bec64f34837da5c9fc7bda0de5d0476a39e8b98f3d1c1efc8c3fe28e8054e4"
       }
      ]
     },

@@ -4852,8 +4852,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.A",
-       "lines": "2511",
-       "sha": "aac96ed2e9b8468337e39150b2b75ddf202f187fa5346acf54a2667a29432e33"
+       "lines": "2510-2511",
+       "sha": "a8638c078242bc36d846231fcb4a4be5b6bd91e0dcac89a431e29a7cc433557f"
       }
      ]
     },
@@ -13530,6 +13530,11 @@
        "ref": "dosbox-x:src/ints/int10.cpp",
        "lines": "717-718",
        "sha": "725ed2302e6f1c6906595b29dedc45fcee30ec27db9c8fb3f852cfa01eecca2a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "743-748",
+       "sha": "6e59b3b83362d9d5b4e736f9851170fe9b3563fd3fe623350db2e8ba0a0bdd0e"
       }
      ]
     },
@@ -17934,9 +17939,9 @@
      "n": "9",
      "on": "in ES",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "8",
-     "text": "Nothing in the case reads ES.",
+     "text": "The unhandled branch stores AH=0x01 after logging the call at src/ints/int10.cpp:868, and reads no ES.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10.cpp",
@@ -19969,9 +19974,9 @@
      "text": "A single-register group, which the list leaves out, logs an error and writes nothing.",
      "quotes": [
       {
-       "ref": "dosbox-x:src/ints/int10.cpp",
+       "ref": "dosbox-x:src/ints/int10_misc.cpp",
        "lines": "189-191",
-       "sha": "b186fd4d8cd5a7aaadac5e620d00b0019f405bd6098f556c48f2856cc9c7bf4a"
+       "sha": "db1501551a288e2038a5e40d12a663f288019e4dab143afda0a6f626bef79c13"
       },
       {
        "ref": "dosbox-x:src/ints/int10_misc.cpp",
@@ -20305,14 +20310,14 @@
      "n": "3b",
      "on": "in BH",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "3",
-     "text": "BH is not read: a nonzero BH changes nothing.",
+     "text": "The branch performs IO_Read and IO_Write and returns BL, logging at src/ints/int10_misc.cpp:238, so BH is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10_misc.cpp",
-       "lines": "227-240",
-       "sha": "61a363d8f1506b1e9fa514dd9858ee47b55f0ea64f9a32785f930f68dad98fbe"
+       "lines": "232-238",
+       "sha": "a21907c63ea561b59f33b0912dc98c83c91057c84bd40015d91914ac669f75b0"
       }
      ]
     }
@@ -20965,7 +20970,7 @@
      "on": "out BX",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "The pointer is the fixed address C000:0030, a ROM location that holds no version number.",
+     "text": "The pointer is the fixed address C000:0030, a graphics ROM location.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10_misc.cpp",
@@ -20999,9 +21004,9 @@
      "n": "3b",
      "on": "out BX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "3",
-     "text": "The not-present answer 0000h is never given: the case stores BX from the version pointer on every path.",
+     "text": "The case stores BX from the version pointer, a fixed 0x30, on every path instead of 0000h.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10.cpp",
@@ -22018,20 +22023,6 @@
        "sha": "c042772ad2681fe3950a415339a1529f7814bd789b876ccb69bf3037c13b010b"
       }
      ]
-    },
-    {
-     "n": "7",
-     "on": "out BL",
-     "of": "dosbox-x",
-     "vs": "extra",
-     "text": "For a single register BL is left holding the value written.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/ints/int10_misc.cpp",
-       "lines": "246-247",
-       "sha": "85198006b24a13b19717ec4d008a04aefa2553302d0a5fe3710cfdf889d996ea"
-      }
-     ]
     }
    ],
    "closed": [
@@ -22218,9 +22209,9 @@
      "text": "A single-register group (DX 20h, 28h, 30h or 38h), which the list leaves out, logs an error and reads nothing.",
      "quotes": [
       {
-       "ref": "dosbox-x:src/ints/int10.cpp",
+       "ref": "dosbox-x:src/ints/int10_misc.cpp",
        "lines": "189-191",
-       "sha": "b186fd4d8cd5a7aaadac5e620d00b0019f405bd6098f556c48f2856cc9c7bf4a"
+       "sha": "db1501551a288e2038a5e40d12a663f288019e4dab143afda0a6f626bef79c13"
       },
       {
        "ref": "dosbox-x:src/ints/int10_misc.cpp",
@@ -22607,7 +22598,7 @@
      "on": "in CX",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The records are read one by one, four bytes each.",
+     "text": "The records are read one by one.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10_misc.cpp",
@@ -23011,14 +23002,19 @@
      "n": "4c",
      "on": "in DX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "4b",
-     "text": "The code imposes no DX range: the character code as it stands indexes the 16 by 16 font table.",
+     "text": "The case copies the font into jfont_dbcs_16 and stores AL at src/ints/int10.cpp:1040, logging at 1024, so it imposes no DX range.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10.cpp",
-       "lines": "1022-1045",
-       "sha": "51d93574eaa0b2ada8f9002d0091c790412b6d4898dcd7d5d20e8ea8c8aa982f"
+       "lines": "1024",
+       "sha": "07c3de5a2e4f86177d1e280cdd82a98416472816769f38e499f98a2cd0f8915c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "1036-1040",
+       "sha": "8af50f3aaf078f17ad438754cb980825b4460dd24450a5610ad85ebfdbd7d7eb"
       }
      ]
     }
@@ -23277,14 +23273,24 @@
      "n": "4c",
      "on": "in DX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "4b",
-     "text": "The code imposes no DH=00h: the whole DX value indexes the font array as the character code.",
+     "text": "The case writes the font into guest memory and stores AL at src/ints/int10.cpp:1084, logging at 1056, so it imposes no DH=00h.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10.cpp",
-       "lines": "1054-1097",
-       "sha": "25d796df536df6d74fb77b2036466c238e39577bbbb3cb31752bca77745e087a"
+       "lines": "1056",
+       "sha": "c674974ba83d098349b8ac9212585e8280d99fa1c3ad1d5179ec7b275de19fb5"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "1069",
+       "sha": "d7ec895aa050cb21c21b22cf212620ca74272447db6c5e9ad2aadf452b11bf07"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "1084",
+       "sha": "f3031d87e73c4dd19bec9546fdc9cd4d9f2308676ea9f8657ccccf8c4ef18fee"
       }
      ]
     }

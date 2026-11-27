@@ -1731,8 +1731,8 @@
      "quotes": [
       {
        "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
-       "lines": "12620",
-       "sha": "4137a2d4e714417c5373190d45c6fdb9f0f7fe860c6e54bbe85d3a0576cfda29"
+       "lines": "12612-12620",
+       "sha": "90678260fe520e92504c7e3c015e259ce78232634e244e65613452f47bfc089c"
       }
      ]
     },
@@ -1796,7 +1796,7 @@
     },
     {
      "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
-     "lines": "12611-12613",
+     "lines": "12611",
      "as": "layout"
     },
     {

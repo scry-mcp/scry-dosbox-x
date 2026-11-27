@@ -4463,15 +4463,20 @@
      "n": "8",
      "on": "when",
      "of": "dosbox-x",
-     "text": "DOSBox-X does not pause the DMA transfer on a version 1.xx card.",
+     "text": "The case calls FillUp and DSP_SetSpeaker(false) at src/hardware/sblaster.cpp:2365-2366 before the conditional log at 2383.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/sblaster.cpp",
-       "lines": "2364-2385",
-       "sha": "dbb2b6967676b349f4a9e6dbf7c62e4b32cf276ea75b61f84e31bde14bf435e4"
+       "lines": "2365-2366",
+       "sha": "1ba47a9becdb1faf0e41c71c8a4ab4b2a0ed3685fbd3f19221313ab6db629410"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2383",
+       "sha": "90f9fca983d2babc33b5ab77010ef617e5a1a73f33124d735dac909f2bf6fc1b"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "4"
     }
    ],

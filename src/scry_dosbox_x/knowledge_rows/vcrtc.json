@@ -91,7 +91,7 @@
  "closed": [
   {
    "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
-   "lines": "3065-3092",
+   "lines": "3065-3080",
    "as": "see-also"
   },
   {
@@ -289,7 +289,7 @@
    "regions": [
     {
      "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
-     "lines": "3093"
+     "lines": "3081-3093"
     },
     {
      "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
@@ -326,6 +326,11 @@
      "of": "doc",
      "text": "A write to an unlisted index reaches no register the table defines.",
      "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3081-3092",
+       "sha": "967928fc6452ebc5bfee445492fa1d75ef661502a65c5bb0d2bb963c4bca1906"
+      },
       {
        "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
        "lines": "3093",

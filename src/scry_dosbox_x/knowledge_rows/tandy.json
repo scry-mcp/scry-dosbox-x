@@ -789,14 +789,19 @@
      "n": "D6",
      "on": "bit 5",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "6",
-     "text": "The handler never reads bit 5, and a write to C6 or C7 reloads no divider.",
+     "text": "A write to C7 takes bits 7-5 as the amplitude at src/hardware/tandy_sound.cpp:213, and a write to C6 or C7 calls TandyDACModeChanged, reloading the divider.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
-       "lines": "168-226",
-       "sha": "266b3af12c519a979739d4987b3abf7a40dcaa3ec10b96609ee1bddbf57970c8"
+       "lines": "206-207",
+       "sha": "1e6ef6c08de3a6a160764aa6f25b85efd3a4e1742afbde437a58dd07a2e042fd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "211-221",
+       "sha": "aa424ac6e03497c1a043cf2175acdb5eb1471574f6255007e56d7dab84ea2be6"
       }
      ]
     },

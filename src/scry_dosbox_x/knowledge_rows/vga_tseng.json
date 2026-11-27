@@ -3052,7 +3052,7 @@
      "on": "write",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A write stores the whole byte; bit 1 is read and written as clock-select 2 by the ET3000 clock helpers, and the other bits change nothing.",
+     "text": "A write stores the whole byte; bit 1 is read and written as clock-select 2 by the ET3000 clock helpers.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_tseng.cpp",

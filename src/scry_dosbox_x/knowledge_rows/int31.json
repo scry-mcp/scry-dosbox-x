@@ -127,7 +127,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is allocated: the default stub logs the interrupt and returns without reading CX.",
+          "text": "No descriptor is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -142,7 +142,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores neither CF nor AX: they keep their values at the call.",
+          "text": "The stub stores neither CF nor AX: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, and they keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -157,7 +157,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No descriptor exists to have a base, a limit or a type.",
+          "text": "No descriptor exists to have a base, a limit or a type: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -292,7 +292,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is freed: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No descriptor is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -307,7 +307,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -322,7 +322,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "Nothing is freed: the default stub only logs the interrupt and returns.",
+          "text": "Nothing is freed: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -337,7 +337,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No segment register is loaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is loaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -491,7 +491,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No selector is returned: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No selector is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -506,7 +506,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -521,7 +521,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -536,7 +536,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No call returns a selector: the default stub only logs the interrupt and returns.",
+          "text": "No call returns a selector: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -641,7 +641,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -656,7 +656,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No increment is returned: the default stub only logs the interrupt and returns.",
+          "text": "No increment is returned: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -784,7 +784,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No selector is locked: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No selector is locked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -799,7 +799,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing in the return: it logs the interrupt and returns.",
+          "text": "The stub stores nothing in the return: it logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -922,7 +922,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No selector is unlocked: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No selector is unlocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -937,7 +937,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing in the return: it logs the interrupt and returns.",
+          "text": "The stub stores nothing in the return: it logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1047,7 +1047,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No address is returned: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No address is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1062,7 +1062,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CX, DX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1229,7 +1229,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No base address is set: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No base address is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1244,7 +1244,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No base address is set: the default stub logs the interrupt and returns without reading CX.",
+          "text": "No base address is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1259,7 +1259,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1274,7 +1274,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No address is used: the default stub only logs the interrupt and returns.",
+          "text": "No address is used: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1289,7 +1289,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No segment register is reloaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is reloaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1464,7 +1464,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No limit is set: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No limit is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1479,7 +1479,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No limit is set: the default stub logs the interrupt and returns without reading CX.",
+          "text": "No limit is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1494,7 +1494,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1509,7 +1509,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No segment register is reloaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is reloaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1671,7 +1671,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No rights are set: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No rights are set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1686,7 +1686,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No rights are set: the default stub logs the interrupt and returns without reading CL.",
+          "text": "No rights are set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1701,7 +1701,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No rights are set: the default stub logs the interrupt and returns without reading CH.",
+          "text": "No rights are set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CH.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1716,7 +1716,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1731,7 +1731,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No segment register is reloaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is reloaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1880,7 +1880,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No alias is created: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No alias is created: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1895,7 +1895,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1910,7 +1910,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "Nothing fails and nothing is created: the default stub only logs the interrupt and returns.",
+          "text": "Nothing fails and nothing is created: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -1925,7 +1925,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No alias selector exists: the default stub only logs the interrupt and returns.",
+          "text": "No alias selector exists: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2066,7 +2066,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is copied: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No descriptor is copied: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2081,7 +2081,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No descriptor is copied: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is copied: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2096,7 +2096,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2263,7 +2263,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is replaced: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No descriptor is replaced: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2278,7 +2278,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No descriptor is replaced: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is replaced: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2293,7 +2293,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2308,7 +2308,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No segment register is reloaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is reloaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2457,7 +2457,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is allocated: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No descriptor is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2472,7 +2472,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2487,7 +2487,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No descriptor is reserved: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is reserved: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2502,7 +2502,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No descriptor is allocated: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is allocated: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2669,7 +2669,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is copied: the default stub logs the interrupt and returns without reading CX.",
+          "text": "No descriptor is copied: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2684,7 +2684,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No descriptor is copied: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is copied: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2699,7 +2699,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF, AX and CX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF, AX and CX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2714,7 +2714,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "Nothing is copied and no descriptor is touched: the default stub only logs the interrupt and returns.",
+          "text": "Nothing is copied and no descriptor is touched: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2729,7 +2729,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No buffer entry is filled: the default stub only logs the interrupt and returns.",
+          "text": "No buffer entry is filled: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2904,7 +2904,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No descriptor is copied: the default stub logs the interrupt and returns without reading CX.",
+          "text": "No descriptor is copied: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2919,7 +2919,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No descriptor is copied: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is copied: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2934,7 +2934,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF, AX and CX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF, AX and CX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2949,7 +2949,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "Nothing is copied and no descriptor is touched: the default stub only logs the interrupt and returns.",
+          "text": "Nothing is copied and no descriptor is touched: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2964,7 +2964,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No segment register is reloaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is reloaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -2979,7 +2979,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No buffer entry is read: the default stub only logs the interrupt and returns.",
+          "text": "No buffer entry is read: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3123,7 +3123,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is allocated: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No block is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3138,7 +3138,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: AX, DX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX, DX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3153,7 +3153,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF, AX and BX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF, AX and BX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3168,7 +3168,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No selector is allocated: the default stub only logs the interrupt and returns.",
+          "text": "No selector is allocated: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3304,7 +3304,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is freed: the default stub logs the interrupt and returns without reading DX.",
+          "text": "No block is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading DX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3319,7 +3319,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3334,7 +3334,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No descriptor is freed: the default stub only logs the interrupt and returns.",
+          "text": "No descriptor is freed: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3349,7 +3349,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No segment register is loaded: the default stub only logs the interrupt and returns.",
+          "text": "No segment register is loaded: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3524,7 +3524,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is resized: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No block is resized: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3539,7 +3539,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No block is resized: the default stub logs the interrupt and returns without reading DX.",
+          "text": "No block is resized: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading DX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3554,7 +3554,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3569,7 +3569,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: AX keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3584,7 +3584,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: BX keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3599,7 +3599,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "Nothing fails and nothing is resized: the default stub only logs the interrupt and returns.",
+          "text": "Nothing fails and nothing is resized: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3614,7 +3614,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No selector is freed: the default stub only logs the interrupt and returns.",
+          "text": "No selector is freed: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3737,7 +3737,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No vector is returned: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No vector is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3752,7 +3752,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CX, DX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3767,7 +3767,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No vector is supported: the default stub only logs the interrupt and returns.",
+          "text": "No vector is supported: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3898,7 +3898,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No vector is set: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No vector is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3913,7 +3913,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No vector is set: the default stub only logs the interrupt and returns.",
+          "text": "No vector is set: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -3928,7 +3928,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4059,7 +4059,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No handler vector is returned: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No handler vector is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4074,7 +4074,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CX, DX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4340,7 +4340,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No handler vector is set: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No handler vector is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4355,7 +4355,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No handler vector is set: the default stub only logs the interrupt and returns.",
+          "text": "No handler vector is set: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4370,7 +4370,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4385,7 +4385,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No stack frame is built: the default stub only logs the interrupt and returns.",
+          "text": "No stack frame is built: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4400,7 +4400,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No handler is called: the default stub only logs the interrupt and returns.",
+          "text": "No handler is called: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4415,7 +4415,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "11",
-          "text": "No stack frame is built: the default stub only logs the interrupt and returns.",
+          "text": "No stack frame is built: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4430,7 +4430,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "12",
-          "text": "No stack frame is built: the default stub only logs the interrupt and returns.",
+          "text": "No stack frame is built: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4445,7 +4445,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "13",
-          "text": "No stack frame is built: the default stub only logs the interrupt and returns.",
+          "text": "No stack frame is built: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4460,7 +4460,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "14",
-          "text": "No stack frame is built: the default stub only logs the interrupt and returns.",
+          "text": "No stack frame is built: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4475,7 +4475,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "15",
-          "text": "No stack frame is built: the default stub only logs the interrupt and returns.",
+          "text": "No stack frame is built: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4611,7 +4611,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No vector is returned: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No vector is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4626,7 +4626,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CX, DX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4641,7 +4641,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No vector is supported: the default stub only logs the interrupt and returns.",
+          "text": "No vector is supported: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4816,7 +4816,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No vector is set: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No vector is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4831,7 +4831,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No vector is set: the default stub only logs the interrupt and returns.",
+          "text": "No vector is set: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4846,7 +4846,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4861,7 +4861,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No vector is supported: the default stub only logs the interrupt and returns.",
+          "text": "No vector is supported: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4876,7 +4876,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No interrupt is reflected: the default stub only logs the interrupt and returns.",
+          "text": "No interrupt is reflected: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -4999,7 +4999,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No handler vector is returned: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No handler vector is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5014,7 +5014,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CX, DX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5029,7 +5029,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No exception is reflected: the default stub only logs the interrupt and returns.",
+          "text": "No exception is reflected: the default stub only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5160,7 +5160,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No handler address is returned: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No handler address is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5175,7 +5175,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CX, DX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5190,7 +5190,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No handler address is returned: the default stub logs the interrupt and returns.",
+          "text": "No handler address is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5205,7 +5205,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No exception is reflected: the default stub logs the interrupt and returns.",
+          "text": "No exception is reflected: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5336,7 +5336,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No handler is set: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No handler is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5351,7 +5351,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No handler is set: the default stub logs the interrupt and returns without reading CX or DX.",
+          "text": "No handler is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX or DX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5366,7 +5366,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5381,7 +5381,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No exception is sent anywhere: the default stub logs the interrupt and returns.",
+          "text": "No exception is sent anywhere: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5525,7 +5525,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No handler is set: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No handler is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5540,7 +5540,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "No handler is set: the default stub logs the interrupt and returns without reading CX or DX.",
+          "text": "No handler is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX or DX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5555,7 +5555,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5570,7 +5570,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No handler address is taken: the default stub logs the interrupt and returns.",
+          "text": "No handler address is taken: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5585,7 +5585,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No exception is reflected: the default stub logs the interrupt and returns.",
+          "text": "No exception is reflected: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5825,7 +5825,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No interrupt is simulated: the default stub logs the interrupt and returns without reading BL.",
+          "text": "No interrupt is simulated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5840,7 +5840,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: BH keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BH keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5855,7 +5855,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: CX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5870,7 +5870,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5885,7 +5885,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5900,7 +5900,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No real mode interrupt runs, so the structure is not filled: the default stub logs the interrupt and returns.",
+          "text": "No real mode interrupt runs, so the structure is not filled: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5915,7 +5915,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "Nothing runs in real mode: the default stub logs the interrupt and returns, and the protected mode stack is untouched.",
+          "text": "Nothing runs in real mode: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns, and the protected mode stack is untouched.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5930,7 +5930,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "10",
-          "text": "No vector is reached: the default stub logs the interrupt and returns.",
+          "text": "No vector is reached: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5945,7 +5945,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "11",
-          "text": "No interrupt frame is built: the default stub logs the interrupt and returns.",
+          "text": "No interrupt frame is built: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -5960,7 +5960,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "12",
-          "text": "No real mode stack is provided: the default stub logs the interrupt and returns.",
+          "text": "No real mode stack is provided: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6174,7 +6174,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub reads nothing: BH keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BH keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6189,7 +6189,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: CX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6204,7 +6204,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6219,7 +6219,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6234,7 +6234,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No real mode procedure is called, so the structure is not filled: the default stub logs the interrupt and returns.",
+          "text": "No real mode procedure is called, so the structure is not filled: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6249,7 +6249,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "Nothing runs in real mode: the default stub logs the interrupt and returns, and the protected mode stack is untouched.",
+          "text": "Nothing runs in real mode: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns, and the protected mode stack is untouched.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6264,7 +6264,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "10",
-          "text": "No real mode stack is provided: the default stub logs the interrupt and returns.",
+          "text": "No real mode stack is provided: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6491,7 +6491,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub reads nothing: BH keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BH keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6506,7 +6506,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: CX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6521,7 +6521,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6536,7 +6536,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6551,7 +6551,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No real mode procedure is called, so the structure is not filled: the default stub logs the interrupt and returns.",
+          "text": "No real mode procedure is called, so the structure is not filled: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6566,7 +6566,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "Nothing runs in real mode: the default stub logs the interrupt and returns, and the protected mode stack is untouched.",
+          "text": "Nothing runs in real mode: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns, and the protected mode stack is untouched.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6581,7 +6581,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "9",
-          "text": "No interrupt frame is built: the default stub logs the interrupt and returns.",
+          "text": "No interrupt frame is built: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6596,7 +6596,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "11",
-          "text": "No real mode stack is provided: the default stub logs the interrupt and returns.",
+          "text": "No real mode stack is provided: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6753,7 +6753,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No callback is allocated: the default stub logs the interrupt and returns without reading DS or SI.",
+          "text": "No callback is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading DS or SI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6768,7 +6768,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6783,7 +6783,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CX, DX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CX, DX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6798,7 +6798,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No callback is provided at all: the default stub logs the interrupt and returns.",
+          "text": "No callback is provided at all: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6913,7 +6913,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No callback is freed: the default stub logs the interrupt and returns without reading CX or DX.",
+          "text": "No callback is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading CX or DX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -6928,7 +6928,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7090,7 +7090,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7105,7 +7105,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: BX and CX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX and CX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7120,7 +7120,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: SI and DI keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7135,7 +7135,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No buffer size is returned: the default stub logs the interrupt and returns.",
+          "text": "No buffer size is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7266,7 +7266,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: BX, CX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX, CX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7281,7 +7281,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: SI and DI keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7417,7 +7417,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AH, AL and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AH, AL and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7432,7 +7432,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: BX keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7447,7 +7447,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CL keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CL keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7462,7 +7462,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: DH and DL keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so DH and DL keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7572,7 +7572,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7587,7 +7587,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: AX, CX, DX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX, CX, DX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7757,7 +7757,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7772,7 +7772,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7787,7 +7787,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No field is filled: the default stub logs the interrupt and returns.",
+          "text": "No field is filled: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7802,7 +7802,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No memory information is returned: the default stub logs the interrupt and returns.",
+          "text": "No memory information is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7964,7 +7964,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is allocated: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No block is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7979,7 +7979,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: BX, CX, SI, DI and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX, CX, SI, DI and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -7994,7 +7994,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8009,7 +8009,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "Nothing is allocated at all: the default stub logs the interrupt and returns.",
+          "text": "Nothing is allocated at all: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8024,7 +8024,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No memory block exists: the default stub logs the interrupt and returns.",
+          "text": "No memory block exists: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8039,7 +8039,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No allocation is made, page granular or otherwise: the default stub logs the interrupt and returns.",
+          "text": "No allocation is made, page granular or otherwise: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8162,7 +8162,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is freed: the default stub logs the interrupt and returns without reading SI or DI.",
+          "text": "No block is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading SI or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8177,7 +8177,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8347,7 +8347,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is resized: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No block is resized: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8362,7 +8362,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8377,7 +8377,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: BX, CX, SI, DI and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX, CX, SI, DI and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8392,7 +8392,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8407,7 +8407,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No handle exists or is invalidated: the default stub logs the interrupt and returns.",
+          "text": "No handle exists or is invalidated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8422,7 +8422,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No error is returned for any size: the default stub logs the interrupt and returns.",
+          "text": "No error is returned for any size: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8579,7 +8579,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is allocated: the default stub logs the interrupt and returns without reading EBX.",
+          "text": "No block is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading EBX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8594,7 +8594,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: ECX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ECX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8609,7 +8609,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: EDX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EDX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8624,7 +8624,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: EBX, ESI and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EBX, ESI and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8639,7 +8639,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8822,7 +8822,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is resized: the default stub logs the interrupt and returns without reading ESI.",
+          "text": "No block is resized: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ESI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8837,7 +8837,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: ECX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ECX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8852,7 +8852,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: EDX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EDX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8867,7 +8867,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: EBX, ESI and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EBX, ESI and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8882,7 +8882,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8897,7 +8897,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No handle exists or is invalidated: the default stub logs the interrupt and returns.",
+          "text": "No handle exists or is invalidated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -8912,7 +8912,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "9",
-          "text": "No descriptor is updated: the default stub logs the interrupt and returns.",
+          "text": "No descriptor is updated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9082,7 +9082,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No page attribute is returned: the default stub logs the interrupt and returns without reading ESI.",
+          "text": "No page attribute is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ESI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9097,7 +9097,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: EBX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EBX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9112,7 +9112,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: ECX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ECX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9127,7 +9127,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub reads nothing: ES and EDX keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and EDX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9142,7 +9142,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9157,7 +9157,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No offset is rounded: the default stub logs the interrupt and returns.",
+          "text": "No offset is rounded: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9327,7 +9327,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No page attribute is set: the default stub logs the interrupt and returns without reading ESI.",
+          "text": "No page attribute is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ESI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9342,7 +9342,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: EBX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EBX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9357,7 +9357,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: ECX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ECX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9372,7 +9372,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub reads nothing: ES and EDX keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and EDX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9387,7 +9387,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF, AX and ECX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF, AX and ECX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9402,7 +9402,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No offset is rounded: the default stub logs the interrupt and returns.",
+          "text": "No offset is rounded: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9572,7 +9572,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No device is mapped: the default stub logs the interrupt and returns without reading ESI.",
+          "text": "No device is mapped: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ESI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9587,7 +9587,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: EBX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EBX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9602,7 +9602,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: ECX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ECX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9617,7 +9617,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub reads nothing: EDX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EDX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9632,7 +9632,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9647,7 +9647,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No device is mapped into a block: the default stub logs the interrupt and returns.",
+          "text": "No device is mapped into a block: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9817,7 +9817,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No memory is mapped: the default stub logs the interrupt and returns without reading ESI.",
+          "text": "No memory is mapped: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ESI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9832,7 +9832,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: EBX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EBX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9847,7 +9847,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: ECX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ECX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9862,7 +9862,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub reads nothing: EDX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so EDX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9877,7 +9877,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -9892,7 +9892,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No memory is mapped into a block: the default stub logs the interrupt and returns.",
+          "text": "No memory is mapped into a block: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10010,7 +10010,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "Nothing is returned: the default stub logs the interrupt and returns without reading SI or DI.",
+          "text": "Nothing is returned: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading SI or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10025,7 +10025,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: SI, DI, BX, CX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI, DI, BX, CX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10040,7 +10040,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10158,7 +10158,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub reads nothing: ES and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so ES and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10173,7 +10173,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF keeps its value at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10317,7 +10317,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No region is locked: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No region is locked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10332,7 +10332,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10347,7 +10347,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10362,7 +10362,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No page is locked: the default stub logs the interrupt and returns.",
+          "text": "No page is locked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10377,7 +10377,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No lock count is kept: the default stub logs the interrupt and returns.",
+          "text": "No lock count is kept: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10521,7 +10521,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No region is unlocked: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No region is unlocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10536,7 +10536,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10551,7 +10551,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10566,7 +10566,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No page is unlocked: the default stub logs the interrupt and returns.",
+          "text": "No page is unlocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10581,7 +10581,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No lock count is kept: the default stub logs the interrupt and returns.",
+          "text": "No lock count is kept: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10751,7 +10751,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No region is made pageable: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No region is made pageable: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10766,7 +10766,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10781,7 +10781,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10796,7 +10796,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No page is relocked: the default stub logs the interrupt and returns.",
+          "text": "No page is relocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10811,7 +10811,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "7",
-          "text": "No page is unlocked: the default stub logs the interrupt and returns.",
+          "text": "No page is unlocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10826,7 +10826,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "8",
-          "text": "No page is made pageable, counted or not: the default stub logs the interrupt and returns.",
+          "text": "No page is made pageable, counted or not: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10970,7 +10970,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No region is relocked: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No region is relocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -10985,7 +10985,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11000,7 +11000,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11015,7 +11015,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No page is relocked: the default stub logs the interrupt and returns.",
+          "text": "No page is relocked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11030,7 +11030,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "No page is relocked, counted or not: the default stub logs the interrupt and returns.",
+          "text": "No page is relocked, counted or not: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11122,7 +11122,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: BX, CX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX, CX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11253,7 +11253,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No page is marked: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No page is marked: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11268,7 +11268,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11283,7 +11283,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11414,7 +11414,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No page is discarded: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No page is discarded: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11429,7 +11429,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11444,7 +11444,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11588,7 +11588,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No memory is mapped: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No memory is mapped: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11603,7 +11603,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: SI and DI keep their values at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so SI and DI keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11618,7 +11618,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: BX, CX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX, CX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11736,7 +11736,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No mapping is freed: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No mapping is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11751,7 +11751,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11869,7 +11869,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AL, AH and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AL, AH and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -11987,7 +11987,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AL, AH and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AL, AH and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12092,7 +12092,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AL and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AL and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12236,7 +12236,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No name is read: the default stub logs the interrupt and returns without reading DS or SI.",
+          "text": "No name is read: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading DS or SI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12251,7 +12251,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: ES, DI, DS, FS, GS, AX, BX, CX, DX, SI and BP keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200; ES, DI, DS, FS, GS, AX, BX, CX, DX, SI and BP keep their values.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12266,7 +12266,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12402,7 +12402,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No watchpoint is set: the default stub logs the interrupt and returns without reading BX or CX.",
+          "text": "No watchpoint is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX or CX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12417,7 +12417,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: DL keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so DL keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12432,7 +12432,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub reads nothing: DH keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so DH keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12447,7 +12447,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "The stub stores nothing: BX, AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so BX, AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12565,7 +12565,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No watchpoint is cleared: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No watchpoint is cleared: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12580,7 +12580,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12595,7 +12595,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No handle is freed: the default stub logs the interrupt and returns.",
+          "text": "No handle is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12718,7 +12718,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No state is read: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No state is read: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12733,7 +12733,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12748,7 +12748,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12853,7 +12853,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No watchpoint is reset: the default stub logs the interrupt and returns without reading BX.",
+          "text": "No watchpoint is reset: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -12868,7 +12868,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13038,7 +13038,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No callback is installed: the default stub logs the interrupt and returns without reading ES or DI.",
+          "text": "No callback is installed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ES or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13053,7 +13053,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13210,7 +13210,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "Nothing is terminated: the default stub logs the interrupt and returns without reading BL.",
+          "text": "Nothing is terminated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BL.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13225,7 +13225,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: DX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so DX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13255,7 +13255,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "6",
-          "text": "Nothing is allocated or freed: the default stub logs the interrupt and returns.",
+          "text": "Nothing is allocated or freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13412,7 +13412,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No memory is allocated: the default stub logs the interrupt and returns without reading ES or DI.",
+          "text": "No memory is allocated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading ES or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13427,7 +13427,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF keeps its value at the call and the structure is not updated.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF keeps its value at the call and the structure is not updated.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13442,7 +13442,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13457,7 +13457,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No block is allocated, so nothing is zeroed: the default stub logs the interrupt and returns.",
+          "text": "No block is allocated, so nothing is zeroed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13588,7 +13588,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "No block is freed: the default stub logs the interrupt and returns without reading SI or DI.",
+          "text": "No block is freed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading SI or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13603,7 +13603,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13618,7 +13618,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "No handle is invalidated: the default stub logs the interrupt and returns.",
+          "text": "No handle is invalidated: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13633,7 +13633,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "No block is counted or destroyed: the default stub logs the interrupt and returns.",
+          "text": "No block is counted or destroyed: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13790,7 +13790,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "Nothing is serialized: the default stub logs the interrupt and returns without reading SI or DI.",
+          "text": "Nothing is serialized: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading SI or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13805,7 +13805,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: DX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so DX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13820,7 +13820,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13835,7 +13835,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "5",
-          "text": "Nothing is serialized and nothing blocks: the default stub logs the interrupt and returns.",
+          "text": "Nothing is serialized and nothing blocks: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13953,7 +13953,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "Nothing is released: the default stub logs the interrupt and returns without reading SI or DI.",
+          "text": "Nothing is released: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading SI or DI.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13968,7 +13968,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub reads nothing: DX keeps its value at the call.",
+          "text": "The stub reads nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so DX keeps its value at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -13983,7 +13983,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "4",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -14127,7 +14127,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "The stub stores nothing: AX and CF keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so AX and CF keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -14250,7 +14250,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "2",
-          "text": "Nothing is set: the default stub logs the interrupt and returns without reading BX.",
+          "text": "Nothing is set: the default stub logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200 and returns without reading BX.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",
@@ -14265,7 +14265,7 @@
           "of": "dosbox-x",
           "vs": "absent",
           "row": "3",
-          "text": "The stub stores nothing: CF and AX keep their values at the call.",
+          "text": "The stub stores nothing: it only logs \"Illegal Unhandled Interrupt Called\" at src/cpu/callback.cpp:197-200, so CF and AX keep their values at the call.",
           "quotes": [
             {
               "ref": "dosbox-x:src/cpu/callback.cpp",

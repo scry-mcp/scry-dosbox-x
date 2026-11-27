@@ -3646,7 +3646,7 @@
      "n": "6",
      "on": "is",
      "of": "dosbox-x",
-     "text": "It sets up no multiplexer, so the source AL names is never selected.",
+     "text": "It sets up no multiplexer, so the source AL names is never selected; it only logs at src/ints/bios.cpp:3175.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios.cpp",

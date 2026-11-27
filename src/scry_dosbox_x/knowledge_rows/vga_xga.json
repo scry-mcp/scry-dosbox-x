@@ -5676,7 +5676,7 @@
      "on": "read",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "DOSBox-X returns index 0A for read index 5 and 0E for 6, but zero for read indices 7, 8 and 9.",
+     "text": "Read indices 5 and 6 return the pixel control and miscellaneous control registers, and 7, 8 and 9 return zero.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
@@ -11189,7 +11189,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = DC, Table 19-1 lists CLIP_L_R for every command group.",
+     "text": "At xx = DC, Table 19-1's row lists CLIP_L_R five times.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -11243,7 +11243,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = E0, Table 19-1 lists CLIP_T_B for every command group.",
+     "text": "At xx = E0, Table 19-1's row lists CLIP_T_B five times.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -11297,7 +11297,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = E4, Table 19-1 lists DEST_SRC_STR for every command group.",
+     "text": "At xx = E4, Table 19-1's row lists DEST_SRC_STR five times.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -11570,7 +11570,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = F4, Table 19-1 lists PAT_FG_CLR for the three 2D groups and FOG_CLR for the two 3D groups.",
+     "text": "At xx = F4, Table 19-1's row lists PAT_FG_CLR three times and FOG_CLR twice.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -11770,7 +11770,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = 100, Table 19-1 lists CMD_SET for every command group.",
+     "text": "At xx = 100, Table 19-1's row lists Start and CMD_SET five times.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -12102,7 +12102,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = 16C, Table 19-1 lists LXEND0_END1 for the 2D Line group, PRXSTART for the 2D Polygon group, and 3XEND0_END1 and TXEND01 for the 3D groups.",
+     "text": "At xx = 16C, Table 19-1's row lists LXEND0_END1, PRXSTART, 3XEND0_END1 and TXEND01.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -12167,7 +12167,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = 170, Table 19-1 lists LdX for the 2D Line group, PLdX for the 2D Polygon group, and 3dX and TdXdY02 for the 3D groups.",
+     "text": "At xx = 170, Table 19-1's row lists LdX, PLdX, 3dX and TdXdY02.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -12232,7 +12232,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = 174, Table 19-1 lists LXSTART for the 2D Line group, PLXSTART for the 2D Polygon group, and 3XSTART and TXSTART02 for the 3D groups.",
+     "text": "At xx = 174, Table 19-1's row lists LXSTART, PLXSTART, 3XSTART and TXSTART02.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -12297,7 +12297,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = 178, Table 19-1 lists LYSTART for the 2D Line group, PYSTART for the 2D Polygon group, and 3YSTART and TYSTART for the 3D groups.",
+     "text": "At xx = 178, Table 19-1's row lists LYSTART, PYSTART, 3YSTART and TYSTART.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -12362,7 +12362,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "At xx = 17C, Table 19-1 lists LYCNT for the 2D Line group, PYCNT for the 2D Polygon group, and 3YCNT and TY_01_Y12 for the 3D groups.",
+     "text": "At xx = 17C, Table 19-1's row lists LYCNT, PYCNT, 3YCNT and TY_01_Y12.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -13038,15 +13038,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "The write lands in the default branch of XGA_Write, which logs it and stores nothing, so the current V-position is left as it was.",
+     "text": "A byte write at port x82E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the V-position keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ]
@@ -13153,15 +13153,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port 86E9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Current X-Position register is left as it was.",
+     "text": "A byte write at port x86E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Current X-Position keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -13314,15 +13314,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port 8EE9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Destination X-Position/Diagonal Step Constant register is left as it was.",
+     "text": "A byte write at port x8EE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Destination X-Position/Diagonal Step Constant keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -13455,15 +13455,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port 92E9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Line Error Term register is left as it was.",
+     "text": "A byte write at port x92E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Line Error Term keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -13587,15 +13587,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port 96E9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Major Axis Pixel Count register is left as it was.",
+     "text": "A byte write at port x96E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Major Axis Pixel Count keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -13703,15 +13703,15 @@
      "n": "3",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port 9EE8 lands in XGA_Write's default branch, which logs it and stores nothing, so the Short Stroke Vector Transfer register is left as it was.",
+     "text": "A byte write at port x9EE8 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Short Stroke Vector Transfer keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "2"
     }
    ],
@@ -13802,15 +13802,15 @@
      "n": "3",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port 9EE9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Short Stroke Vector Transfer register is left as it was.",
+     "text": "A byte write at port x9EE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Short Stroke Vector Transfer keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "2"
     }
    ],
@@ -13934,15 +13934,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port A6E9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Foreground Color register is left as it was.",
+     "text": "A byte write at port xA6E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Foreground Color keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -14071,15 +14071,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port AAE9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Bitplane Write Mask register is left as it was.",
+     "text": "A byte write at port xAAE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Bitplane Write Mask keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -14212,15 +14212,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port AEE9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Bitplane Read Mask register is left as it was.",
+     "text": "A byte write at port xAEE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Bitplane Read Mask keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -14344,15 +14344,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port B2E9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Color Compare register is left as it was.",
+     "text": "A byte write at port xB2E9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Color Compare keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     }
    ],
@@ -14464,15 +14464,15 @@
      "n": "5",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port BEE9 lands in XGA_Write's default branch, which logs it and stores nothing, so the BEE8H registers are left as they were.",
+     "text": "A byte write at port xBEE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the BEE8h registers keep their values.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     },
     {
@@ -14605,15 +14605,15 @@
      "n": "4",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A byte write at port BAE9 lands in XGA_Write's default branch, which logs it and stores nothing, so the Foreground Mix register is left as it was.",
+     "text": "A byte write at port xBAE9 calls XGA_DrawWait, writes colorpat and calls S3D_Write, then logs at src/hardware/vga_xga.cpp:3019; the Foreground Mix keeps its value.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
-       "lines": "3004-3029",
-       "sha": "ea4fd75bfcd3be2b7ddf4b1eb4e061e829400def52d771c583eec4d5ba67b0f8"
+       "lines": "3010-3019",
+       "sha": "16f1d10921934154e533df13d381b47c5b93bb17647a010468474c84bb5f910f"
       }
      ],
-     "vs": "absent",
+     "vs": "differs",
      "row": "3"
     },
     {

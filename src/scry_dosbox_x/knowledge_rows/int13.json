@@ -1134,8 +1134,8 @@
      "n": "31",
      "on": "out AL",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The read-error exit stores no reg_al, so no burst length is set for a corrected ECC status.",
+     "vs": "differs",
+     "text": "The read-error path stores AH and sets CF at src/ints/bios_int13.cpp:444-445, logging at 438; AL is not stored.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3086,8 +3086,8 @@
      "n": "17",
      "on": "in AL",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_al: the floppy access call is passed a count of 0.",
+     "vs": "differs",
+     "text": "The case calls FLOPPY_INT13_Access and stores AH and CF at src/ints/bios_int13.cpp:643-644, logging at 635; AL is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3146,8 +3146,8 @@
      "n": "20",
      "on": "in ES:BX",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read ES or BX.",
+     "vs": "differs",
+     "text": "The case calls FLOPPY_INT13_Access and stores AH and CF at src/ints/bios_int13.cpp:643-644, logging at 635; ES and BX are not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3186,8 +3186,8 @@
      "n": "22",
      "on": "when",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read the INT 1Eh table.",
+     "vs": "differs",
+     "text": "The case calls FLOPPY_INT13_Access and stores AH and CF at src/ints/bios_int13.cpp:643-644, logging at 635; the INT 1Eh table is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3206,8 +3206,8 @@
      "n": "23",
      "on": "when",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read an address field buffer.",
+     "vs": "differs",
+     "text": "The case calls FLOPPY_INT13_Access and stores AH and CF at src/ints/bios_int13.cpp:643-644, logging at 635; no address field buffer is read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3495,8 +3495,8 @@
      "n": "14",
      "on": "in AL",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_al.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:654-655, logging at 648; AL is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3510,8 +3510,8 @@
      "n": "15",
      "on": "in CH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_ch.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:654-655, logging at 648; CH is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3525,8 +3525,8 @@
      "n": "16",
      "on": "in CL",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_cl.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:654-655, logging at 648; CL is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3540,8 +3540,8 @@
      "n": "17",
      "on": "in DH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_dh.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:654-655, logging at 648; DH is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3555,8 +3555,8 @@
      "n": "18",
      "on": "when",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_dh or the cylinder.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:654-655, logging at 648; DH and the cylinder are not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3835,8 +3835,8 @@
      "n": "15",
      "on": "in AL",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_al.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:665-666, logging at 659; AL is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3850,8 +3850,8 @@
      "n": "16",
      "on": "in ES:BX",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read ES or BX.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:665-666, logging at 659; ES and BX are not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3865,8 +3865,8 @@
      "n": "17",
      "on": "in CH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_ch.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:665-666, logging at 659; CH is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3880,8 +3880,8 @@
      "n": "18",
      "on": "in CL",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_cl.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:665-666, logging at 659; CL is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3895,8 +3895,8 @@
      "n": "19",
      "on": "in DH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_dh.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:665-666, logging at 659; DH is not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -3910,8 +3910,8 @@
      "n": "20",
      "on": "when",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never read reg_dh or the cylinder.",
+     "vs": "differs",
+     "text": "The case stores AH and sets CF at src/ints/bios_int13.cpp:665-666, logging at 659; DH and the cylinder are not read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -6833,8 +6833,8 @@
      "n": "21",
      "on": "out CX",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The only CX store is 0x0001: bit 1 is not set.",
+     "vs": "differs",
+     "text": "The success branch stores AH, BX and CX at src/ints/bios_int13.cpp:858-860, logging at 857, with CX set to 0x0001 only.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -6848,8 +6848,8 @@
      "n": "22",
      "on": "out CX",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The only CX store is 0x0001: bit 2 is not set.",
+     "vs": "differs",
+     "text": "The success branch stores AH, BX and CX at src/ints/bios_int13.cpp:858-860, logging at 857, with CX set to 0x0001 only.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -6863,8 +6863,8 @@
      "n": "23",
      "on": "out AH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The only AH store of the success branch is 0x01: no other version is returned.",
+     "vs": "differs",
+     "text": "The success branch stores AH, BX and CX at src/ints/bios_int13.cpp:858-860, logging at 857, with AH set to 0x01.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",
@@ -6878,8 +6878,8 @@
      "n": "24",
      "on": "out DH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "This case's own lines never store reg_dh.",
+     "vs": "differs",
+     "text": "The success branch stores AH, BX and CX and sets CF clear at src/ints/bios_int13.cpp:858-861, logging at 857; DH is not stored.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_int13.cpp",

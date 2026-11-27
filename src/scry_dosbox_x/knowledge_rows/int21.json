@@ -5083,8 +5083,8 @@
      "n": "13",
      "on": "when",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "DX is left as it was when the open fails.",
+     "vs": "differs",
+     "text": "The case calls DOS_FCBOpen and stores AL at src/dos/dos.cpp:1477-1481, logging at 1482; DX is left unchanged.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -17523,8 +17523,8 @@
      "n": "9",
      "on": "out AL",
      "of": "dosbox-x",
-     "text": "The case sets AL to 0 and has no store of FFh.",
-     "vs": "absent",
+     "text": "The case stores AL=0 at src/dos/dos.cpp:1941 after the log at 1940, and never stores FFh.",
+     "vs": "differs",
      "row": "4",
      "quotes": [
       {
@@ -36995,9 +36995,9 @@
      "n": "11",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "6",
-     "text": "The call never fails: it always returns the area and clears CF.",
+     "text": "The case sets DS, SI, CX and DX and clears CF at src/dos/dos.cpp:2792-2796, logging at 2797, so it never fails.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -37335,8 +37335,8 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2817-2818",
-       "sha": "e025ef1b89ef49db63a97a8b1fc91004fe22e3b8b2b0572a6bd1cb361a1284aa"
+       "lines": "2807-2818",
+       "sha": "5ab2a32bb6f992289a6c4bc3db7215ffae93c0ab513d8d39eb55e69f7af74f15"
       }
      ]
     },
@@ -38556,8 +38556,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.H",
-       "lines": "2119",
-       "sha": "e70b60b4a05da827081f07e38972d261239c5b26e754fda1e1906b15257e2d44"
+       "lines": "2115-2119",
+       "sha": "09b2b3d47abf097011622d5a3d8e8a730b9c2108dab48ba7246ed9982af01531"
       }
      ]
     },
@@ -38808,7 +38808,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "16",
-     "text": "The status is always 0xFF, so the success value 0x00 is never returned for a valid mode.",
+     "text": "The set side answers AL=0xFF: only AL=0 enters the branch that stores AL=0.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39035,7 +39035,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The handler never reads AL and never calls device driver function 5.",
+     "text": "The handler never reads AL: it only logs \"set driver look ahead flag\" at src/dos/dos.cpp:2923.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39699,9 +39699,9 @@
      "n": "13",
      "on": "out CF",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "5",
-     "text": "Neither CF nor AX is set for the call: the default handler sets only AL.",
+     "text": "The default handler stores AL=0 at src/dos/dos.cpp:3420 after the log at 3419; neither CF nor AX is set.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40823,9 +40823,9 @@
      "n": "9",
      "on": "in DS:DX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "2",
-     "text": "The name is never read and no ROM search is started.",
+     "text": "The branch logs at src/dos/dos.cpp:3192 and reaches the default handler's AL=0 store at 3420; the name is never read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40838,9 +40838,9 @@
      "n": "10",
      "on": "out CF=0",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "3",
-     "text": "CF is left as it was and the disk transfer area is not filled.",
+     "text": "The branch logs at src/dos/dos.cpp:3192 and reaches the default handler's AL=0 store at 3420; CF and the area are unchanged.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40853,9 +40853,9 @@
      "n": "11",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "4",
-     "text": "No ROM error code is returned: the default handler sets only AL.",
+     "text": "The branch logs at src/dos/dos.cpp:3192 and reaches the default handler's AL=0 store at 3420; no ROM error code is returned.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41022,9 +41022,9 @@
      "n": "7",
      "on": "in DTA",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "2",
-     "text": "The disk transfer area is never read.",
+     "text": "The branch logs at src/dos/dos.cpp:3195 and reaches the default handler's AL=0 store at 3420; the transfer area is never read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41037,9 +41037,9 @@
      "n": "8",
      "on": "out CF=0",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "3",
-     "text": "CF is left as it was and the disk transfer area is not updated.",
+     "text": "The branch logs at src/dos/dos.cpp:3195 and reaches the default handler's AL=0 store at 3420; CF and the area are unchanged.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41052,9 +41052,9 @@
      "n": "9",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "4",
-     "text": "AX is not set to 0x0012 and CF is not set either: the default handler sets only AL.",
+     "text": "The branch logs at src/dos/dos.cpp:3195 and reaches the default handler's AL=0 store at 3420; AX is not 0x0012.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41335,9 +41335,9 @@
      "n": "16",
      "on": "in BX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "4",
-     "text": "The handler never reads BX: no scan address is set.",
+     "text": "The branch logs at src/dos/dos.cpp:3199 and reaches the default handler's AL=0 store at 3420; BX is never read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41365,9 +41365,9 @@
      "n": "18",
      "on": "in ES:BX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "7",
-     "text": "The handler never reads ES:BX: no exclusion region list is written.",
+     "text": "The branch logs at src/dos/dos.cpp:3199 and reaches the default handler's AL=0 store at 3420; ES:BX is never read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41412,7 +41412,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "13",
-     "text": "The handler never reads AL: it answers AL=0x00 and leaves CF as it was.",
+     "text": "The handler logs AL at src/dos/dos.cpp:3419 before setting it to 0x00 and leaving CF as it was.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41425,9 +41425,9 @@
      "n": "22",
      "on": "in DS:DX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "10",
-     "text": "The handler never reads DS:DX: the new list is not stored.",
+     "text": "The branch logs at src/dos/dos.cpp:3199 and reaches the default handler's AL=0 store at 3420; DS:DX is never read.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41747,9 +41747,9 @@
      "n": "4",
      "on": "out CF=1",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "2",
-     "text": "The get branch has no error path: it never sets CF.",
+     "text": "The get branch stores BX and DX and clears CF at src/dos/dos.cpp:3061-3062, logging at 3060; it has no error path.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41921,14 +41921,24 @@
      "n": "7",
      "on": "in DX",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "3",
-     "text": "DX is never read: the system code page is not set.",
+     "text": "The case sets the system code page and stores registers at src/dos/dos.cpp:3086-3117, logging at 3071, 3076 and 3079.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "3065-3119",
-       "sha": "296d894fa44bf8ce2145acd5d27896a3752a4f3894ba172c4a0f037b9bc94504"
+       "lines": "3071",
+       "sha": "f0c1c93ea5bcc554b954e13e959e9dd2f95f1f3b3fdceb8953d7b1dceed0efaf"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "3086",
+       "sha": "58789f94f05a4514d5b65f87cc53f9c0c0c44700844ca83f07cabe5f89756667"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "3112-3118",
+       "sha": "8f261c0a4ee922da76ad48968e7ddd36611b8718020857c64c57e1e7e2448cbd"
       }
      ]
     },
@@ -50189,7 +50199,7 @@
      "n": "8",
      "on": "in SI",
      "of": "dosbox-x",
-     "vs": "extra",
+     "vs": "differs",
      "text": "Only bit 0 of SI is tested: a writing request is the one with SI bit 0 set.",
      "quotes": [
       {
@@ -50197,7 +50207,8 @@
        "lines": "3396-3404",
        "sha": "720f9907c1e3a1685e6bf1b3b4ad9bff0987fcf88da81b23591a6ba486d9f56e"
       }
-     ]
+     ],
+     "row": "4"
     },
     {
      "n": "9",
@@ -50269,12 +50280,6 @@
      "lines": "3395-3404",
      "as": "agrees",
      "row": "2"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "3398-3401",
-     "as": "unfollowed",
-     "row": "4"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",

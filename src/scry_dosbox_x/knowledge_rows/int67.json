@@ -3411,8 +3411,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.P",
-       "lines": "6585",
-       "sha": "3d43e8265a955d9a45306f5e5558e1c0ba330379ba01564039808ec863f1694d"
+       "lines": "6582-6585",
+       "sha": "e44ee78993ab2faf6f2077a15398b093ca775b4fe17293f40199ff7efd329c10"
       }
      ]
     },
@@ -3437,8 +3437,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.P",
-       "lines": "6587",
-       "sha": "c02f0182c1cd8dad196c2e68cef0c46ef9f0b1360c6cf671a5712d02d4c2a718"
+       "lines": "6586-6587",
+       "sha": "c86725f0d2dd5f26bc4f0147779093380692bc1ae770eb11e439b54a73dafb33"
       }
      ]
     },
@@ -3463,8 +3463,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.P",
-       "lines": "6589",
-       "sha": "06c232c54b59ab334e0a4527c8f5c2cccc91375d4e775cf7f48b341f56b6c882"
+       "lines": "6588-6589",
+       "sha": "14d539b3356533f589ffe9824353875ed0475aed843b5c7fb5eb13f0023ba81c"
       }
      ]
     },
@@ -3642,8 +3642,8 @@
      "n": "20",
      "on": "out AH",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The function itself returns no A3h: the count read from guest memory only bounds each loop and is never compared with the total of mappable segments.",
+     "vs": "differs",
+     "text": "The function reads and writes guest memory and returns a status at src/ints/ems.cpp:747-789, logging at 788, but never returns A3h.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/ems.cpp",
@@ -4005,6 +4005,10 @@
    "name": "map pages by number",
    "regions": [
     {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "6597-6600"
+    },
+    {
      "ref": "dosbox-x:src/ints/ems.cpp",
      "function": "INT67_Handler",
      "case": [
@@ -4034,8 +4038,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.P",
-       "lines": "6600",
-       "sha": "0a7079bdfb105c1437f1469bae351d6e2e5ea729871ed7b0ad8f0ca3b487caba"
+       "lines": "6597-6600",
+       "sha": "7a760af9f0e2636bdb395af70feeffcef72ad7d44121816f3054291ea0420a8d"
       }
      ]
     },
@@ -4238,6 +4242,10 @@
    "name": "map pages by segment",
    "regions": [
     {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "6597-6601"
+    },
+    {
      "ref": "dosbox-x:src/ints/ems.cpp",
      "function": "INT67_Handler",
      "case": [
@@ -4271,8 +4279,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.P",
-       "lines": "6601",
-       "sha": "fc37b0ca1e060ca973be318a603cdfb7681821b86ad35ff6010b2188947f36f1"
+       "lines": "6597-6601",
+       "sha": "e59f704dd7727325e16100b2a78636a1450198f6aa87765009f3589d4720e7ef"
       }
      ]
     },
@@ -8096,8 +8104,8 @@
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.P",
-       "lines": "7405",
-       "sha": "2f7ba7734b3cb172cf956447171aaa24343144382ee0146b463c353b0cd818fb"
+       "lines": "7404-7405",
+       "sha": "ff0d58c51d80107c9c0d7280e2e874825ad27db70c09d105b26aaf664bfc2456"
       }
      ]
     },
@@ -9753,13 +9761,18 @@
      "n": "16",
      "on": "out EAX",
      "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The case writes neither EAX nor ESI.",
+     "vs": "differs",
+     "text": "The case switches to protected mode and changes CPU and segment state at src/ints/ems.cpp:1325-1349, with no log of the call.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/ems.cpp",
-       "lines": "1325-1373",
-       "sha": "b93c8d0b8e9bef5d0c4c5c69278b5d88044922e988aebb9006b440c52fa85f8a"
+       "lines": "1325-1327",
+       "sha": "d985d291fa34fe6ebd99ded21dc3ea9b7eaa7dd7447f02a82cd208e3a0979868"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1345-1349",
+       "sha": "e81637bf585c7238e34072fedffe9a489ab50ab8ddf382b6af889b5f4d4e3255"
       }
      ],
      "row": "8"

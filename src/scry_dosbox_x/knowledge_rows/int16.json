@@ -2653,7 +2653,7 @@
      "of": "dosbox-x",
      "vs": "absent",
      "row": "2",
-     "text": "The case stores nothing: AX is left unchanged, never 4D53h.",
+     "text": "The case stores nothing: AX is left unchanged, never 4D53h; it only logs at src/ints/bios_keyboard.cpp:1529.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
@@ -3085,8 +3085,8 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
-       "lines": "1544-1547",
-       "sha": "ffee13856f5157930e0bcb4ed1af326641730d1161414d02f63b84ab1ec705e9"
+       "lines": "1544-1553",
+       "sha": "04186b465323fff46b4308520bdb3a76c811fa92e2a3e360c4ff87c33701a625"
       },
       {
        "ref": "dosbox-x:src/ints/int_dosv.cpp",
@@ -3189,8 +3189,13 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
-       "lines": "1555-1557",
-       "sha": "d6d24170c59fd31ed0702fed557c96ed4ce85d37cb487cc7f4ddd7962b596c16"
+       "lines": "1555-1566",
+       "sha": "75b47e3ce2e0da95f2c49878d1058a0b25cfce83054764a996d6c260e1bf4723"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1567-1577",
+       "sha": "1eaaf40d9067de2e9a48d1af03efb4d3c5f47ff3a4d10c1dfc5c97fe3d05cfa9"
       },
       {
        "ref": "dosbox-x:src/ints/int_dosv.cpp",

@@ -78,7 +78,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "Table 6 selects the data register for reading and for writing with CS1FX- asserted and DA2-0 = 000.",
+     "text": "Table 6's row with fields 0 0 0 selects the data register for reading and for writing.",
      "quotes": [
       {
        "ref": "datasheet:ATA-ATAPI-1.raw.txt",
@@ -266,7 +266,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "Table 6 selects the error register on a read and the features register on a write, DA2-0 = 001.",
+     "text": "Table 6's row with fields 0 0 1 selects the error register on a read and the features register on a write.",
      "quotes": [
       {
        "ref": "datasheet:ATA-ATAPI-1.raw.txt",
@@ -661,7 +661,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "Table 6 selects the sector count register for reading and for writing, DA2-0 = 010.",
+     "text": "Table 6's row with fields 0 1 0 selects the sector count register for reading and for writing.",
      "quotes": [
       {
        "ref": "datasheet:ATA-ATAPI-1.raw.txt",
@@ -2336,7 +2336,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "Table 6 selects the status register on a read and the command register on a write, DA2-0 = 111.",
+     "text": "Table 6's row with fields 1 1 1 selects the status register on a read and the command register on a write.",
      "quotes": [
       {
        "ref": "datasheet:ATA-ATAPI-1.raw.txt",
