@@ -1893,6 +1893,58 @@
     }
    }
   },
+  "ibm-pc:call:0x10/0x10/0x00": {
+   "doc": {
+    "seal": "0bf77770f61e3fd22f85d8ffa5fd9d9c5d93e56926a860e473d99640b3fa8913",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "1": {
+      "digest": "aa94616091ea6489d1509b843a01dbfadd611c1e6d47b555023b7fbd652e9dcf",
+      "by": "slice dx-int10-01 reader"
+     },
+     "2": {
+      "digest": "b41d116bd7e561bc1306a8fcd4c170d571d15165ed34e02f8ac6d09d85d9ea75",
+      "by": "slice dx-int10-01 reader"
+     },
+     "3": {
+      "digest": "2df81056cdc92176a0093aaca42bea28ec92c5167884a6c4dbfb52dcccc3e82e",
+      "by": "R3 reader"
+     },
+     "4": {
+      "digest": "1ae89cc212a5708ee37f4d9057ffd377a9cd1e1e268fa98e4ea77646a10c4b29",
+      "by": "slice dx-int10-01 reader"
+     },
+     "5": {
+      "digest": "8e8c0d7d80bdf5eaed397fce6c7f94092b2761cf8a8d816d54356c741cb2ea0e",
+      "by": "slice dx-int10-01 reader"
+     },
+     "6": {
+      "digest": "17f0fc8b123d77165efd003333b1d626f6c76b0b41ca706351080f0c2b8bafa2",
+      "by": "slice dx-int10-01 reader"
+     },
+     "7": {
+      "digest": "78d57d001aabfa8e53dea267e0e0b898cc67e81bc8561f5676712ea2ef749869",
+      "by": "slice dx-int10-01 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "e687faf09f5218faca885f44d2869e4a5253be397333bf569b636516405d440a",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "8": {
+      "digest": "53f70a9d86223043f969eed84fef1189d55e31df540a12ea2f6b1e8aa5c40c62",
+      "by": "slice dx-int10-01 reader"
+     },
+     "P": {
+      "digest": "6d7f26ee71d382cd071c2a3cab37dd82bd61e698b039b1dcecc8175f7643c76d",
+      "by": "slice dx-int10-01 reader"
+     }
+    }
+   }
+  },
   "ibm-pc:call:0x10/0x10/0x01": {
    "doc": {
     "seal": "c46adaedf56a64f4804942d9063f86c9ab340fc7040877337ef00ae20057951f",
@@ -23021,6 +23073,33 @@
       "by": "slice dx-int21-06 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "8db6af639bd8e582e43b5d63d58cdd947b6456ad2249d4e474d86c65d2797c85",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "23": {
+      "digest": "4828f98c634ea7f809e9996ecb61026f07bcb8b2cb8bd4960530c23465813bd4",
+      "by": "slice dx-int21-06 reader"
+     },
+     "24": {
+      "digest": "14f929fce552f89466b63deb463670f524de57b4de5e77de25503c2592dfbc19",
+      "by": "slice dx-int21-06 reader"
+     },
+     "25": {
+      "digest": "c9d82363e7293a1730404552d091a15bfd39ae1d1fd08072746d417deb42cdaf",
+      "by": "slice dx-int21-06 reader"
+     },
+     "26": {
+      "digest": "b2d2260cd76b3e571aa01aab5248c0a5f10a8aa9d94dd6bed3b447837e806257",
+      "by": "slice dx-int21-06 reader"
+     },
+     "27": {
+      "digest": "ee75b6bf8287e75e715a547c53bcb2aa982af305152d85e9aaf751738ed5bdde",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "ibm-pc:call:0x21/0x64": {
@@ -23670,6 +23749,33 @@
      },
      "5": {
       "digest": "5113e1952073af787e224b2016f6eeafd77e3bcd2e7cc5505ab9516ad9e9f970",
+      "by": "slice dx-int21-06 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "4982592739b1f5a9559b1e8dfd1d72285fd227bb4eda5be60fa705deceb176f0",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "10": {
+      "digest": "094948985db3f4398b8f931243abf8f5018381aced8cfaeb3c6f699cd3c9720b",
+      "by": "slice dx-int21-06 reader"
+     },
+     "11": {
+      "digest": "d22d22f1f9f6c5c95854a2b5bdf25c023b03b0b60f40bc7f698d5b13189ed28a",
+      "by": "slice dx-int21-06 reader"
+     },
+     "13": {
+      "digest": "6315109b4b3d0cb47b9ef21a8cce86fdc4a572e788e3afecd2db34323f80eec3",
+      "by": "slice dx-int21-06 reader"
+     },
+     "7": {
+      "digest": "b74776d978c937863e1d1ea9c4d9d735a31b3e0deb3e5f5eb135d288f4e9038c",
+      "by": "R3 reader"
+     },
+     "9": {
+      "digest": "bc13208d42e5265f8014e5883da62b487530bc28649ee036814181c2b681cb82",
       "by": "slice dx-int21-06 reader"
      }
     }
@@ -26061,6 +26167,57 @@
      },
      "7": {
       "digest": "6b589440fbd00f1eb01dabf2efe6e199f2be71a6102ff56eeadc51ffe39d7a50",
+      "by": "slice dx-svc1-01 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "bd556563135d59561d93178c859c2d8195516dee0d6e0c4712bfc780589550de",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "10": {
+      "digest": "f4d710e34d02a8b953afcbfc23d7d7c8011e719920d72cb0f8d61cabf74eab35",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "11": {
+      "digest": "adfbb37b234c3bc6876ce3276caacc07a3f268fbad6683993dcc7feae183e6bb",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "12": {
+      "digest": "76f20cb71cfa5722163b3e83bc84fff4cb13527489d35e07cdf9cf409943b629",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "13": {
+      "digest": "e86a95acae06ac3543e8f881c009a32cc2e92974a5fda0bd76838ff00b87ab30",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "14": {
+      "digest": "36b23d93ec8075a46da2b4b50dc441fab201a74c2c7f60bf69d185b7d04f6e17",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "15": {
+      "digest": "3f2c232baadf574d79a0191f28679eb91295ba0cf8e172b313ccf69325430e1e",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "16": {
+      "digest": "259a4ff61be283bf5b1bd6da78ed88e0ab62fc119ce21142147f9a6ee964f195",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "17": {
+      "digest": "6951b8edf3480b2a6dcd7184fffbcfaccd58078d24711797f1a3388e16eeb518",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "18": {
+      "digest": "12995cae5a0c4ed7454ed32fbb50ae5e7ff5dfa4cc27ff14ad27762559769f6d",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "8": {
+      "digest": "befa5c105c40ac143f7ffac040c66ef814ad53cb404933c9de65a40a59629408",
+      "by": "slice dx-svc1-01 reader"
+     },
+     "9": {
+      "digest": "6b4daaf8eb36ddcf79e37891d9945f90a167266f9348ac573e56f80f01a0e02b",
       "by": "slice dx-svc1-01 reader"
      }
     }
@@ -73851,6 +74008,25 @@
       "by": "slice dx-g7-sbdsp-cmd-02 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "95923b53d683367a5192c1089d381d5ed1134728d35e25ef8dc34c7fb30e8839",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "6": {
+      "digest": "82da50013e9ad92348724fd1a7a6dc10806ad3a22cd0e0b6d1ac34e665861ee2",
+      "by": "slice dx-g7-sbdsp-cmd-02 reader"
+     },
+     "7": {
+      "digest": "566afc38296d678a0b9d3b6a566ac5b8aed9d6f18caf144bab91c9f674d013d8",
+      "by": "R3 reader"
+     },
+     "8": {
+      "digest": "29fc1722b302d0c8b5763614a31d46ff001c1d55ab5a630ddddcf9ca12b04e61",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "sblaster:command:0xD4": {
@@ -75647,6 +75823,45 @@
      },
      "9": {
       "digest": "daa19530a15eec55899fcb3b56b32d37c3610d1f516372dc5710f23e84929305",
+      "by": "slice dx-g7-tandy-01 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "b63d2fbc2142c1d28bd27345f82bf98df5e946c3f47ec7f50a57da52cf935309",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "D2": {
+      "digest": "35363ed187615d6921caf36d8843824d9fdd18b5e639c22f7029f5c062bd08dc",
+      "by": "slice dx-g7-tandy-01 reader"
+     },
+     "D3": {
+      "digest": "7e5f56bef7a1d38b2c958b4ba5dd6db26ee41cd118dacfcbdd49a7322c395429",
+      "by": "slice dx-g7-tandy-01 reader"
+     },
+     "D4": {
+      "digest": "dd49b87487b89cfaacb65242416d079120b2e5d2725d9088f99da2fe972872f2",
+      "by": "slice dx-g7-tandy-01 reader"
+     },
+     "D5": {
+      "digest": "f13d50676bac4b3dacd58fac3cf8b87650b2899cbb3658c50af4d60933df3f1c",
+      "by": "slice dx-g7-tandy-01 reader"
+     },
+     "D6": {
+      "digest": "0f5f51ea9948fc39cef645d687ee1862dedc9a690e71c5cea395f55236a00ce4",
+      "by": "R3 reader"
+     },
+     "D7": {
+      "digest": "4059f28057e7a4cc97187e315e83f0f8ae635babe74635cf8b0be4ee33d6cef4",
+      "by": "slice dx-g7-tandy-01 reader"
+     },
+     "D9": {
+      "digest": "8b5c5867acdcdd42b89abc9615299862a50d6c5a5ac1153ea6597db675b2d43e",
+      "by": "R3 reader"
+     },
+     "P": {
+      "digest": "61c9705dddf22db8b29e10d098da7de109c6a21b74d41506a7314a71708acaee",
       "by": "slice dx-g7-tandy-01 reader"
      }
     }
@@ -82171,6 +82386,21 @@
       "by": "slice dx-g10-vga_xga-06 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "4b732b1abb0b9b02559f48907c756949d35dec439023c801878f099df4631d1d",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "14c45a9a5155ea5c080d1dddd438ca9cdb1173e653827f365d5f67c1724833aa",
+      "by": "slice dx-g10-vga_xga-06 reader"
+     },
+     "5": {
+      "digest": "3a7ed284275e11f1387f948c6d550b13e4c7adb0eac00c5d02e6a25f781ce36d",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0x83D4..0x83D5": {
@@ -82554,6 +82784,21 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "3e9428528cd38ab9ef9b8362067f8004dd012dd2989138b074dcc435c2f4f1a1",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "8eb728b10c25ea0ed0dd4d4bc87abbc54baa101f0b60c32b23c50f32bfd3282f",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "2252d2e15823b5448024c8e582e5c214aeccd420e2b5c9ede1f95f0e5016a765",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0x8EE8": {
@@ -82611,6 +82856,21 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "c8abaab9aa83bbbc7a599c3badda815df843cea159181dd0ed3ac5fa98f93975",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "29eccaa20f38037b2aa3735e9e16e5723c5524757163a40f71a7040200c67eef",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "399f101d8f4c3dc8f181802f1c3971186290da6eb66692dd3cb0facd141b2029",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0x92E9": {
@@ -82630,6 +82890,21 @@
      "3": {
       "digest": "6d7c936bd89ce695631cd6dd30a9539dd4d3a20f49ce08ec5fe7626a0f19a64c",
       "by": "slice dx-g10-vga_xga-07 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "4ba4166ecdd264386252cf035565c1554ef2a7619d3c8544eb4313dcff69d0af",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "ef645ee0b46d22cb21e59d66a7a501e04e8da99a1222efefb330b2300b2afed1",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "c83d3ed171428f1eb59d2e0752fcd789bc6fb80661a9fb79dd48330453edf78a",
+      "by": "R3 reader"
      }
     }
    }
@@ -82653,6 +82928,21 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "5f7e288481f74661a9bfe672870a487c1e35e292761226f38fcc2e022bd0697a",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "d0dc30e5fc71e5ff44598e73500bef69da41adba48f34ecd906361090a118a2d",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "4010e092d4be71c70bfb6c5950a9ac0bf7467a406e7fa236f28bf971a5d67b7b",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0x9EE8": {
@@ -82670,6 +82960,17 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "bec7509e0be72d773cf229b86bd2dd774dbb8ef6bcf0fafb26973ae8d8262092",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "3": {
+      "digest": "bc9c0d9218ac6a440e7da5ae6ef05d806e3485449eae0dd09b60b9349c81d79c",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0x9EE9": {
@@ -82685,6 +82986,17 @@
      "2": {
       "digest": "57a387083030079614010e56fcf336899761434d432bbd3a88001ba9643d52cd",
       "by": "slice dx-g10-vga_xga-07 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "de7c04b10415b15324576b8f4df12c407693a6ed3322658921b2954b846cccc3",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "3": {
+      "digest": "2e166e935823970d7a41b916c7fb0f27b76d8c4cbe48b3dea500b5ff5a490b58",
+      "by": "R3 reader"
      }
     }
    }
@@ -83303,6 +83615,21 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "ab1b8189619d94bb863e83350d77fbc715f9fedf36432a849af8362e08150601",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "42b2b646d8584d9320983728c6f6a92bd3bbaef5c18df337b4531bd2022c7e64",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "f72596c5886884ce2b764092499a582413060b24929a4c92fd9165e7476897c6",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0xA96C": {
@@ -83480,6 +83807,21 @@
      "3": {
       "digest": "9fd39d5bb79600226d345354262321dccabfd5db112db9c804c7a1d88ec17d2e",
       "by": "slice dx-g10-vga_xga-07 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "64fbd2caf95399fb30645a3c79a6572d04be5bd69ea094bcd6b926e04db5ae9f",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "af535e6565e9b405fc8552cc3e3e997000f89c30dafc543c638e7b462a04aaab",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "c2360eec36229569e577e97dc7c4ba67cb3f15f80b1a5dc17b79c29794359341",
+      "by": "R3 reader"
      }
     }
    }
@@ -83673,6 +84015,21 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "93330e39e696c189ca63d7e243856d79b929ee9fe902db9cb1586f39379710d4",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "28df331bb558c7b9e4d2bd8f78a076eafb070b73dbbff61b768d03fe198cc22c",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "c0e209c7cca220bb4c9562a05f6bff0a225af97aac859bd471bc8073a2e91274",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0xB2E8": {
@@ -83726,6 +84083,21 @@
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
+   },
+   "dosbox-x": {
+    "seal": "3d64ef4234fe2f4212265bf591bec2132564fce952d0549b8960e3d6bddc7e84",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "fff032c0d22987f62ee3a662a7f5e05c8b85a3725053f37466abb334197394ee",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "5": {
+      "digest": "078911c2a2f9f4973af95885e403512d2cd4383854cd162f09a7469c70fe80e8",
+      "by": "R3 reader"
+     }
+    }
    }
   },
   "vga_xga:register:0xB6E8": {
@@ -83767,6 +84139,21 @@
      },
      "3": {
       "digest": "9a924ede4c2f9cd42acf9c60fb314435dd6e64dccb4033fadb029bb5bc8d06da",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "15bf791a0055cd07a2d043f3c63382a2ee6c40aa82c47359f4fe5ab477f87c05",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "4": {
+      "digest": "6edd26f36e3125ab647a9e4f18211852b366b2457f67592370b39626330c9b55",
+      "by": "R3 reader"
+     },
+     "5": {
+      "digest": "f54d81b81dc27ad049ea00f657ea1af4feafb68cc628132a05de265ee81a0ed3",
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
@@ -83880,6 +84267,21 @@
      },
      "4": {
       "digest": "96c3998a4110276c90ea55f2a05d4df8534bc16bb6eff6ab3fdbac7241c4fdee",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     }
+    }
+   },
+   "dosbox-x": {
+    "seal": "81353bea90ca02a4546a44fa5c03b0269bc85f0bf1671ea23785f30ed4dd0290",
+    "by": "R3 reader",
+    "writer": "L1 dosbox-x writer",
+    "rows": {
+     "5": {
+      "digest": "e42fbf8e064df548522cee61e7e74fea804caf5f94bc9972032f1a845001fbff",
+      "by": "R3 reader"
+     },
+     "6": {
+      "digest": "63af6706bed4f2706c77bd9ca7e047de26156c2c6d4494cbe22ae5a2164ac2a8",
       "by": "slice dx-g10-vga_xga-07 reader"
      }
     }
