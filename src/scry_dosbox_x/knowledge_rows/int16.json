@@ -1,0 +1,3292 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "int16",
+ "kind": "call",
+ "title": "INT 16h, the keyboard services",
+ "scope": "ibm-pc",
+ "covers": "INT 16h, the keyboard services: reading, checking and storing keystrokes, shift states, the DOS/V and PC country calls, and the AX PC, ETen, J-3100 and Word cooperation calls.",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0x16/0x00",
+   "name": "get keystroke",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x00"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "278-295"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=00h gets a keystroke.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "278",
+       "sha": "64dc568cbe896e939bf7653beee582dae362651585116c3e67f8cb468427c473"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the BIOS scan code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "280",
+       "sha": "bf8c242f1824afa4be2b66f5edbbaa1ad4a5e35e95a15b0c267022d16212b980"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the ASCII character.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "281",
+       "sha": "d42be43d63f1918f5e38e1d6a206cb31ea150a60fa605e6b65e9a4d8ca960724"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "On extended keyboards this function discards extended keystrokes and returns only when a non-extended keystroke is available.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "282-283",
+       "sha": "fac703164b453c8fa2dc037560ebe165227a472edbc762ae85a66e25922de834"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS scan code is usually, but not always, the hardware scan code: it differs for shifted special keys.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "284-287",
+       "sha": "b25b9e10dda6090620d51b681fdaa425e34c17cb0e93a74bafb8ae42572716dc"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Some older clone BIOSes do not discard extended keystrokes and manage AH=00h and AH=10h the same.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "288-289",
+       "sha": "ab3843fe71c52b4eaf6f40e56b01b2b0881b4c90cbb83278b8e2de4202a86807"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The K3PLUS v6.00+ INT 16 BIOS replacement does not discard extended keystrokes but translates prefix E0h to 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "290-293",
+       "sha": "ea9c7f3ce11571b10eb938c68d1ad6c4d82fd952cecafb1445c44cf38c38d08c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x00 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321-1322",
+       "sha": "74e8c3e2d29f828e2f211fb0920c79c1c79948b3e8039eb332a8dc0cd6d3489e"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On PC-98 with the break flag set the case stores AX 0 and returns without reading the buffer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1327-1330",
+       "sha": "479d96aa555e276331735fb84b287a77e521ccf538a48c142412357696feea67"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the configuration asks for it the case unmasks IRQ1 on every read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1323-1324",
+       "sha": "65a33e402c053b45a3f7c288ba1f6dffceb139116bb0e5d42888ec8cd58a5e8f"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With no non-extended key available it adds one to reg_ip and returns, so the callback runs again.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1337-1340",
+       "sha": "ce244d0c989b27ded94a66a4eb1ee3a0212c8c19d2d813781ed2d90e41b5e992"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case also stores INT28_AllowOnce true.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1333",
+       "sha": "0572551fe9d87914c9458c28c8721ff07f676f7d8718c3bd896e5d6bcccbef04"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "279",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "294-295",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1334-1341",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1336",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1336",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x10",
+   "name": "get enhanced keystroke",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x10"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "512-525"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=10h gets an enhanced keystroke, on enhanced keyboards only.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "512",
+       "sha": "bce94d49f27e9ad02a892ccdbfb13201b183b1682ce14f7f5dce7e6e5ca99b87"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the BIOS scan code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "514",
+       "sha": "bf8c242f1824afa4be2b66f5edbbaa1ad4a5e35e95a15b0c267022d16212b980"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the ASCII character.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "515",
+       "sha": "d42be43d63f1918f5e38e1d6a206cb31ea150a60fa605e6b65e9a4d8ca960724"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "If no keystroke is available, the function waits until one is placed in the keyboard buffer.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "516-517",
+       "sha": "f743820876eeb751d1801e045a3a54e873f665600effa2b13554e524f4f514c4"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS scan code is usually, but not always, the hardware scan code, and differs for shifted special keys.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "518-521",
+       "sha": "580cd169a7153ba3aaa8196ab2257133c9c7370fb4f919523001c3a4621b1c99"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Unlike AH=00h, this function does not discard extended keystrokes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "522",
+       "sha": "be7e65f42a466778e61f6626bfd7701a9c009226264e621fbbc21592de7a5e19"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16/AH=09h tells whether the function is supported, but only on later model PS/2s.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "523-524",
+       "sha": "f4649a86d722febd5cbd1ca95686571b19926f4a6c2f0a46469e2d6728bea56c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x10 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1342",
+       "sha": "6c906cd831f5101c2e2d5ff188da37e5d81f241815199d3115f032d643ea8fdd"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On PC-98 with the break flag set the case stores AX 0 and returns without reading the buffer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1347-1351",
+       "sha": "2e85cea294e0d5f84af7cb274b23b1605ff31785c3af9e5c3ea1db431a624e7d"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With no key available it adds one to reg_ip and returns, so the callback runs again.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1360-1363",
+       "sha": "ce244d0c989b27ded94a66a4eb1ee3a0212c8c19d2d813781ed2d90e41b5e992"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "out AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "For an enhanced key whose low byte is F0h the case clears the low byte unless the key is a Kanji code.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1355-1358",
+       "sha": "64f3506fce4ee271d16292f5e6af1edd9e281e5f3d1cd5f23fb481e0a78aaf6c"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When configured the case unmasks IRQ1, and it also stores INT28_AllowOnce true.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1343-1344",
+       "sha": "65a33e402c053b45a3f7c288ba1f6dffceb139116bb0e5d42888ec8cd58a5e8f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1353",
+       "sha": "0572551fe9d87914c9458c28c8721ff07f676f7d8718c3bd896e5d6bcccbef04"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "513",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "525",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1354-1363",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1359",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1359",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x01",
+   "name": "check for keystroke",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x01"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "297-313"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=01h checks for a keystroke.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "297",
+       "sha": "b7d2907eddc85b9fbb7c368e8cad402c11add6afb3686e3679743e26bee397f9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out ZF=1",
+     "of": "doc",
+     "text": "ZF is set if no keystroke is available.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "299",
+       "sha": "ee31c09401edb87aa12498323198d9082c3d9761a57760b2485558f1192ed577"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out ZF=0",
+     "of": "doc",
+     "text": "ZF is clear if a keystroke is available.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "300",
+       "sha": "2c2d5c24da33d45badaaa79e08269a3e9d5b98107329f096a423980a431911ce"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "With a keystroke available, AH is the BIOS scan code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "301",
+       "sha": "a6f762f9d4144a14e4a152261aa20aa7bf74e7c49f9b6c3937bcbe747d190184"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AL",
+     "of": "doc",
+     "text": "With a keystroke available, AL is the ASCII character.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "302",
+       "sha": "d42be43d63f1918f5e38e1d6a206cb31ea150a60fa605e6b65e9a4d8ca960724"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "A keystroke present is not removed from the buffer, but extended keystrokes incompatible with 83/84-key keyboards are removed by IBM and most compatible BIOSes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "303-306",
+       "sha": "817e22eb26202b5d648e9be4057d1600c927d59822a00661b35bb9cd94e66b03"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Some older clone BIOSes do not discard extended keystrokes and manage AH=00h and AH=10h the same.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "307-308",
+       "sha": "ab3843fe71c52b4eaf6f40e56b01b2b0881b4c90cbb83278b8e2de4202a86807"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The K3PLUS v6.00+ replacement does not discard extended keystrokes but translates prefix E0h to 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "309-312",
+       "sha": "ea9c7f3ce11571b10eb938c68d1ad6c4d82fd952cecafb1445c44cf38c38d08c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x01 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1365",
+       "sha": "120475367e362cebc5a782bfa73ae61dd9d599970cc91e3f32742fec3bdaac0b"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With int16_ah_01_cf_undoc set the case also sets CF when a key is available and clears it otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1377",
+       "sha": "722803d37c2380a3dbb0df56f9bb136ee771599248719c5393989dcff61453c5"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1387",
+       "sha": "a7d70e57c47faef92cc3073f14cf6441d2d282a8655358c482aa142f3c9c0999"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case enables interrupts after IRET, unmasks IRQ1 when configured, and stores INT28_AllowOnce true.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1367-1371",
+       "sha": "637744560e148874e622ff821808e15d79d89fb9dd0ebbb375c6357ab124f6f2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "298",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "313",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1372-1383",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1384-1389",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1376",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1378",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1378",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x11",
+   "name": "check enhanced keystroke",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x11"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "527-539"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=11h checks for an enhanced keystroke, on enhanced keyboards only.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "527",
+       "sha": "9484aea1fff64c4d0d7c3a3cd30bfa05d763a8a488d71ec432123bea1cf89e5d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out ZF=1",
+     "of": "doc",
+     "text": "ZF is set if no keystroke is available.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "529",
+       "sha": "ee31c09401edb87aa12498323198d9082c3d9761a57760b2485558f1192ed577"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out ZF=0",
+     "of": "doc",
+     "text": "ZF is clear if a keystroke is available.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "530",
+       "sha": "2c2d5c24da33d45badaaa79e08269a3e9d5b98107329f096a423980a431911ce"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "With a keystroke available, AH is the BIOS scan code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "531",
+       "sha": "a6f762f9d4144a14e4a152261aa20aa7bf74e7c49f9b6c3937bcbe747d190184"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AL",
+     "of": "doc",
+     "text": "With a keystroke available, AL is the ASCII character.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "532",
+       "sha": "d42be43d63f1918f5e38e1d6a206cb31ea150a60fa605e6b65e9a4d8ca960724"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "A keystroke available is not removed from the buffer, and unlike AH=01h extended keystrokes are not discarded.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "533-534",
+       "sha": "91fc648f5e08260f710328a2bcc164021574f1a7ca36f1b7d76df8f034a2c2c9"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Some versions of the IBM BIOS Technical Reference erroneously report CF instead of ZF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "535-536",
+       "sha": "7e745e588b2c045e131fd9498bc62a6c2cb38a3ff9c957eae35d981c3e418d91"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16/AH=09h tells whether the function is supported, but only on later model PS/2s.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "537-538",
+       "sha": "f4649a86d722febd5cbd1ca95686571b19926f4a6c2f0a46469e2d6728bea56c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x11 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1393",
+       "sha": "eb894c941b4a25e5ecde353d9d3090a16357a5eadf62bb0068f7e32bb68218fd"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "For an enhanced key whose low byte is F0h the case clears the low byte before returning it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1414-1417",
+       "sha": "bc73c07807d4c2c6344f583ceec50b71e53891ddac2b5a313e7d8c01d024706e"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case enables interrupts after IRET, unmasks IRQ1 when configured, and stores INT28_AllowOnce true.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1395-1397",
+       "sha": "c4ad3e3614841740ca978c6d6e306952b00cb7d64e40b62675455ff1f0066aa5"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1409",
+       "sha": "0572551fe9d87914c9458c28c8721ff07f676f7d8718c3bd896e5d6bcccbef04"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "528",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "539",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1410-1419",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1411",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1413",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1418",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1418",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x02",
+   "name": "get shift flags",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x02"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "315-331"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=02h gets the shift flags.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "315",
+       "sha": "96e9c593201b95d8e935d0293244cfb4eb7c4311579e3ae5ae2ed26d486a5575"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the shift flags (see #00582).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "317",
+       "sha": "9be9cca77180cec6417b9908ad0529031b59a85c978ec46656fac3deacfff310"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "AH is destroyed by many BIOSes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "318",
+       "sha": "096912c1a5d973c1446222778505ebdcffb09207bd11e95b8ce25a56050d1501"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Shift flags: bit 7 Insert, bit 6 CapsLock, bit 5 NumLock, bit 4 ScrollLock, bit 3 Alt pressed, bit 2 Ctrl pressed, bit 1 left shift, bit 0 right shift.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "320-330",
+       "sha": "d41f408685d6eb928ea1e01f74efe6ea597c26351a166f0dc632779a95f9e19b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x02 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1421",
+       "sha": "1cd68746f2760cc0b702efb53d83d258d707e44f4beb0311a7713ab06b52f8e4"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case leaves AH unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1421-1423",
+       "sha": "5856273a9fd60142533f8bec54fa94d74c93fab1486f28f6b7cc41a6e5253949"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "316",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "319",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "331",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1422",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x03",
+   "name": "set typematic rate",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x03"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "333-350"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=03h sets the typematic rate and delay.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "333",
+       "sha": "77eef7f3241a472e2c24c0b4f3dd4be4fb38b0f12f01b89a86ca30005703d321"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the subfunction: 00h sets default values, 01h to 04h change PCjr values, 05h sets the rate and delay, 06h gets them.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "335-341",
+       "sha": "f58823d5392158f1c7e826c0d79920c85c0468d4ca9b6f3eb8fb5cc35023ccc2"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "344",
+       "sha": "ea79052a58aab7c33e2f9639b0ea77cc84467aabfb49d810602d93a6ebf4d6ea"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in BH",
+     "of": "doc",
+     "text": "With AL=05h, BH is the delay value, 00h 250ms to 03h 1000ms.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "341-342",
+       "sha": "bb6880ebbde3359493e13587b3e79f74ba0c2d3dd8d65ff885f9e5c3cd30c4ac"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in BL",
+     "of": "doc",
+     "text": "With AL=05h, BL is the repeat rate, 00h 30 per second to 1Fh 2 per second.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "341-343",
+       "sha": "4e55bd3c96f707e08945490d35d044a85fa753b57baaf18ea110982af793838f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "With AL=06h, BL returns the repeat rate.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "344-345",
+       "sha": "9309aa7f464a10605bcda31df0f8029f252794ef3045e9926d79ac54873b2d2d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out BH",
+     "of": "doc",
+     "text": "With AL=06h, BH returns the delay.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "344-346",
+       "sha": "cf57e77afd980326f34b8bbc5779025456eedac76614dd9f29874067ff806a79"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "AH is destroyed by many BIOSes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "347",
+       "sha": "6d7fd1fd3d87f90ea793a251d778b90257a1b6478fff767af6e5ae4b9beddaf6"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16/AH=09h tells whether some of the subfunctions are supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "348-349",
+       "sha": "83be4bb8b5896065cce2c53c181d8cf25afa8d7086ba4bcc3701617f830d2cec"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x03 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1424",
+       "sha": "62405d246173b1fec6d28303a978a46fce9b008d879a9817b1b3970c9c214632"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case handles only AL 0x00 and 0x05 and logs an error for every other value, PCjr subfunctions included.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1425-1433",
+       "sha": "4434436e91e1567c73c027ae17a31c40d756853c47780c69e5471992734e50cb"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "11",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case answers AL=06h with a logged error and stores no rate or delay.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1425-1433",
+       "sha": "4434436e91e1567c73c027ae17a31c40d756853c47780c69e5471992734e50cb"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "12",
+     "on": "out BH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case answers AL=06h with a logged error and stores no rate or delay.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1425-1433",
+       "sha": "4434436e91e1567c73c027ae17a31c40d756853c47780c69e5471992734e50cb"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "13",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case never stores AH and leaves it as the caller left it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1424-1434",
+       "sha": "6be8ebfbf5fff77b1c49444aee14ca2c5cf03ed0f2a4cc5e54e40332dc34d739"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AL=00h writes F3h then 20h, the 500ms delay and 30 characters per second defaults.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1425-1427",
+       "sha": "4be05ebf408702bdb746b14dfe6fc99fabf055be3eebb10d75709d0d2214d417"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "334",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "350",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1428-1430",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1428-1430",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x05",
+   "name": "store keystroke",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x05"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "381-407"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=05h stores a keystroke in the keyboard buffer, on AT and PS machines with enhanced keyboards.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "381",
+       "sha": "17a37276ccebb56761c0a9f1fc50b25c9723a80fba5c8796142e4ead54b665bd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in CH",
+     "of": "doc",
+     "text": "CH is the BIOS scan code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "383",
+       "sha": "c66cf5509ea849a53340d54f84547766aa7a813a91bcd073b9ceee0bdbd014bf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CL",
+     "of": "doc",
+     "text": "CL is the ASCII character.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "384",
+       "sha": "5c00862010ead48f48537fecc9f1b37182839f89ce25dfef0590a8b50df871b7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the status: 00h if successful, 01h if the keyboard buffer is full.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "385-387",
+       "sha": "ad4947bf6624fce3eb81e704dd31b39d3e7e17adbc195b31d401d8774a5945fe"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "AH is destroyed by many BIOSes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "388",
+       "sha": "096912c1a5d973c1446222778505ebdcffb09207bd11e95b8ce25a56050d1501"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Under DESQview and on the HP 100LX and 200LX, some keystrokes invoke special functions when read from the buffer (see #00583 and #00584).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "389-393",
+       "sha": "cb0c10ca80871ab0dc7c890162854902ec494ec23597f9221b841e4c72906e8c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "DESQview pseudo-keystroke 38FBh switches to the next window only if the main menu is already popped up, and 38FCh pops up the main menu.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "397-400",
+       "sha": "cd8aef6d07684da85c43efb2f97c12a8e9de9f2fac387adc1a493d95e4a85cb9"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "HP 100LX/200LX pseudo-keystroke EE00h pops up the topcard display and puts other system manager applications into sleep mode.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "404-407",
+       "sha": "abb4674d327d28d6bb1bf496cba3d405cd6ee1f99494a6681dc163bb37378400"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x05 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1435",
+       "sha": "7743a62b37824a6628a13ab0a2bdc3f207a74aa02e7989f3a0388a7494c25609"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case never stores AH and leaves it as the caller left it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1435-1438",
+       "sha": "249e89a4e360d225f4f613a18d34542c00b9479bc3e713495300af6136200c9c"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "7b",
+     "on": "is",
+     "of": "doc",
+     "text": "DESQview pseudo-keystroke 38FEh closes the current window, and 38FFh pops up the learn menu.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "401-402",
+       "sha": "ddc56fa8189e666ecc94dce0f889330dfdc58c2c800cd49d6122ac51f63fa8fc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "382",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "394-395",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1436",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1436",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1436-1437",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x12",
+   "name": "get extended shift",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x12"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "541-577"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=12h gets the extended shift states, on enhanced keyboards only.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "541",
+       "sha": "647744d108fbc284b1842e52583241edad8c14501d89ef14433b0eee68d9c5c7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is shift flags 1, the same as AH=02h returns (see #00587).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "543",
+       "sha": "363ebe2666b9ef7ef14b236dde21c3393d4805444f013e4d2732fc735b99518c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is shift flags 2 (see #00588).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "544",
+       "sha": "d34984da1a50b913e32698e71139919a562601a317027cd4a0be13409c28cd6d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "AL bit 3 is set only for the left Alt key on many machines, and AH bits 7 through 4 are always clear on a Compaq SLT/286.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "545-546",
+       "sha": "ad3f491d14188cdb5ac3f069853e1ad04036e7d2a84d64afabe44ffc05bde343"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16/AH=09h tells whether the function is supported, but only on later model PS/2s.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "547-548",
+       "sha": "f4649a86d722febd5cbd1ca95686571b19926f4a6c2f0a46469e2d6728bea56c"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Many BIOSes destroy AH on return from functions above AH=12h, returning 12h less than AH held on entry.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "549-552",
+       "sha": "d556656eeb51eccfafcfbdbbca09ab0dd21ba76fbda280b3b4b6222c3413e02f"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Shift flags 1: Insert, CapsLock, NumLock, ScrollLock, Alt, Ctrl, left shift and right shift in bits 7 to 0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "555-565",
+       "sha": "d9e8ec6d230e3da1ba54a5a22cc29b871d87945f42a6fb781f24afd42b62d6a1"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Shift flags 2: SysReq, CapsLock pressed, NumLock pressed, ScrollLock pressed, right Alt, right Ctrl, left Alt and left Ctrl in bits 7 to 0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "567-577",
+       "sha": "f87987e920c72aae67c18285ee5a045795e544e956fdbc2295c4f2e91aea47b6"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x12 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1439",
+       "sha": "1b2d696fd1adc8ea0f163aaddf7558fd65eeb61098d094890679ad9009da77d5"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case builds AH from the BIOS flag bytes: bits 0-1 and 4-6 of FLAGS2, its bit 2 moved to bit 7, and bits 2-3 of FLAGS3.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1441-1443",
+       "sha": "ed00e750adbe21c9bfa2d1bb147d2f137438c5fb530c9697d0116e79e3a789f4"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "542",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "553",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1440",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x13",
+   "name": "dbcs shift control",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x13"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "579-598"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=13h is the DOS/V double-byte character set shift control.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "579",
+       "sha": "f1f2c0e9d1dc405947fd40d13a9ac9675f929a3b6eeb301a592d2809d67a5f05"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the function: 00h sets the shift status from DX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "581-584",
+       "sha": "8208e7014a60ac37301f058dce0311a223105eb04e9e950f4d0df0f7ead31cb9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The functions are supplied by the Japanese Front-End Processor.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "587",
+       "sha": "c3643fd99327911ae7e5e00ee22f056de47b3d65c2d445bd8aef133455a79ff6"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Shift status: bit 0 full-size rather than half-size, bits 2-1 the input mode, bits 5-3 internal, bit 6 Romaji, bit 7 Katakana to Kanji conversion, bits 15-8 internal.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "590-598",
+       "sha": "8092ed4a3acda7403fcd5b95cc2b8344383d4aedecd249a38ed02cb57e1feb4d"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x13 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1445",
+       "sha": "a1832795063e5a6e1c5d1c560ca136f3af1334bd51f8603f83719b2c3b0e2527"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case sets or reads the host input method state and stores DL 0x81 or 0x00, not a shift status built from the Japanese Front-End Processor.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1451-1462",
+       "sha": "1ad94d9c42a421555599f1a8a2a27ec219945c47ca1587b38a3b1062634a62a3"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1463-1464",
+       "sha": "3d78742d26395c64d5e56af303ffc1915a4783ea29862fd9d84bb5f28b060bbf"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1472-1482",
+       "sha": "ab33480cd493dc4e46b9bea1274ea5c0b1a21d6d63fc73e656668cc3a558f699"
+      }
+     ],
+     "row": "2b"
+    },
+    {
+     "n": "6b",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "For AL=00h the case switches the host input method on or off from bit 7 or 0 of DL and stores no shift status.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1452-1456",
+       "sha": "09856e7bf57dbe4bbe04fb7673e88d8c8e52e0406b6c76dee7e51c6d08f234f3"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1472-1476",
+       "sha": "2ff9e0ab32e97d64e3bdc445706a5f71690da3d342b1ad69f66919d2e2a9069b"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case acts only when (IS_DOSV or ttf_dosv) and IS_DOS_CJK hold and DOSV_FEP_CTRL_IAS is set; otherwise it changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1446-1451",
+       "sha": "fe2d1986c5bda36fe68a026c6955c0a7f447dc905322ac2feb8d35386d9418be"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1484-1485",
+       "sha": "bd991064990ba41f53a21a49f335a63b294715b89476366c0672a7d1c79b424b"
+      }
+     ]
+    },
+    {
+     "n": "2b",
+     "on": "out DX",
+     "of": "doc",
+     "text": "With AL=01h, DX returns the current shift status (see #00589).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "585-586",
+       "sha": "7e5e382fb5e02604860a41f2ca050410f7426a285feb878cfd4f65bbfb7c642e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "580",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "588",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1466",
+     "as": "unseen",
+     "reason": "the other arm of the build, for SDL2 builds"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x14",
+   "name": "shift display control",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x14"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "600-609"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AH=14h controls the shift status display.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "600",
+       "sha": "5291f2ce35639e6e0c7ed0ac6c8d363b6044e9ea423c323b22035e59c5a1130d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the function: 00h enables the display, 01h disables it, 02h gets the display state.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "602-605",
+       "sha": "a169885c661c4a1dfcd8e7d18a0365fb0a216dea38e82259320f30f96a8ecfab"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AL",
+     "of": "doc",
+     "text": "With AL=02h, AL returns the current state, 00h enabled or 01h disabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "605-606",
+       "sha": "c265e46399569bc2378918eaa722af393e4f3673f402f6f63310c35ec99a552c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "It controls the screen-bottom shift status rows for the Japanese Front-End Processor.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "607-608",
+       "sha": "92819bb5f65e71f0b02c936f17b7921a09f93ec425bc14fbc3ad1cf1a6b43c4a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x14 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1486",
+       "sha": "261551528b3089c1fdae3f21e3c48d282831143e10ca5ea43aa59a686650f80a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case acts only when (IS_DOSV or ttf_dosv) and IS_DOS_CJK hold and DOSV_FEP_CTRL_IAS is set; otherwise it changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1487-1491",
+       "sha": "ffefa7d63f8a0b7837d75e1e3393e07a90a70c920f95abe6f9d1f4622a7f181e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1499-1500",
+       "sha": "26b8c32bd60e40dbef49af32c0dd9f9491de6a02f3b5e32400e4f62e79f7fc56"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "601",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "609",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1492-1497",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1494",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x50",
+   "name": "ax keyboard country",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The DOSBox-X source header cites no document for AH=50h."
+    },
+    {
+     "where": "maker",
+     "gave": "No maker document describes the AH=50h dispatch itself; Ralf Brown's list documents AX=5000h and AX=5001h separately."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Not searched for this dispatch."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Not searched for this dispatch."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list has sections for AX=5000h and AX=5001h and none for the AH=50h dispatch."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x50"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "INT 16h AH=50h sets or gets the keyboard BIOS country mode by AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1501-1503",
+       "sha": "97032c2a763f15f43bc411b9ed47c2957a476948cdde3588fc85c343f0f85d72"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x50 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1501",
+       "sha": "b670f77ed7a880ee948ffa75a943f5d7a082ad96ded523c3661c3ed30bf5909a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not a JEGA the case returns at once, changing nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1502",
+       "sha": "39275f0fad833141a058ad440514e8fac3cc629b4c0ffd3536767f0d1e4c1cb2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An AL no case takes logs an error and stores AL 0x02.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1514-1517",
+       "sha": "dc3f6bcb0e9b3178739cd64b1f3ec1ee52467135d9262ae3587553daa703ac14"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1504-1508",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x16/0x50/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1509-1513",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x16/0x50/0x01"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x50/0x00",
+   "name": "set kbd country",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x50",
+      "0x00"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1021-1038"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AX=5000h sets the keyboard country code, on AX PC machines.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1021",
+       "sha": "7c8366289bbf5c739afbdfa246c276c1299d06515681aafe6e6dad1c98bf240d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is the country code, 0001h USA (English) or 0051h Japan.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1023-1024",
+       "sha": "650637d28f2dbf3dead2f0d49f1fbb0f3028509b5567158679851bcc2a7938b3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the status: 00h successful, 01h bad country code, 02h other error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1025-1028",
+       "sha": "d7927bebc91f04a91d3a4f6f112351054f1e3ceaddceb25f7436f4d1bdb0c560"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Japanese versions of MS-DOS, PC DOS and DR DOS call it with BX=0051h at initialization.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1029-1030",
+       "sha": "1504ab535d0a6332d04f0da5c5f5cc3a41390aed76a341ce50c2ef518358e286"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The K3PLUS v6.00+ replacement switches country layouts, or to transparent mode, and beeps on mode changes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1031-1037",
+       "sha": "db2e96dc8b080401fa50a1497eb302c83cb4440eeb39c78fa789e85ffc86c89d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x50, then by case 0x00 of the dispatch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1501-1504",
+       "sha": "cc19e5dc9d3c019b816371f237c91370e1d36a92bc07285e9082faa8f674639c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not a JEGA the case returns at once, changing nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1502",
+       "sha": "39275f0fad833141a058ad440514e8fac3cc629b4c0ffd3536767f0d1e4c1cb2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1022",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1038",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1506",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1506-1507",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x50/0x01",
+   "name": "get kbd country",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x50",
+      "0x01"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1040-1047"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 16h AX=5001h gets the keyboard country code, on AX PC machines.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1040",
+       "sha": "e21b01cdf10b0e24578a29de337ac9a5745dce887c70010ed00098b6642a9aba"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the status: 00h successful with BX holding the country code, 02h error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1042-1045",
+       "sha": "ddfe441d3e207d606d23b6f956a44809a5cb8ccc86553b1a90d11472d3c15b44"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The call is also supported by K3PLUS v6.00+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1046",
+       "sha": "08c936c3ed830f2a903be20eec427d83a3c765e253ebd2abe44359f9ef477c01"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by the case 0x50, then by case 0x01 of the dispatch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1501-1503",
+       "sha": "97032c2a763f15f43bc411b9ed47c2957a476948cdde3588fc85c343f0f85d72"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1509",
+       "sha": "0115923e275c12b7c3c88a851fcf7351b21ca30e5ded5df6b7689530040c46a0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not a JEGA the case returns at once, changing nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1502",
+       "sha": "39275f0fad833141a058ad440514e8fac3cc629b4c0ffd3536767f0d1e4c1cb2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1041",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1047",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1511-1512",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x51",
+   "name": "read shift status",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x51"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1049-1054"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "On an AX PC, AH=51h reads the shift key status.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1049-1050",
+       "sha": "9bfdef02603011939b3f042ff57501fdbb4fc2ae93fa22ac58421d131535a420"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the standard shift key states.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1051",
+       "sha": "3ba49342ebe054eba7159fb91c2d47d4cd77b5634e9a4bd96eb9b585b089a903"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the Kana lock: 00h when off, 01h when on.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1052",
+       "sha": "0da7c7c8bf18f348277f8958f9a62bed89236fdabf8c8a7c9764e2179620d611"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The K3PLUS v6.00+ INT 16 replacement also supports the call, but always returns AH=00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1053",
+       "sha": "400b6671c09fdc000c1122706aa24cb5a3ac8d03252acc8e90b658030e707a8e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0x51 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1520",
+       "sha": "0595a548324409d25b2f96adb90dc9bff6de36cf1e4bda6953190f9a0e655514"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "Outside a JEGA machine, or outside its JP keyboard mode, the case returns with every register unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1521-1522",
+       "sha": "200968c75461719f31d6e034d1147a76d9e7b5ceeb7ddcd3cbd24d9de3787e30"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "AH receives the status byte masked with 0x02, so the Kana lock reads 0x02, not the document's 01h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1525",
+       "sha": "62fae03eceb3227687da7d362c0e32e9482493362cfd4fe639d6aeef8522df0f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1054",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1524",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0x55",
+   "name": "microsoft cooperation",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0x55"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1088-1095"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1097-1117"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1119-1129"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=5500h is Microsoft Word's internal cooperation call, made at startup to any keyboard TSR present.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1088-1089",
+       "sha": "1edd5428ea1fcfa88192efbd999f43be29da5d9b75230ffd18c04ddb4494d419"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1091-1092",
+       "sha": "53f1506f5aaf06fd1758a8a1f1764bb72b361d4d4d98ae6ee672549febe179de"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 4D53h ('MS') if a keyboard TSR is present.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1090",
+       "sha": "42519e7b1b32f680d44aaa8f10e6e28029ccd25b254981b89082415a8c7e9541"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "If the return is not 4D53h, Word installs its own INT 09 and INT 16 handlers; otherwise it assumes the TSR handles the keyboard.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1093-1094",
+       "sha": "d9a8b602522e8106d5fec6ba10e792ad38641e1b6a34dd0d8068fc795602d63d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=55FEh is Microsoft QBASIC's internal cooperation call: DX=0000h initializes with a function and structure pointer, DX=FFFFh shuts down.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1097-1103",
+       "sha": "500a9066ededba9f0a49dd10c57c7ea537fff99fe5ec1e4b386ba43c0c4826c4"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is the result: 4D4Bh installs only the INT 1B handler, and any other value also installs handlers for INT 08, 09, 16, 1B and 1C.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1104-1107",
+       "sha": "8119e6cb240bc244dee5f9484aeb771aa96e836ce49f73156d0e09d2f9d9f0f8"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The pointer in ES:CX seems to point at a structure defining a keyboard callback; a TSR returning AX=4D4Bh makes QBASIC stop.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1108-1110",
+       "sha": "9539c35888e877e5ef7f6077c4a2aac45339f6940e5e16fb07a159d560a6594d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "MS-DOS 6.0's DOSSHELL makes these calls at startup, exit and before or after shelling out; EDIT.COM and HELP.COM do too, through QBASIC.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1111-1114",
+       "sha": "106e9223d3d2bf593a7c5d8d23ee8132d3ceab29251c7b068a9588adc8edaa92"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "K3PLUS v6.07+ supports this function but never invokes the callback function.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1115-1116",
+       "sha": "539cae9318565b2b03eddf3a36c3063d7231e156b0b3632a5593f92bb1956c29"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=55FFh is a Microsoft Word call whose TSR cooperation is unknown; BX holds Word's version, BL its major part.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1119-1121",
+       "sha": "46eb1f0e5e80917fd522f8cefac9262002a2d31ed007c57602738cc5c7a3f879"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "CX=0000h sets an unknown flag and any other value clears it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1122-1124",
+       "sha": "2ccf7400653ff6b76e018dc2ca72918ef666c44f440a7e4d70437592ef3f3528"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "Hooks intercepting this call are present in SWAPSH, SWAPDT v1.77j and SCRNBLNK.COM, and the German Word 5.0 calls it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "1125-1128",
+       "sha": "3319a66af75e8c7c33ddb1104638318288cb40d05666ba38f8b0ea11928e34dc"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0x55 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1527",
+       "sha": "46b360879ead16b5b849b803be825bc5076eb56aa281f73a94a8f4122758b62d"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "AX is left at 0x55FEh, which the document reads as the other result that installs handlers, and no handler is installed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1527-1530",
+       "sha": "ab11dcf48531b3886b720a269b615c2c2964449fb39c3e41c9be2f26e3af148b"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "The case stores nothing: AX is left unchanged, never 4D53h; it only logs at src/ints/bios_keyboard.cpp:1529.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1527-1530",
+       "sha": "ab11dcf48531b3886b720a269b615c2c2964449fb39c3e41c9be2f26e3af148b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1095",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1117",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "1129",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x16/0xDB",
+   "name": "eten call",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no ETen keyboard code, and its headers cite no document for this call."
+    },
+    {
+     "where": "maker",
+     "gave": "ETen's technical manual (ISBN 9575040910) is not published online."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No ETen material was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds a Japanese DOS/V technical reference (1993); it does not document this call."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list release 61 has no INT 16 AH=DBh section."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0xdb"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0xDB of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1531",
+       "sha": "525d9f7dc783b77f5017396f9fb7480894638684179dcf6e77e511e9f90344a2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case holds only comments and a break, so no register is changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1531-1534",
+       "sha": "a23d4a6154abe3c5c7713a38f4801ed0422ad5f270b21304b650653f05f04df4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AX is left as the caller passed it; the commented-out store of 8000 is not compiled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1531-1534",
+       "sha": "a23d4a6154abe3c5c7713a38f4801ed0422ad5f270b21304b650653f05f04df4"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x16/0xF0",
+   "name": "j3100 beep",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no J-3100 machine or keyboard code, and its headers cite no document for this call."
+    },
+    {
+     "where": "maker",
+     "gave": "Toshiba publishes no J-3100 technical reference; catalogues list only Japanese third-party books on the series."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Toshiba J-3100 technical manual was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds a Japanese DOS/V technical reference (1993); it does not document the J-3100 INT 16h calls."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list release 61 has no J-3100 INT 16h section."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0xf0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0xF0 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1535",
+       "sha": "cfc80ddc2bb402ce358e809b50fa25a6d62f3bf592bbfde34011132f93d6b884"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case holds only a comment and a break, so it does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1535-1537",
+       "sha": "64966f308bc9a3967a574875a288902a574e16351d6108df4def25c0fe20b8a3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AX is left as the caller passed it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1535-1537",
+       "sha": "64966f308bc9a3967a574875a288902a574e16351d6108df4def25c0fe20b8a3"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x16/0xF1",
+   "name": "j3100 set shift",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no J-3100 machine or keyboard code, and its headers cite no document for this call."
+    },
+    {
+     "where": "maker",
+     "gave": "Toshiba publishes no J-3100 technical reference; catalogues list only Japanese third-party books on the series."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Toshiba J-3100 technical manual was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds a Japanese DOS/V technical reference (1993); it does not document the J-3100 INT 16h calls."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list release 61 has no J-3100 INT 16h section."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0xf1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0xF1 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1538",
+       "sha": "d5cf544f39a2d86371be4ffaf9332bf3689d45c45116e9682ae267b488e82b3c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case holds only a comment and a break, so it does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1538-1540",
+       "sha": "45f686458cbbb502bb2485de85fe626e7d8f0cde4098702a529be91136660e80"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AX is left as the caller passed it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1538-1540",
+       "sha": "45f686458cbbb502bb2485de85fe626e7d8f0cde4098702a529be91136660e80"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x16/0xF2",
+   "name": "j3100 key click",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no J-3100 machine or keyboard code, and its headers cite no document for this call."
+    },
+    {
+     "where": "maker",
+     "gave": "Toshiba publishes no J-3100 technical reference; catalogues list only Japanese third-party books on the series."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Toshiba J-3100 technical manual was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds a Japanese DOS/V technical reference (1993); it does not document the J-3100 INT 16h calls."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list release 61 has no J-3100 INT 16h section."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0xf2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0xF2 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1541",
+       "sha": "4f75142a28ad5ccdf9a3379356a52a3241b6c6b0e3942c15d786a5980fe973a2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case holds only a comment and a break, so no sound is made.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1541-1543",
+       "sha": "6d5fdb56ac4e1ec341891ec976be737be54a42cd2afe8ccaaca5b8453ba6cf2c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AX is left as the caller passed it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1541-1543",
+       "sha": "6d5fdb56ac4e1ec341891ec976be737be54a42cd2afe8ccaaca5b8453ba6cf2c"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x16/0xF5",
+   "name": "j3100 set key data",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no J-3100 machine or keyboard code, and its headers cite no document for this call."
+    },
+    {
+     "where": "maker",
+     "gave": "Toshiba publishes no J-3100 technical reference; catalogues list only Japanese third-party books on the series."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Toshiba J-3100 technical manual was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds a Japanese DOS/V technical reference (1993); it does not document the J-3100 INT 16h calls."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list release 61 has no J-3100 INT 16h section; INT 17 AH=F5h merely shares the number."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0xf5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0xF5 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1544",
+       "sha": "3eba5f0b1b6c865cfe272dc4ddbc2ce567b5edec436d8ce6b7a4d26ca96e175d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The key is stored only where J3_IsJapanese() holds, on a J-3100 in video mode 74h; elsewhere every register is left unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1544-1553",
+       "sha": "04186b465323fff46b4308520bdb3a76c811fa92e2a3e360c4ff87c33701a625"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int_dosv.cpp",
+       "lines": "2697-2702",
+       "sha": "7d96a6e8390b85ce9d7f7b995a4c4346fc88f5b72b17d7b74664728bfc781571"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "BX holds the key, which is handed to BIOS_AddKeyToBuffer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1547",
+       "sha": "24f75e541bd3bf82afd8fd08a3ebe136cba886247170ce4d8cc33b647cc6531b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AX becomes 0000h when the key is stored and FFFFh when the buffer is full.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1547-1553",
+       "sha": "c723351d3093afd5fa062d9a5da42421881ee1015a96a478432d4625dde8137a"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x16/0xF6",
+   "name": "j3100 check buffer",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no J-3100 machine or keyboard code, and its headers cite no document for this call."
+    },
+    {
+     "where": "maker",
+     "gave": "Toshiba publishes no J-3100 technical reference; catalogues list only Japanese third-party books on the series."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Toshiba J-3100 technical manual was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds a Japanese DOS/V technical reference (1993); it does not document the J-3100 INT 16h calls."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list release 61 has no J-3100 INT 16h section."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "function": "INT16_Handler",
+     "case": [
+      "0xf6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 16h handler reaches it by case 0xF6 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1321",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1555",
+       "sha": "6877427ae9af65947d5f8cc7288ae8f2c0e78f08ae5e78c3661b108749ec0078"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The buffer is counted only where J3_IsJapanese() holds, on a J-3100 in video mode 74h; elsewhere every register is left unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1555-1566",
+       "sha": "75b47e3ce2e0da95f2c49878d1058a0b25cfce83054764a996d6c260e1bf4723"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1567-1577",
+       "sha": "1eaaf40d9067de2e9a48d1af03efb4d3c5f47ff3a4d10c1dfc5c97fe3d05cfa9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int_dosv.cpp",
+       "lines": "2697-2702",
+       "sha": "7d96a6e8390b85ce9d7f7b995a4c4346fc88f5b72b17d7b74664728bfc781571"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "AX counts the keys between tail and head, halved, and becomes FFFFh when that equals the buffer size in words.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1559-1567",
+       "sha": "0a8d7411f8d1b3d51ef03664b161cbb20d95244c2b13d7c1cbac029454fdd431"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1568-1570",
+       "sha": "f5f9f3b32d61bb77e84605ee7fbcf3949b3e6e6e8b06001b51a165c59dcc3533"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "BX becomes the machine code of the emulated J-3100 model.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1571",
+       "sha": "245aac23246e39b4d1b4cb05dfd9db012ac45282900265794029e6254f9b521f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On PC-98 the store, read and check helpers of the same file take head and tail from 0x524 and 0x526.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "390",
+       "sha": "d2612415f071a26a4e3f6950332c59858f3a6160183bf2af726fc392136a811e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "391",
+       "sha": "bc17572255ca70f7439ac2de170f41565cfebc0b1fa4a09fe13b4a5d3c479afd"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "479",
+       "sha": "d2612415f071a26a4e3f6950332c59858f3a6160183bf2af726fc392136a811e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "480",
+       "sha": "bc17572255ca70f7439ac2de170f41565cfebc0b1fa4a09fe13b4a5d3c479afd"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "526",
+       "sha": "d2612415f071a26a4e3f6950332c59858f3a6160183bf2af726fc392136a811e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "527",
+       "sha": "bc17572255ca70f7439ac2de170f41565cfebc0b1fa4a09fe13b4a5d3c479afd"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "engine": [
+  "IO_Write",
+  "PIC_SetIRQMask",
+  "SDL_SetIMValues",
+  "SDL_GetIMValues",
+  "IME_SetEnable",
+  "IME_GetEnable",
+  "J3_IsJapanese",
+  "J3_GetMachineCode"
+ ]
+}

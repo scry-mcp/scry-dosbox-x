@@ -7,8 +7,9 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from scry_core import naming
-from scry_core.knowledge import Base, KeyFault
+from scry_core.knowledge import KeyFault
 from scry_core.knowledge import keys as keyspelling
+from scry_core.knowledge.index import Index
 from scry_core.naming import Field, Named
 
 from scry_dosbox_x import declarations as dec
@@ -43,7 +44,7 @@ def number_of(value: object) -> int | None:
     return None
 
 
-def interrupt_call(base: Base, interrupt: int, registers: Mapping[str, int]) -> Named | None:
+def interrupt_call(base: Index[Any], interrupt: int, registers: Mapping[str, int]) -> Named | None:
     if interrupt == XMS_KEY:
         return None
     try:
@@ -67,7 +68,7 @@ def _symbol(ref: str) -> Named | None:
 class DosboxNamer:
     """Per argument and per reply field, what a number is called in the confirmed base."""
 
-    def __init__(self, base: Base) -> None:
+    def __init__(self, base: Index[Any]) -> None:
         self._base = base
 
     def _entry(self, kind: str, value: int, access: str = "") -> Named | None:

@@ -1,0 +1,117 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "dos-errors",
+ "kind": "error",
+ "title": "DOS extended error codes 1 to 10",
+ "scope": "ibm-pc",
+ "covers": "FIXTURE of a test: two DOS errors, copied from the pilot",
+ "source": "official",
+ "entries": [
+  {
+   "key": "1",
+   "name": "function invalid",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8140"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "446"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 01h (1) is function number invalid.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8140",
+       "sha": "1bc31b884fc64e46d2453ee9badc7ca08eb0971a1d84e42073152dac6fdec1e7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_FUNCTION_NUMBER_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "446",
+       "sha": "aa4b845788c353930f1432ddc837ec025ae59d6f16bcb6aaf0f22c4459433f65"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "2",
+   "name": "file not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8141"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "447"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 02h (2) is file not found.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8141",
+       "sha": "bb7688c3a8854339a8431876d09f4efe2a1d809168494932ed8561056178f69d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_FILE_NOT_FOUND, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "447",
+       "sha": "f1c0f2167d8c5117753e164bc81a89c0a9648eb73b327db8b762ad44d04f625b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  }
+ ]
+}

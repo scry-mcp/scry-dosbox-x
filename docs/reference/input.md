@@ -65,8 +65,8 @@ Reply, 7 of 11 fields:
   "posted": 1,
   "bytes": 2,
   "frames": 2,
-  "frame_before": 337,
-  "frame_after": 347,
+  "frame_before": 316,
+  "frame_after": 326,
   "verify": {
     "checked": true,
     "seen": true,
@@ -292,7 +292,7 @@ The pointer went to the centre of `court`: pixel 240,100 of a 320x200 screen, 48
   },
   "driver_arrived": true,
   "motion": true,
-  "frame_before": 278,
+  "frame_before": 277,
   "frame_after": 288,
   "verify": {
     "checked": true,

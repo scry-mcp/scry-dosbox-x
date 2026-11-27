@@ -1,0 +1,1405 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "fdc",
+ "title": "The floppy disk controller's PC-AT and PC-98 registers",
+ "kind": "register",
+ "scope": "fdc",
+ "covers": "The registers of the AT-compatible floppy disk controller: SRA, SRB, DOR, MSR and the DSR that shares its address, the data register, DIR and the CCR that shares its address; and the PC-98 dual-use mode and 3-mode registers at ports 0x00BE and 0x04BE",
+ "source": "official",
+ "documents": [
+  {
+   "name": "82077SL.raw.txt",
+   "variant": "82077SL"
+  }
+ ],
+ "official": {
+  "82077SL.raw.txt": [
+   "575-584",
+   "597-602",
+   "606-613",
+   "619-638",
+   "646-667",
+   "674-677",
+   "682-685",
+   "687-699",
+   "726-727",
+   "787-821",
+   "831-836",
+   "866-872",
+   "884-896",
+   "909-911",
+   "925-939"
+  ]
+ },
+ "entries": [
+  {
+   "key": "0x00",
+   "name": "status register A",
+   "aliases": [
+    "SRA",
+    "status register A"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "597-602"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "606-610"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "611-613"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "619-630"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2437-2440"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2442-2445"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2447-2448"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2643-2646"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Status Register A is read-only and monitors the state of the interrupt pin and several disk interface pins.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "597-600",
+       "sha": "68494139d8abe00298ac00acad4aee8082022a7bebcc70cf18033ee0d0c36b2c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is part of the PS/2 register set and is not accessible in PC-AT mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "597-602",
+       "sha": "10d5dd3e66bf0756fb3d265100e9ef256e68613e147917de236bcccd3aa90571"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Its bits are INT PENDING (7), DRV2 (6), STEP (5), TRK0 (4), HDSEL (3), INDX (2), WP (1) and DIR (0); after reset STEP, HDSEL and DIR are 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "606-610",
+       "sha": "380d8b94da2f3019c8c28a0e9e2f9247012023f995bc8ae1c6e840cfafd4eb36"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "INT PENDING lets software monitor the INTERRUPT pin, and the marked bits reflect drive signals on the cable independently of INVERT.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "611-613",
+       "sha": "3d739b0c94150114d22d4807a92db2715e227689ebac203ba5f28be5b3c8d927"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "In Model 30 mode bits 0 to 4 are inverted, DRQ (printed DRO, bit 6) monitors the DMA request, and STEP (bit 5) is latched with the step output.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "619-630",
+       "sha": "30d3f97b94cbeba2e9b0d17488e672dc4d2ecf974cea301f391a6bbf141070a2"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "In PC-AT mode the emulator's read handler leaves the case and returns 0xFF, so the register reads all ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2643-2646",
+       "sha": "0b9867d008d021113870c722d5e1071e9d336260786ceacf571d0c69f8ae31a3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2678",
+       "sha": "241fe285b912b96cb626e2777b402f683b760b7d92a86fbe3ccc7cc07b3769b5"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "Bit 7 is the interrupt state; bit 6 set without a second drive, bit 4 off track 0, bits 2 to 0 one, bits 5 and 3 zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2447-2448",
+       "sha": "a264d06131e493b49a7b5c8b9beb41ae4ce287d62b352d83af932f53fb5fcbef"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "In Model 30 mode bit 7 carries the interrupt; the emulator returns bit 4 only at track 0, 1 in bits 3 and 0, and 0 in DRQ and STEP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2442-2445",
+       "sha": "2a07c076850eb9c82d99e3e05196c2bf14b399a5601ac1e2fdc7e35b1cbbcade"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2437-2440",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2447-2448",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "status register B",
+   "aliases": [
+    "SRB",
+    "status register B"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "631-638"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "646-655"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2452-2453"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2455-2459"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2461-2462"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2647-2648"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Status Register B is read-only and monitors the state of several disk interface pins.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "631-632",
+       "sha": "56a9f8a0fc10f00d14c39b7b68d72b2e0de94ec354b5ff1a90cc7f12f2c310e8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "It is part of the PS/2 register set and is not accessible in PC-AT mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "632-633",
+       "sha": "09134e61ad74371bb1004a89148facbe4a5314cf4a46fc58414dda101794d135"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "In PS/2 mode bits 7 and 6 are 1, bit 5 is drive select 0, bits 4 and 3 toggle, and bits 2 to 0 are WE and motor enables.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "634-638",
+       "sha": "0a2ab2144c7a34ba5abae4c9b04147400c8eef13a329393692cf7e346df430f9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "In Model 30 mode bits 0, 1, 5 and 6 return the decoded drive selects, and bits 2 to 4 are set by edges and cleared by a DIR read.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "646-655",
+       "sha": "a8ed96d662a63bddf46888b269b2e949d2c9137d2758ed5b526d9b52bca1dd8f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "In PC-AT mode the emulator's read handler leaves the case and returns 0xFF, so the register reads all ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2647-2648",
+       "sha": "489809b32b4356e31bf66a81c988dc8567f4b8f496ecdac18089ad1db318e856"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2678",
+       "sha": "241fe285b912b96cb626e2777b402f683b760b7d92a86fbe3ccc7cc07b3769b5"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "Bits 7 and 6 are 1, bit 5 comes from the DOR's drive select, bits 1 and 0 from its motor enables, and WRDATA, RDDATA and WE read 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2461-2462",
+       "sha": "84fa9da66bf1010ef77167d32940e6de37c8bd16e89d3369836e97c83a4c5e0b"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "The emulator returns the negated drive selects in bits 6, 5, 1 and 0 and 0 in bits 4, 3 and 2, so no edge is latched.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2455-2459",
+       "sha": "425eadbf0ac56642bda74c6f282039b71f7db4df41ff634335ad53802cae9d3a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2452-2453",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "DOR",
+   "aliases": [
+    "digital output register",
+    "digital output port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "656-667"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "674-677"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "682-685"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1143-1144"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1146-1157"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1161-1162"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1164-1169"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1177-1180"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1182-1185"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2595-2596"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2650-2651"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Digital Output Register holds the drive select and motor enable bits, a reset bit and a DMA GATE bit.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "656-657",
+       "sha": "353587c7e8651994f4442ad4a19a2f8aac7c7ea8473b575152e215ddb2cff87a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 7 to 4 are the motor enables and bits 1 and 0 the drive selects; a set bit is active and one drive is selected at a time.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "658-667",
+       "sha": "1b9e0442c26df4781b4d377e87c46816748e0ab7d707fd8b0e46315ee81a21e0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The DMA GATE bit works only in PC-AT and Model 30 modes: low, it tristates INT and DRQ and disables DACK and TC; in PS/2 mode it has no effect.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "674-677",
+       "sha": "16cd4db5bdd564f2bf292f41110f1d74706cc3d4c0148d43ce45f1ea8be7646f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The RESET bit clears the basic core and FIFO circuits when LOCK is 0, and, set by a chip reset, holds the part in reset until the host clears it.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "682-685",
+       "sha": "8535a6a357a9cc64bb0de8062f77ca4b9dc4bfb19c7079d6cf45d1c39390b239"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of the DOR returns the byte last written, except on the XT, where the port reads 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2650-2651",
+       "sha": "acabf37d935a5cf0b2f4720c69ca3d7171404e4d044932749327abb16df96116"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2678",
+       "sha": "241fe285b912b96cb626e2777b402f683b760b7d92a86fbe3ccc7cc07b3769b5"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "A write at port offset 0x02 passes the byte to fdc_baseio_w's DOR case, on_dor_change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2595-2596",
+       "sha": "7a73da9b4309a51894218b4159fbaed9edc842215ff550389c372d514e93d03a"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The emulator does not tristate INT or DRQ: a change of bit 3 activates or deactivates the IRQ line, which the Model 30 DIR returns as its DMA gate.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1172-1175",
+       "sha": "0fc725a7eb41432fb0c4423424b57e4ab494798b12161f30885ba0b89b19cca4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2422-2424",
+       "sha": "3dc46c95d4bcd80c59571b5a612fd582bb8725da2ee3e1b8756beabc5598cc8b"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "The emulator treats bit 2 as active low: clearing it resets the controller and it stays in reset while clear, not while the bit is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1146-1157",
+       "sha": "54afa639ada8827b3d93cb133495236684c065560bafd8aa649e28b7f97ac76e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "792-796",
+       "sha": "d4fa2c9175ae51af96ed4fd44758f228d7d1d9a00651e53c48a0ccec7c8563f7"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1143-1144",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1161-1162",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1164-1169",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1177-1180",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1182-1185",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "main status register",
+   "aliases": [
+    "MSR",
+    "DSR",
+    "main status",
+    "datarate select register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "575-584"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "687-699"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "726-727"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "787-795"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "796-815"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "831-836"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "663-671"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1146-1151"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2400-2402"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2403-2407"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2653-2656"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1201-1205"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2598-2606"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "676-687"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "688-692"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Main Status Register is read-only and is used for controlling command input and result output for all commands.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "787-795",
+       "sha": "8cfc4ec10dfb9089d0e4861c4337f4a9d0a44efc7e15d4f01ee6c6bac2203145"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "RQM, printed ROM in the capture, (bit 7) says the host can transfer data, DIO (bit 6) gives the direction, and NON-DMA (bit 5) marks a polled execution phase.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "788-790",
+       "sha": "4004351cbc00f65915a9ebfc17e60f028595b512c6395c352903053673c17ec8"
+      },
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "796-805",
+       "sha": "a300d4f4a1f4fcfe150bcbe70afa075731ebd7f7461ef1621bd8fb619b56c121"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 4 (command busy) is set while a command is in progress, and bits 3 to 0 are the drive busy bits during a seek or a recalibrate.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "806-815",
+       "sha": "469dbbbbc49b3ad56aa6548f718ef887a361b8bc4fd242b3731597cb8b508688"
+      },
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "831-836",
+       "sha": "e5ad1ff8f28d8df3135d358918da28edb524ea7d3250838d043cbc6914b1ddc7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "At the same address a write goes to the Datarate Select Register, which is write-only and changes the timings of the drive control signals.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "575-584",
+       "sha": "20973a6895bc97a1a68b02d772bbede7b4d6568577c536255daa7022a52ffed7"
+      },
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "687-692",
+       "sha": "03be07db0b676adb7945c8333d5d4812f9a2c11273149e3bb8960e9e9fbfd69a"
+      },
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "693-699",
+       "sha": "c7fe6bdee71180640f89e839b2729d4d566aaa15df26b11bedb0e069faff66da"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "The DSR's S/W RESET behaves like the DOR reset except that it clears itself.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "726-727",
+       "sha": "842a3d10c7744a3cc5acfe8b808aad3c05fb2873e2a0c395820d15ee0822346c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "Port offset 0x04 reads through main_status and writes through the DSR case of fdc_baseio_w.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2653-2656",
+       "sha": "cc997351ea14be077aa3721ccdcd13cc6df0acf270a302b4e0c9ea298e1e8529"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2598-2600",
+       "sha": "b1b1e8d870efd507196da4d3773fdfee6e54a9850505dd63764610f82578cf26"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2400-2402",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2403-2407",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2598-2600",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1201-1205",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2653-2656",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "663-671",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1146-1151",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2601-2606",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "676-687",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "688-692",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "data register",
+   "aliases": [
+    "FIFO",
+    "data port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "816-821"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2608-2617"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2657-2665"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2667-2669"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2203-2210"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2381-2383"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1235-1239"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "All command parameter information and disk data transfers go through the FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "816-819",
+       "sha": "bd4bb03a6e549ad21091250a84a8cb5d26a63125e846d338a15c1b484187334c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The FIFO is 16 bytes in size with programmable thresholds, and data transfers are governed by the RQM and DIO bits of the Main Status Register.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "817-821",
+       "sha": "4e00b505971ceb52a96c3fef6cc831d63d04e1b9eb3f10e41053879701d1be4f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Data transfers are governed by the RQM and DIO bits of the Main Status Register.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "820-821",
+       "sha": "f1ae77d615182020fb0a1ae45b27ad242ef46e8a7504e84486def497bac04901"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "The emulator's data port hands each accepted byte directly to fdc_data_write, which stores it as a command byte or parameter, guarded only by its ready flags.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2608-2617",
+       "sha": "87ebbaa4a3944bb6e0d7f1522ac6480f90f996d8ac7c12c3f2f17784896984a5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2203-2210",
+       "sha": "8321dc160f5bc5aeeb0fca954b7bbdd1aa4630aa63e16eda2700f2bbb664c821"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2381-2383",
+       "sha": "cb494ee8ddfd0e3aa0cdfbfd088a2b076c21af6352f837699ca36726988e4272"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read when the controller has no result byte ready returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2657-2665",
+       "sha": "a9c36756e1123eebe949c14e1e6b4f431a87cfac4771038b4196e5f657fb3a41"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2667-2669",
+       "sha": "10a7f157f5e897452786f4963a38ad54e636c4be3f98167723d3abd8ab71eda0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1235-1239",
+       "sha": "45d21aa25551c440987bbe2ee74aad5720b8b8a70fc1bf82e2c11431b0be2a5b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2657-2665",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "digital input register",
+   "aliases": [
+    "DIR",
+    "CCR",
+    "configuration control register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "866-872"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "884-896"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "909-911"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "925-936"
+    },
+    {
+     "ref": "datasheet:82077SL.raw.txt",
+     "lines": "937-939"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "393"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2425-2427"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2428-2432"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2422-2424"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2619-2621"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2670-2672"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1201-1205"
+    }
+   ],
+   "rows": [
+    {
+     "n": "0",
+     "on": "is",
+     "of": "doc",
+     "text": "The Digital Input Register is a read-only register; in the PC-AT mode only bit 7 is driven.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "866-869",
+       "sha": "8a2561785cab31c01e99f516f9404003f64c501669597ac71e3547191a11c18e"
+      }
+     ]
+    },
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "The Digital Input Register is read-only in all modes; in PC-AT mode only bit 7 is driven and all the other bits remain tristated.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "866-872",
+       "sha": "1d789c8a9badbb1ba8fd221a221ae7e72676a9ffff835c6e130244f195f611f3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "In PS/2 mode bits 6 to 3 return 1 and bits 2 and 1 return the current data rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "884-893",
+       "sha": "1354c1630303e104a6c05d9a8cf47b08bca967fd015ebc0dd8bcaead658686ba"
+      },
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "909-911",
+       "sha": "acebd2fe1c7e0767a4eeccb2d9bd5941d60cb2456a683769f179e14541fbf482"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "HIGH DENS (bit 0) is low whenever the 500 Kbps or 1 Mbps rate is selected, independently of the IDENT and INVERT pins.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "894-896",
+       "sha": "8b67df15d8e45d1ea186c6a3dba2e2fc76d974b948636f0960b03bcd1b1ebf84"
+      },
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "909-911",
+       "sha": "acebd2fe1c7e0767a4eeccb2d9bd5941d60cb2456a683769f179e14541fbf482"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "In Model 30 mode bits 6 to 4 return 0, bit 7 is inverted, bit 3 reflects the DOR's DMA GATE and bit 2 the CCR's NOPREC.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "925-936",
+       "sha": "6a2f1017a9b27d87ff6b454660be46942d7520d6e7a7dac7376d9bf97991fbea"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "The Configuration Control Register sets the data rate and is write-only; in the PC-AT the capture names it the OSR.",
+     "quotes": [
+      {
+       "ref": "datasheet:82077SL.raw.txt",
+       "lines": "937-939",
+       "sha": "ab4d147bfb650cf6625296d44567e16742a65230e54b954f5cf5197521a9f769"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "In PC-AT mode the emulator returns 1 in bits 6 to 0 instead of leaving them tristated.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2425-2427",
+       "sha": "18dfc377ce728a01d05ab720401333c7e145d4868aaeead45c1a584fd3fd3ef0"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "In Model 30 mode bits 6 to 4 return 0 and bit 7 is inverted; bit 3 returns the DOR's DMA gate, but bit 2 reads 0 whatever NOPREC holds.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2422-2424",
+       "sha": "3dc46c95d4bcd80c59571b5a612fd582bb8725da2ee3e1b8756beabc5598cc8b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2428-2432",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2428-2432",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "393",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2619-2621",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1201-1205",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2670-2672",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0xBE",
+   "name": "PC-98 mode register",
+   "aliases": [
+    "dual-use FD I/F mode"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pc_fdc and upd765 headers name no document; pc9821.cpp maps port 0x04BE to a 3-mode handler and cites none."
+    },
+    {
+     "where": "maker",
+     "gave": "NEC publishes no online register manual for the PC-98 floppy interface; only the printed Technical Data Book was found."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers.org's NEC and floppy directories hold drive manuals and no PC-98 interface register table."
+    },
+    {
+     "where": "archive-org",
+     "gave": "The PC-9800 Series Technical Data Book HARDWARE 1993 gives 00BEH as mode change and mode status, but its OCR table is garbled and it names no 04BEH."
+    },
+    {
+     "where": "index",
+     "gave": "Datasheet indexes gave no NEC PC-98 floppy interface register table."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2542-2546"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2548-2552"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "739-741"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "743-745"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2555-2558"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2560-2561"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1100-1105"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 0x00BE is the PC-98 dual-use floppy interface mode register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2542-2546",
+       "sha": "306eeca8fdb20ceb0a085de50fc83de6b73c47a40d701ba42e4d9233fc5f86a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the low three bits: bit 0 picks 1 MB when set, bit 1 the access mode, and bit 2 enables motor control, clear leaving it always on.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2548-2552",
+       "sha": "96fca85a91f5544d0ea5c4df5751667c39d9b0f2677424ebc9d6b03b7b2bac13"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "739-741",
+       "sha": "ca31f8a9955e9563343f54389bbe05e6dc3066ed15b6325ea4de4fab7b4d0570"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "743-745",
+       "sha": "7f586d751f87e4c22806d05de26f7f055092d591e2bc69de3ad35bc9864fee4f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0x08 in bit 3 and the stored low two bits; the motor-control bit is not returned.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2555-2558",
+       "sha": "fda9c3b18f95fef0f9fde4d8c6d4f00f86b12a341ec4431accc87576c6970055"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2560-2561",
+       "sha": "21ab1b4082b26900561aec9eff4f9b8f4c254adb3b64ff1aba3fd24e4f3895fe"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "Ports 0x00BE and 0x04BE are installed only for the first PC-98 controller.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1100-1105",
+       "sha": "169bd251c6551208b247359432126143cbd637677efa1f8f7362c6dc694e04c9"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x4BE",
+   "name": "PC-98 3-mode register",
+   "aliases": [
+    "3-mode FD I/F"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pc_fdc and upd765 headers name no document; pc9821.cpp maps port 0x04BE to a 3-mode handler and cites none."
+    },
+    {
+     "where": "maker",
+     "gave": "NEC publishes no online register manual for the PC-98 floppy interface; only the printed Technical Data Book was found."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers.org's NEC and floppy directories hold drive manuals and no PC-98 interface register table."
+    },
+    {
+     "where": "archive-org",
+     "gave": "The PC-9800 Series Technical Data Book HARDWARE 1993 gives 00BEH as mode change and mode status, but its OCR table is garbled and it names no 04BEH."
+    },
+    {
+     "where": "index",
+     "gave": "Datasheet indexes gave no NEC PC-98 floppy interface register table."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2564-2568"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2570-2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2578-2579"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1100-1105"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 0x04BE is the PC-98 3-mode (1.44 MB) floppy interface register, and the drives emulated here do not do 1.44 MB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2564-2568",
+       "sha": "7a6747edd32a16a2507bfb77c8e243c87a673d233eb636badfc8902becde5b45"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write with bit 4 set stores bit 0 as the 3-mode flag; a write without bit 4 changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2564-2568",
+       "sha": "7a6747edd32a16a2507bfb77c8e243c87a673d233eb636badfc8902becde5b45"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2570-2571",
+       "sha": "11f3021ba2f293d2b95a2b5d519f74e86edbb54926e241ddb14561aa6aea14f7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0xEE with bit 0 holding the stored 3-mode flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "2578-2579",
+       "sha": "071d4d8bd992fcab2618c9e3fe3b188349784122245475ed1f55212e6a43afa3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "Ports 0x00BE and 0x04BE are installed only for the first PC-98 controller.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1100-1105",
+       "sha": "169bd251c6551208b247359432126143cbd637677efa1f8f7362c6dc694e04c9"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  }
+ ]
+}

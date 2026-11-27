@@ -1,0 +1,1100 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "ps1_sound",
+ "title": "The IBM PS/1 audio adapter's port registers",
+ "kind": "register",
+ "scope": "ps1",
+ "covers": "The registers the IBM PS/1 audio adapter's card answers at ports 200H-206H, as the PS/1 Technical Reference gives them: the DAC and ADC data port, the control and status port, the FIFO timer reload, the almost-empty and joystick port, the sound generator port and the second joystick port.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "IBM-PS1-Technical-Reference-57F1970.raw.txt",
+   "variant": "ps1"
+  }
+ ],
+ "official": {
+  "IBM-PS1-Technical-Reference-57F1970.raw.txt": [
+   "14436-14438",
+   "14607-14612",
+   "14635-14665",
+   "14668-14680",
+   "14682-14695",
+   "14772-14782",
+   "14784-14794"
+  ]
+ },
+ "closed": [],
+ "engine": [
+  "FillUp",
+  "write",
+  "PIC_ActivateIRQ"
+ ],
+ "entries": [
+  {
+   "key": "0x200",
+   "name": "DAC and ADC data",
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14607-14612"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDWrite",
+     "case": [
+      "0x0200"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDRead",
+     "case": [
+      "0x0200"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "0",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 200H carries the output DAC's data and the input ADC's data.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14607",
+       "sha": "e5261f52730f17834c20f0a779cf1d8e1758478955cc9e7e92918087586527cd"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14610",
+       "sha": "64fb0c391087aea4ba09713cee7ddb409aa43fc4013f7062b81e1db6cf150de0"
+      }
+     ]
+    },
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of port 200H returns the ADC data latch and clears the ADC Data Ready bit.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14607-14609",
+       "sha": "845a3cdf70c378026210abb3ca78fa17ad70c5d7adaef720769a3dac49cfb005"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to port 200H puts the byte into the FIFO that feeds the output DAC.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14610",
+       "sha": "64fb0c391087aea4ba09713cee7ddb409aa43fc4013f7062b81e1db6cf150de0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "When the FIFO is empty, the byte reaches the DAC at the next overflow of the FIFO timer.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14611-14612",
+       "sha": "c44131c45472fad03859d557151a7a1ffc7b94468a7ed5bdd0335af8743e87d3"
+      }
+     ]
+    },
+    {
+     "n": "S1",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "A read returns the last byte written to port 202H and clears bit 0x10 of the status, not an ADC latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "236-239",
+       "sha": "e8005d92268313edaf83c10dee4e4609b868fd17e6c5b30ca4839bba18be4151"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "173",
+       "sha": "d37ce6aaf2a6469b3ae4125607e789e4f5abedc791b652250c04a2d227f64e51"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "53",
+       "sha": "278645daeefe04723f97de3d6bee703aac80875504b5bfba9dffc58419d6fd56"
+      }
+     ]
+    },
+    {
+     "n": "S3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The mixer drains the FIFO sample by sample, stepping it by the rate the divisor sets.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "297-308",
+       "sha": "7c4a3c711b9c7cf3435842887e31551620fe300748dd817be5efe0fbe3c35a17"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "183-188",
+       "sha": "2141976d8b260e1b713c9ae0f40d35c77028cb4599663040fccf6d76eac4dcbd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "159-167",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "155",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "234",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x202",
+   "name": "control register",
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14635-14665"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDWrite",
+     "case": [
+      "0x0202"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDRead",
+     "case": [
+      "0x0202"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUND_CalcStatus"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The port reads as 00H after a RESET.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14650",
+       "sha": "af7d45a56d49292dcdbe73596d0b411ea54faad56d24c397da9ef939de300cd8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 4 is read only and reports that ADC data has been latched; a read of port 200H resets it.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14642",
+       "sha": "6f86f0d9059f4d6709e773630e1ab57409a7e8d752ea019e14121537c762de49"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14655-14657",
+       "sha": "2771ebcec42e769e956e41bf8e9ba8d9bfda48e255dd0631cab5533a9f520845"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 3 reports that the FIFO is full.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14643",
+       "sha": "e163f9a7e3f5c2adfd7abfff82af703097c10c13faafa4fdbe99b17bf0dc756c"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14658-14659",
+       "sha": "464c35ea4b432fb8bec20534ba99b38eb1b7c11951dd0359544c5d6f98388b7c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 2 reports that the FIFO is empty.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14644",
+       "sha": "bb8f2d89af1147594dd22e935e1ea3380107dd3102f3bacd517fb51395a35399"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14660",
+       "sha": "90589187b4d983af0cfdf49e8449d1a81a2b39a7e362cd93217d5462a5e16032"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to bit 2 enables or disables the modem's audio.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14644-14645",
+       "sha": "9372e7be79e581283362b36d22545604baf0bec268be3394b5ad41024ac5bfbd"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14660-14661",
+       "sha": "80b5965d51500a4dd2b87bd07b54bf777aa75a8adc8c1d3d1d5445dae9a5ddc9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 1 reports the almost-empty interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14646",
+       "sha": "4b2916ed10474365f5908774bb7e81c47236e5ed9c3f83e8f941d2f29db482c1"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing 0 then 1 to bit 1 clears the almost-empty interrupt flag.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14646-14647",
+       "sha": "eda83178d2eb096e48f94a954e1cb219a400de2ef32e9a0afa30b11675b062ad"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14662-14663",
+       "sha": "e2f8dc29bf1c1ea5b7cd1d6fcbc2f62c5fee542368da3f8ea9d1c511a28a2f28"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to bit 5 enables the joystick interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14640-14641",
+       "sha": "bdabe5b72b04118b5e341487f910260e72208c7b63a4419f46ad0cd4b97f054f"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14654",
+       "sha": "4d4fe838cb8c7100bbd614327b017b294d0d30f33a9fa4a8fbb899b9d5ac7462"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 5 reports the joystick interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14640",
+       "sha": "7e6b35d46ea95ec1225e52dcb473750c550585f7fd0c6e39e8e6aa4a58f9b411"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 6 selects manual joystick mode at 0 and auto mode at 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14638-14639",
+       "sha": "4da62b31193e5903989e77f793ca6452aef13fccb78641756472407ffd26baff"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14652",
+       "sha": "f23e6aba554ecc4cbcdc7a38449d7cc4eaeeef02fe339e355fbd4ce8f00f2d11"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 6 reads back the RINO signal.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14652-14653",
+       "sha": "b2605d05e0df3a565c906731bccd1241488b8ed2b94bb83aea11a241b1a44f20"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 set to 1 enables an interrupt from any of the three internal sources.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14648-14649",
+       "sha": "ff7865ea3c4321e7fd0cfbd500ace51e59f7ef351358ff2517b1c79085af94d1"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14664-14665",
+       "sha": "466e5a0bb5e9d8ccbfc87a18f73c10af429e66710ed187c2a815826b953cf241"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "doc",
+     "text": "The notes print bits 7, RINO, RIN1 and ROUT as reserved, though the table gives bits 7 and 6 to RIN1 and RINO.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14651",
+       "sha": "936673eb51c64c9ae446d226bdefd26ca58acc3f7fcfe6102fb1844429531b20"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14637-14638",
+       "sha": "704c0aa980aba6592f57ba12edd9a28a8ba9852d140f4e16dfe7d77de90bdd62"
+      }
+     ]
+    },
+    {
+     "n": "S2",
+     "on": "bit 4",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read returns the status the calculation derives from the pending byte count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "240-249",
+       "sha": "48992e20cc9c5fda8b644ebde4cb5bb8d953858c7f92e0b83ec2974712e29c15"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "94",
+       "sha": "33fec6b2c995e4109430dee5ea862e149b924618a840697a78581392434b2966"
+      }
+     ]
+    },
+    {
+     "n": "S5",
+     "on": "bit 2",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "5",
+     "text": "The write stores the byte and acts only on bits 0-1; bit 2 enables no modem audio.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "171-181",
+       "sha": "75f19030c4afd5928d483fb4627db825a7f98032da98e6ee0004b9115d506a6d"
+      }
+     ]
+    },
+    {
+     "n": "S6",
+     "on": "bit 1",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "Bit 0x02 reports fewer than 128 bytes pending while command bits 0-1 are 11, not an almost-empty interrupt.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "98-100",
+       "sha": "7462f355be41311552746e325228f3b615f10592a811f563eca2af463b5c40ac"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "56",
+       "sha": "e9fc3624090cbbdba10ff0f2dbdd3a58b87ff3a653391a3608c356232ee35315"
+      }
+     ]
+    },
+    {
+     "n": "S7",
+     "on": "bit 1",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "7",
+     "text": "The write stores the byte and arms the FIFO interrupt from bits 0-1; no flag is cleared.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "171-181",
+       "sha": "75f19030c4afd5928d483fb4627db825a7f98032da98e6ee0004b9115d506a6d"
+      }
+     ]
+    },
+    {
+     "n": "S8",
+     "on": "bit 5",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "8",
+     "text": "The write stores the byte and enables no joystick interrupt.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "171-181",
+       "sha": "75f19030c4afd5928d483fb4627db825a7f98032da98e6ee0004b9115d506a6d"
+      }
+     ]
+    },
+    {
+     "n": "S9",
+     "on": "bit 5",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "9",
+     "text": "The read returns the FIFO status only, with no joystick interrupt bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "93-113",
+       "sha": "7a8701d8b6ddc2fbafb34f207e7da3714ca2363487065f192199542da7b1dbe6"
+      }
+     ]
+    },
+    {
+     "n": "S10",
+     "on": "bit 6",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "10",
+     "text": "The write keeps the byte in ps1.Command and arms the FIFO interrupt from bits 0-1; bit 6 selects nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "171-181",
+       "sha": "75f19030c4afd5928d483fb4627db825a7f98032da98e6ee0004b9115d506a6d"
+      }
+     ]
+    },
+    {
+     "n": "S11",
+     "on": "bit 6",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "11",
+     "text": "The read returns the FIFO status only, with no RINO bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "93-113",
+       "sha": "7a8701d8b6ddc2fbafb34f207e7da3714ca2363487065f192199542da7b1dbe6"
+      }
+     ]
+    },
+    {
+     "n": "S12",
+     "on": "bit 0",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "12",
+     "text": "The write arms the FIFO interrupt when bit 0 or bit 1 is set, so bit 1 also arms it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "173-174",
+       "sha": "aed508e1e271fadfb47640843b2b53bb4ca619823532b37338420d058d91b9c5"
+      }
+     ]
+    },
+    {
+     "n": "SX",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X rebuilds ps1.Status from the pending count on reset, on a 0x200 write, on a 0x202 read and on each mixer update, and clears bit 0x10 on a 0x200 read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "126",
+       "sha": "b1421b1c084c61c5e0874025afea6df31a7a67575b93552b52cca04e43033244"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "160",
+       "sha": "b1421b1c084c61c5e0874025afea6df31a7a67575b93552b52cca04e43033244"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "245",
+       "sha": "a8cdfd74dce40529de150030daf692ba6f1787c1054222c963232b5774af9b55"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "238",
+       "sha": "8288deb35dcab1ac3bc5c739d07825e06bc47ce3426738d4188a38f21c261e72"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "279",
+       "sha": "b1421b1c084c61c5e0874025afea6df31a7a67575b93552b52cca04e43033244"
+      }
+     ]
+    },
+    {
+     "n": "S2b",
+     "on": "bit 4",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "The calculation returns a status built from the pending count and the FIFO flags.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "93-104",
+       "sha": "17417186d0bb4baed545f77c56400116d849aa6ef782121e8319d18d66695301"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "112-113",
+       "sha": "b03d35b24e7a74fbfd17456f991c54f866754946b2c19d233b87b0ac0fede416"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14635-14636",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "94-97",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "101-105",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "106-111",
+     "as": "dead",
+     "reason": "FIFO_NEARLY_FULL and FIFO_HALF_FULL are both 0x00, so these two stores change nothing"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "155",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "234",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x203",
+   "name": "FIFO timer reload",
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14668-14680"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDWrite",
+     "case": [
+      "0x0203"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDRead",
+     "case": [
+      "0x0203"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The timer is clocked at one microsecond per count.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14678",
+       "sha": "fc6d9d492144b127f969f964d6f5a11a88f4232d54526afebad2c0a1269b3e83"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the current value of the FIFO timer.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14670",
+       "sha": "fc0f81ee85e8e61d26f4db717742901f43d5d5887efd6c4f07241769012184a1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The timer sets the rate of both the ADC and the DAC.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14680",
+       "sha": "dabc5a8fdaee30474dcc22ba7ccf5f154bc505f42640d33e3fe9e42ccfce9347"
+      }
+     ]
+    },
+    {
+     "n": "2w",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the FIFO timer's reload value.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14670",
+       "sha": "fc0f81ee85e8e61d26f4db717742901f43d5d5887efd6c4f07241769012184a1"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14679-14680",
+       "sha": "6512e9ad4dbc3883f05e3c77f10fa2462e75192591234c328c15d955aa92fbda"
+      }
+     ]
+    },
+    {
+     "n": "S2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2w",
+     "text": "A write stores the divisor and computes the DAC rate as 1 MHz divided by the divisor plus one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "183-188",
+       "sha": "2141976d8b260e1b713c9ae0f40d35c77028cb4599663040fccf6d76eac4dcbd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "34",
+       "sha": "8099ff522aced85166805093551d119af74641ac78e7b81e0f9fe1691bca22c2"
+      }
+     ]
+    },
+    {
+     "n": "S2b",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2w",
+     "text": "A write also raises the FIFO interrupt when fewer than 128 bytes remain and command bits 0-1 are set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "198-205",
+       "sha": "7631cc9839a00de13d746a1c75d0dd1c40c67737d0f21b976a5ac31656111bb4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "174",
+       "sha": "ac883ee0ad52d84660e93b65a8800d4f1de3c275ba99db7b8bd4d89134920b6d"
+      }
+     ]
+    },
+    {
+     "n": "S2r",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read returns ps1.Divisor, the value last written, not the running count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "250-252",
+       "sha": "f768bbc1f2ea2b99029247901b0afea9630a3652ee1021e7bed21dd88bf99869"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "185",
+       "sha": "1d1c9ba5c1076c64faa4c12e34d73a3a81c5297ac1d314bd865c1bf1255c4081"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14668-14669",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14671-14677",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "189-197",
+     "as": "dead",
+     "reason": "the branch that would cap the rate above 22050 Hz has its whole body commented out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "155",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "234",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x204",
+   "name": "Stick A X, almost empty",
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14682-14695"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDWrite",
+     "case": [
+      "0x0204"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "0",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 204H carries the almost-empty value and the X position of Stick A.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14692-14693",
+       "sha": "603a54b0e02725329b9a8486b9cf4108f25ac63e36c3810bdd6cacbc3bdb6623"
+      }
+     ]
+    },
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of port 204H returns the X position of Stick A.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14692",
+       "sha": "52d4f11533f003ea9f65bfc06d6784be7e11441f97f2b6d57f68a813ec0689f7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the almost-empty threshold, a value of n meaning 4n bytes left.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14692-14695",
+       "sha": "405bc59b33ee3d3d283f777a683c431124f289e10e715089f50610af5d9b847e"
+      }
+     ]
+    },
+    {
+     "n": "S1",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "A read of 0x204 matches no case and returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "257-259",
+       "sha": "6d69d0dfeb8c76f5103dd428e62e42ac3e72b2d28aca244b5da61a18dcbcd097"
+      }
+     ]
+    },
+    {
+     "n": "S2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A write stores the byte in ps1.Unknown, and a zero triggers a full DAC reset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "208-213",
+       "sha": "3d37e5ea4edb6729c99721cb60fbbbde75a61fa1ea37ae097b663979a33c4d33"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14682-14683",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14684-14691",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "155",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x205",
+   "name": "sound generator",
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14436-14438"
+    },
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14772-14782"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "function": "PS1SOUNDWrite",
+     "case": [
+      "0x0205"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "0",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 205H is the sound generator's write port and reads the Y position of Stick A.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14438",
+       "sha": "6703e678028ada89f24a4c55914b8693e210d98b18b3436ff88317fcdffd19fb"
+      },
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14782",
+       "sha": "eb16957622bfd6b5c6999735ffb64f91181215ccd376de7df30fdb46695c4624"
+      }
+     ]
+    },
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "Port 205H writes to the sound generator, a part that generates three voices plus noise and is write only.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14437-14438",
+       "sha": "c0fa855bcaaf09650421c218963d2a6c5cb53a5cd5ebc0c96514e31401d76dff"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of port 205H returns the Y position of Stick A.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14782",
+       "sha": "eb16957622bfd6b5c6999735ffb64f91181215ccd376de7df30fdb46695c4624"
+      }
+     ]
+    },
+    {
+     "n": "S2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read of 0x205 returns 0, for a game's detection.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "253-256",
+       "sha": "0c394324dc8af3f08673c847ab8c1ea3899a6ed811a943c66ae7894ad8a90a84"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14436",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14772-14781",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "214-219",
+     "as": "unfollowed",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+     "lines": "155",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x206",
+   "name": "Stick B X",
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14784-14794"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of port 206H returns the X position of Stick B.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14794",
+       "sha": "43c624b9548ed211e6f71ff1a5969b595afd688c2aadc6fce98f845f3a47927b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The port's write bits are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+       "lines": "14786-14793",
+       "sha": "2754dca9ce2007147f2d049d3408b1082955d04d4448c3743595c4140d76a670"
+      }
+     ]
+    },
+    {
+     "n": "S1",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "A read of 0x206 returns 0, for a game's detection.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ps1_sound.cpp",
+       "lines": "253-256",
+       "sha": "0c394324dc8af3f08673c847ab8c1ea3899a6ed811a943c66ae7894ad8a90a84"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IBM-PS1-Technical-Reference-57F1970.raw.txt",
+     "lines": "14784-14785",
+     "as": "layout"
+    }
+   ]
+  }
+ ]
+}

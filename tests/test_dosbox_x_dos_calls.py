@@ -23,7 +23,9 @@ def _read(path: Path) -> dos.Trace:
     return dos.read(dos.Trace(path))
 
 
-def test_each_call_is_paired_with_its_return_and_the_missing_file_carries_error_2() -> None:
+def test_each_call_is_paired_with_its_return_and_the_missing_file_carries_error_2(
+        served_rows: object) -> None:
+    """AH=3Dh and error 2 are held back, so they stay numbers."""
     calls = {c.get("file"): c for c in _read(TRACE).calls if c.get("file")}
     found, missing = calls["IN.TXT"], calls["MISSING.TXT"]
     assert found["name"] == "0x3D" and found["out"] == {
@@ -33,9 +35,9 @@ def test_each_call_is_paired_with_its_return_and_the_missing_file_carries_error_
     assert missing["line"].endswith("0x3D MISSING.TXT -> error 2"), missing["line"]
 
 
-def test_a_confirmed_call_is_named_in_its_row_and_its_line() -> None:
-    close = next(c for c in _read(TRACE).calls if c["function"] == "0x3E")
-    assert close["name"] == "close file" and " 0x3E close file " in close["line"], close
+def test_a_served_call_is_named_in_its_row_and_its_line(served_rows: object) -> None:
+    end = next(c for c in _read(TRACE).calls if c["function"] == "0x4C")
+    assert end["name"] == "terminate with code" and " 0x4C terminate with code" in end["line"], end
 
 
 def test_a_call_is_timed_in_seconds_on_run_for_s_clock() -> None:
@@ -53,10 +55,10 @@ def test_a_call_that_does_not_return_to_its_caller_says_so_and_claims_no_result(
 
 def test_a_call_made_inside_another_returns_before_it() -> None:
     by = {c["n"]: c for c in _read(TRACE).calls}
-    close = next(c for c in by.values() if c["name"] == "close file" and c["psp"] == "0x08BC"
+    close = next(c for c in by.values() if c["function"] == "0x3E" and c["psp"] == "0x08BC"
                  and c["n"] > 20)
     inner = [by[close["n"] + 1], by[close["n"] + 2]]
-    assert [c["name"] for c in inner] == ["get date", "get time"], inner
+    assert [c["function"] for c in inner] == ["0x2A", "0x2C"], inner
     assert close["returned"] and all(c["returned_s"] <= close["returned_s"] for c in inner)
 
 

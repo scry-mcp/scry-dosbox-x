@@ -1,0 +1,800 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "speaker",
+ "title": "The PC speaker and its PIT channel",
+ "kind": "device",
+ "scope": "ibm-pc",
+ "covers": "The PC speaker's gate at port 61h, its PIT channel 2 and the counter modes the channel plays.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "8254.raw.txt",
+   "variant": "8254"
+  }
+ ],
+ "official": {
+  "8254.raw.txt": [
+   "180-186",
+   "527-541",
+   "558-574",
+   "580-596",
+   "610-613",
+   "630-640",
+   "665-674",
+   "683-689",
+   "708-723"
+  ]
+ },
+ "entries": [
+  {
+   "key": "speaker",
+   "name": "PC speaker",
+   "aliases": [
+    "PIT channel 2",
+    "port 0x61"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "6878"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "6892-6895"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "6908-6913"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "6927-6931"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "6935-6936"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7001-7006"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7233-7241"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7243-7252"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "180-186"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "527-541"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "558-574"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "580-596"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "610-613"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "630-640"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "665-674"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "683-689"
+    },
+    {
+     "ref": "datasheet:8254.raw.txt",
+     "lines": "708-723"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "read_p61"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p61"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetPITControl",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetCounter",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetCounter",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetCounter",
+     "case": [
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "ForwardPIT",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "ForwardPIT",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "ForwardPIT",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "ForwardPIT",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "ForwardPIT",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetType"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "707-738"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetCounter",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetCounter",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "function": "PCSPEAKER_SetCounter",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "466-468"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 42h is PIT counter 2, the counter wired to the cassette and the speaker on the XT, AT and PS/2.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "6878",
+       "sha": "2b47fd3eea9ceae7dcf0c649c5307a01cf334213dcb715d1d54d6e2aac1d753b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 43h is the PIT mode port, the control word register shared by counters 0 to 2.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "6892",
+       "sha": "9287da67490fd4942213cd54c6f4787d5316753cd9280dfc1105e648ebeb3eb0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "A control word written to port 43h must be followed at once by the matching action on ports 40h to 42h, or the system may hang.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "6893-6895",
+       "sha": "6a9dec8321252599fecdd6f1aa6fe2437dd31711430f8b2211c6c2f27b6443df"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "When bits 7-6 of the control word are 10, counter 2 is selected; 11 is reserved on the 8253 and the read-back command on the 8254.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "6908-6913",
+       "sha": "fbb46825a29565865437e46c7f782781f55cdae510632b65c294f7772f25768b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "When bits 3-1 select a mode, 0 is zero-detection interrupt, 1 programmable one-shot, 2 rate generator, 3 square wave, 4 software strobe, 5 hardware strobe.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "6927-6931",
+       "sha": "5a9444841f5bcc249d311da828f5093c22b4f1a99c69b05b62ba7a7af36f98da"
+      },
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "6935-6936",
+       "sha": "a66d55a4900de677e924713fa170bc215b244785a57d515a33e40eeb53be20e0"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 61h is keyboard controller port B, a system control port kept compatible with the 8255 PPI of the XT.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7001-7006",
+       "sha": "96dec5a25a42fc9006e81dca02171aafb2ccaa29a864f6e5a12dfc574ec74371"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "doc",
+     "text": "When port 61h is written, bit 1 enables the speaker data and bit 0 enables timer 2's gate to the speaker.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7233-7241",
+       "sha": "1b4f8c4bf1304054b261e0c3396987409377d1f71eef5a68214dc2a72e242ef2"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "doc",
+     "text": "When port 61h is read, bit 5 mirrors timer 2's output, bit 1 reports the speaker data and bit 0 the timer 2 clock gate.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7243-7252",
+       "sha": "74ceb4465d3b5fd27eb27266a8450259574433ed82d0f0a1211bd1f06eff44c8"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "reset",
+     "of": "doc",
+     "text": "After power-up the mode, count and output of every counter are undefined, and each must be programmed before it is used.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "180-186",
+       "sha": "901f29b4012154221cf3ea442239ae4bf6e1cca5418645d26eedcd791b0ad965"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 0 holds OUT low after the control word until the count reaches zero, then high; GATE enables counting and has no effect on OUT.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "527-538",
+       "sha": "113dd0781874a415f85c0fb4a56eac518da43010310a43d42ac5c2050bc979f3"
+      },
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "539-541",
+       "sha": "cb489554010c57dc47ecff3732182d33aadbad95836f2d8ec5b4d6019ee0cc20"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 1 is a retriggerable one-shot: OUT goes low on the clock after a trigger and stays low for N clocks; GATE has no effect on OUT.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "558-569",
+       "sha": "d1dd1eb5ebda5b9fa1682217fa589fea94640c70cd0d6c03bf7c381fd42d227d"
+      },
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "570-574",
+       "sha": "6df46ade918941a8d635d3fb22d80b941c47c03b23fd1d04c0eb7785e5f3cda4"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 2 divides by N: OUT is high and drops low for one clock when the count reaches one; a low GATE during a pulse sets OUT high.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "580-589",
+       "sha": "bc4bd4932e0e4e56134fa6c8be78f7a755667742d150549d2934e1459d000618"
+      },
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "590-596",
+       "sha": "84a5ce81f35ffcec57da3190b1b88ba31ef447385b43c994ad3adca2c7c778b9"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 3, a square wave of period N: OUT goes low for the rest of the count when half expires; a low GATE while OUT is low sets it high.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "610-613",
+       "sha": "508f6cb3e9ec93e34a5fd987d6f5cfae0d8fa9ff48cd05eee4550035e0bc19d1"
+      },
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "630-634",
+       "sha": "248e75e77822a8cb1f39ea8b9a67bc68d966bd12adbfa38292c01375219e5277"
+      },
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "635-640",
+       "sha": "b52c9c636763a5a411926c5425a871e3bcc65ad2934576c8ceb914befcf51621"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 3 with an odd count loads the initial count minus one, an even number, and decrements by two; one clock after it expires OUT goes low and reloads.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "665-674",
+       "sha": "f1392a2a3cd6f3a1ef414fa5cb2240ce384ed9c3c98b904b198706222223d277"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 4 is a software-triggered strobe: writing the count triggers it, and OUT goes low for one clock after the count expires; GATE has no effect on OUT.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "683-689",
+       "sha": "f4ed80c493f0dc9c688292bb5869f13ecbc1fb5db625ff6dadd39409fa1c1dc4"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "when",
+     "of": "doc",
+     "text": "Mode 5 is a hardware-triggered strobe: a rising GATE edge triggers it, OUT goes low for one clock after the count expires, and GATE has no effect on OUT.",
+     "quotes": [
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "708-719",
+       "sha": "4ab438c0d0da589ce9f90b4c6f5c3c4a9de0fb829700fa1f859e59ce57691997"
+      },
+      {
+       "ref": "datasheet:8254.raw.txt",
+       "lines": "720-723",
+       "sha": "b1136954ec08ef09be60a6377c590068bb053182ee12646754d4888aab2ac332"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "9",
+     "text": "The speaker starts in mode 3 with a count of 1320 (about 903 Hz) and its output high, where the document leaves the state undefined.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "718-726",
+       "sha": "a136f5c1c27a2ea7081750d8bf03ae42da1efc340555506c9312cf0a093bf3c7"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "10",
+     "text": "Mode 0's output runs low until the count expires and then high as written, but the speaker's audio model ignores the gate: clearing it does not stop the output.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "178-189",
+       "sha": "ab0f555d6b0aa8c407e9cd6501dad264e670ded6e2b641c5e037266de245f2f1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "411-413",
+       "sha": "47c67b45638a63ac9026bd685b834d6f602eadaa5f090426d2064032ae316e99"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "539-548",
+       "sha": "9e0d6b6b62d3ffa7d4ca177478604922f0bfb05b79bc9586fe14c597adc0e8a9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "549-553",
+       "sha": "655bb55cfcb9ee8e76223f706dc286001735c51aba8081a0278099c775eaecfd"
+      }
+     ]
+    },
+    {
+     "n": "19",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "12",
+     "text": "Mode 2 runs the rate generator as written, but the speaker's audio model ignores the gate: clearing it neither stops the count nor sets OUT high.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "213-224",
+       "sha": "64e85109af848bc1611fdd9c218848d10ad7471ac1291b54c6d4eb035c7d0968"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "225-236",
+       "sha": "4b010a037a4dd0a44d33590e11d6bb810f02d3e215a517bd3821131b0b876665"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "237-241",
+       "sha": "9f90d9964d8782efae4b57cbdf009818fdc3e778946d7f3b93912eaac763f97b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "423-428",
+       "sha": "64bbc8813d65afc267604085aed4dd230714e1d85f9ffe16a2bba7a88b879ce5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "539-548",
+       "sha": "9e0d6b6b62d3ffa7d4ca177478604922f0bfb05b79bc9586fe14c597adc0e8a9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "549-553",
+       "sha": "655bb55cfcb9ee8e76223f706dc286001735c51aba8081a0278099c775eaecfd"
+      }
+     ]
+    },
+    {
+     "n": "20",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "14",
+     "text": "Odd counts are not adjusted: the half period is always half the count, so an odd count gives a symmetric square wave instead of the uneven halves described.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "445-446",
+       "sha": "a1bd39aa242c728866554cbfaddff4c8473330e1d186a36fcdfdb25b99403eb6"
+      }
+     ]
+    },
+    {
+     "n": "21",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "15",
+     "text": "The mode 4 output goes low when the count expires and stays low until a new count is written, not for one clock; clearing the gate changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "264-275",
+       "sha": "07345098892535698f2069a0a774f4e162dc18adbf541a9afad903c42b027e3c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "457-461",
+       "sha": "f716ed7692bb1af44e5d033408f684cdf7f94c27d6e568b617a1f791de808780"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "539-548",
+       "sha": "9e0d6b6b62d3ffa7d4ca177478604922f0bfb05b79bc9586fe14c597adc0e8a9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "549-553",
+       "sha": "655bb55cfcb9ee8e76223f706dc286001735c51aba8081a0278099c775eaecfd"
+      }
+     ]
+    },
+    {
+     "n": "22",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "16",
+     "text": "Mode 5 is not implemented: the default case returns before the mode is stored, so the counter keeps its previous mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "462-466",
+       "sha": "b86b92f5a82d80fa21ce1baf9f1db5263969838ed9da28c692aa500c7b4e9e54"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "466-468",
+       "sha": "89b137685f4470ed943c78d896d48c5097087ab8b42c04a3c0bf04188e775520"
+      }
+     ]
+    },
+    {
+     "n": "23",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "8",
+     "text": "Bits 1 and 0 read back what was written and bit 5 follows timer 2 while the gate is set, but with the gate clear bit 5 always reads 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "725-736",
+       "sha": "40ad9801444423405eefb06d2d7402b07fd5a2007e751b34138f03e8121ffff6"
+      }
+     ]
+    },
+    {
+     "n": "24",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "In mode 3, a count below a minimum value is raised to that minimum before it is used.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+       "lines": "430-439",
+       "sha": "f92dd811cf5d67b59ddcf57a1996665bace21847f0f1fb5ea7385d2c911cdead"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "740-748",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "510-511",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "301-306",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "415-421",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "202-211",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "517-526",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "243-253",
+     "as": "agrees",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "254-261",
+     "as": "agrees",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "445-455",
+     "as": "agrees",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "544-548",
+     "as": "agrees",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "737",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "2125",
+     "as": "unseen",
+     "reason": "the PC-98 buzzer path of another machine writes the same variable"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "281-282",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "297",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "384-385",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "405",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "174",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "191-200",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "212",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "477-482",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "499-505",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "515-516",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "527-537",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "707-717",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "727-738",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "554-558",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pcspeaker.cpp",
+     "lines": "541-543",
+     "as": "agrees",
+     "row": "11",
+     "nothing": true
+    }
+   ]
+  }
+ ],
+ "engine": [
+  "AddPITOutput",
+  "AddDelayEntry",
+  "TIMER_SetGate2",
+  "TIMER_GetOutput2",
+  "TIMER2_ClockGateEnabled",
+  "CheckPITSynchronization",
+  "PCSPEAKER_UpdateType",
+  "speaker_pit_update",
+  "speaker_pit_delta",
+  "set_gate",
+  "track_time",
+  "Enable"
+ ]
+}

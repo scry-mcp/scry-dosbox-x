@@ -60,8 +60,8 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
         "posted": 1,
         "bytes": 2,
         "frames": 2,
-        "frame_before": 330,
-        "frame_after": 337,
+        "frame_before": 309,
+        "frame_after": 316,
         "verify": {
           "checked": true,
           "seen": true,
@@ -75,8 +75,8 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
         },
         "session": {"alive": true, "running": true, "altered": true}
       },
-      "frame_before": 330,
-      "frame_after": 337
+      "frame_before": 309,
+      "frame_after": 316
     },
     {
       "op": "send_keys",
@@ -89,8 +89,8 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
         "posted": 1,
         "bytes": 2,
         "frames": 2,
-        "frame_before": 337,
-        "frame_after": 347,
+        "frame_before": 316,
+        "frame_after": 326,
         "verify": {
           "checked": true,
           "seen": true,
@@ -104,8 +104,8 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
         },
         "session": {"alive": true, "running": true, "altered": true}
       },
-      "frame_before": 337,
-      "frame_after": 347
+      "frame_before": 316,
+      "frame_after": 326
     }
   ],
   "steps_completed": 2,

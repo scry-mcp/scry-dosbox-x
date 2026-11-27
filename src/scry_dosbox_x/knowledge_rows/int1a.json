@@ -1,0 +1,4608 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "int1a",
+ "kind": "call",
+ "title": "INT 1Ah, the time, sound and PCI services",
+ "scope": "ibm-pc",
+ "covers": "INT 1Ah: the system clock and RTC services, the PCjr and Tandy digital sound calls, and the PCI BIOS functions.",
+ "source": "official",
+ "engine": [
+  "IO_Write",
+  "IO_Read",
+  "IO_ReadB",
+  "CALLBACK_Idle",
+  "InitRtc",
+  "RtcUpdateDone",
+  "Tandy_SetupTransfer",
+  "IO_WriteD"
+ ],
+ "entries": [
+  {
+   "key": "0x1A/0x00",
+   "name": "get system time",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x00"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5772-5791"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=00h gets the system time: CX:DX are the clock ticks since midnight.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5772-5774",
+       "sha": "cf0e10e95507a03f6c506e183409d8a289c898b2778bcda29be1bed375f00440"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the midnight flag, nonzero if midnight has passed since the time was last read.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5775",
+       "sha": "5c41eb3bc87cbd74fad65f023b5b6db6c8ba4d667244d315b4eb87e3ef2481f5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "There are about 18.2 ticks a second, 1800B0h a day, except on the Tandy 2000 at 20.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5776-5777",
+       "sha": "31eca01d80896c0007d015df9d04ea7b348f2265178ccc4075df43a4d17e4ab2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "IBM and many clone BIOSes set the flag rather than increment it, losing a day when two midnights pass unpolled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5778-5780",
+       "sha": "478759c00eaf9d2e0e1f4b455153af4a9e5119f8073a406c31e826dfce7bea81"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Because the read clears the flag, an application that reads after midnight before DOS makes DOS advance no date.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5781-5783",
+       "sha": "838997bc803cdb6c8b97bc49cb4842cfe7ffce4ba65c2ea22ff1ca555013e76f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Modern MS-DOS and PC DOS releases (5.0+???) treat AL as a day counter, as older releases expect.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5784-5785",
+       "sha": "0f7b6a417f81d3d5b280000e71a9dd3974d65e2db0c37958f670bede6f5a231d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "DOS 5 to 7.10 offer a SWITCHES=/T option that forces the older flag behaviour.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5786-5788",
+       "sha": "0c797ec39456981e82293d328ae9c8e789bffe24ee5505900a4a314b2a1708ae"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x00 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3105",
+       "sha": "11875e2a7260481386395f1473039142e9d2da454c13ce5c0cd4aec726d77752"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "9",
+     "on": "out CX",
+     "of": "dosbox-x",
+     "text": "CX becomes the high word of the 32-bit tick count at 0040:006C.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3107",
+       "sha": "ba368a9072cc3dee0a856e3351acad9f1d01f0859b5333b3303d989a56b212a7"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3110",
+       "sha": "a146f5a94434a4a0e397855313d058aeebe952a80aee2940538d0c65d93707ad"
+      },
+      {
+       "ref": "dosbox-x:include/bios.h",
+       "lines": "94",
+       "sha": "5868f2e835bd294ca69408a70102539581a1bc37cde76626a9303588d8ccb0bf"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "10",
+     "on": "out DX",
+     "of": "dosbox-x",
+     "text": "DX becomes the low word of that tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3111",
+       "sha": "168f2143a4e594389eaffe868604ec085a7bdaec592f788b1ef441bae1ae86da"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5789",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5790",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5791",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3108-3109",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x01",
+   "name": "set system time",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x01"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5793-5800"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=01h sets the system time from CX:DX, the clock ticks since midnight.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5793-5795",
+       "sha": "3b6e02b12217699ffc72aa397a287cedf435ba4768dd8aa3cea395cffbda7ea8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "There are about 18.2 ticks a second, 1800B0h a day, except on the Tandy 2000 at 20.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5797-5798",
+       "sha": "31eca01d80896c0007d015df9d04ea7b348f2265178ccc4075df43a4d17e4ab2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The call resets the midnight-passed flag.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5799",
+       "sha": "0a676fa3c7bec6d49c54a5875b3baf30a70df32b41410a459f6aa5344f422321"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "Nothing is returned: AH is left as the caller passed it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5796",
+       "sha": "d0b820d4a4f84b5fbd6655ba40efab42243fd5dbe441228ba745413913b0b47f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x01 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3114",
+       "sha": "e337ed1bac4cc6786ac86a808d0e4900c6e33c89281c5ad038d8aa8bd8ae2964"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The tick count is written to 0040:006C as a 32-bit value built from CX and DX.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3115",
+       "sha": "5f4218a12cb8fb53afc26b9e5b517f6d30b82daade7bf8444520a3ceda8cfe1e"
+      },
+      {
+       "ref": "dosbox-x:include/bios.h",
+       "lines": "94",
+       "sha": "5868f2e835bd294ca69408a70102539581a1bc37cde76626a9303588d8ccb0bf"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5800",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3114-3116",
+     "as": "agrees",
+     "row": "4",
+     "nothing": true
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x02",
+   "name": "get rtc time",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x02"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5802-5820"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=02h gets the time from the real-time clock.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5802-5803",
+       "sha": "bd76995e5172679a2a5bfb7d18ea974e1e0ef30fe76d14ea3d1d1b54af7e23b3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The caller should clear CF before the call, to avoid the bug below.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5804",
+       "sha": "7546099c60151a866d24cd3ae78d76512dade8100219a73efa7614dc4502ffd6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear if successful and set on error, the clock not running or mid-update.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5805",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5810",
+       "sha": "4e0b4dc1d4612bbaca4607534b9e0618174fb8b0efe0398efb4f036f8e9e59e8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CH",
+     "of": "doc",
+     "text": "CH is the hour, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5806",
+       "sha": "3ef091fa4229898fc09ac7bce66f74819a1b46aef8a7f17987c6fe8199e32fe3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CL",
+     "of": "doc",
+     "text": "CL is the minutes, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5807",
+       "sha": "ddd33ef06c971c241e6acc55f296af795c6e6854811423fcaba9c321cc56bb13"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out DH",
+     "of": "doc",
+     "text": "DH is the seconds, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5808",
+       "sha": "284c843d421939d84eaed6fab1adbd80bb27275c7fc0e06c72b4c19ce500dc52"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out DL",
+     "of": "doc",
+     "text": "DL is the daylight savings flag: 00h standard time, 01h daylight time.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5809",
+       "sha": "db28ea1aa57c125ead7b90b52ad2030f297e3afb3d30b689cf1ca84827ce010e"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The Sperry PC also supports the call, returning binary values with DL always 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5811-5813",
+       "sha": "e0a4bec7821b87caca3f226d6a9f706981ebdb47499548d36cafe4cc102c0d2c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "MS-DOS and PC DOS use the call to detect a preset RTC, calling once more when the values are nonzero.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5814-5817",
+       "sha": "db0b04c48d803481508e28e1a098cad06f9155051c4f48f7adb8462a3b1f6b8e"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Some BIOSes leave CF unchanged on success, so CF should be cleared before the call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5818-5819",
+       "sha": "ef7c43629f4df2086919176531293b5a89429ad546737c2905a326cc18a446fb"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x02 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3117",
+       "sha": "0678fe738ac0eb79d1844b41f6224dee9619ec5cf7f32ac7d43ba51c6ee0048c"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The case first writes CMOS 0Bh for BCD and 24-hour mode, then waits for the update to finish.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3118-3119",
+       "sha": "50111fb668777b1608ed52d346a643dd7e8ae4bc49be48b9e7da418d08e74526"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3099",
+       "sha": "ddf16997ac4a0ac56efc441e4d56002a925b53a068e75ca3762be8c6c79ab71f"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It clears CF and lets the CPU idle four times after the reads.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3127",
+       "sha": "875259829684c91944b65a09cdb70fdda7460ae1281b0b1a9b6a9a5fee441508"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3129",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "14",
+     "on": "out CH",
+     "of": "dosbox-x",
+     "text": "CH receives CMOS register 04h, the hours.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3120",
+       "sha": "1cbd3d234ec9aa4a4b4cff7b64881d58d86d8af7d74a0d31970a9b9f9685fa27"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "15",
+     "on": "out CL",
+     "of": "dosbox-x",
+     "text": "CL receives CMOS register 02h, the minutes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3121",
+       "sha": "e74792e51ca4a18e3bea2a157955fb9367ea18266ee33b5f9dda49e8323218f0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "16",
+     "on": "out DH",
+     "of": "dosbox-x",
+     "text": "DH receives CMOS register 00h, the seconds.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3122",
+       "sha": "6702db394c09d231b5b0933f9c2c0afc351688726afde3aeb7e8bc1365f97746"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "17",
+     "on": "out DL",
+     "of": "dosbox-x",
+     "text": "DL receives bit 0 of CMOS register 0Bh, the daylight saving bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3123",
+       "sha": "1d19a9a678bca369a2a46a94e4d361692992f749d190a6590c633c93d2a564aa"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "18",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is always cleared: the wait cannot fail, so the error the document gives never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3129",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3084-3087",
+       "sha": "85ffbb886f42a1cc9447e4f9c6c9d55b0ae8e90c1f08b5a06ef34b426ceea46e"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5820",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3118-3120",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3118-3121",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3118-3122",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3123",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x03",
+   "name": "set rtc time",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x03"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5831-5841"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=03h sets the clock time from CH, CL and DH, in BCD, and DL holds the daylight savings flag.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5831-5836",
+       "sha": "251b2312f80248a6ab47788806fc7f7f8d37602c4b1243bb27d661c04b33d51b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "Nothing is returned: AH is left as the caller passed it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5837",
+       "sha": "d0b820d4a4f84b5fbd6655ba40efab42243fd5dbe441228ba745413913b0b47f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The Sperry PC also supports the call, in binary rather than BCD, and ignores DL.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5838-5840",
+       "sha": "10f65ca5f27bbb6e75fc705f75a87e98341db5d0d46a493edcff73923b975964"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x03 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3131",
+       "sha": "6ee667d5f2a95101699732c54faf822ef9ff60285f6e462fffe52be9939c73ba"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The case selects BCD and 24-hour mode, waits, stops updates, writes hours, minutes and seconds to CMOS 04h, 02h and 00h, then allows updates.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3132-3138",
+       "sha": "35c064f06ea0f0097bf1c7374fc1394aa7182fc119623e2e23c6c10c135da2d8"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The daylight saving bit is written from bit 0 of DH, the seconds, so DL is ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3138",
+       "sha": "3e74de8020b02735f0fc5973238aaf92e3c1f75e94ad99ed8d3c5670d1693923"
+      }
+     ],
+     "vs": "differs",
+     "row": "1"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5841",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3132-3143",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x04",
+   "name": "get rtc date",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x04"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5853-5887"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=04h gets the date from the real-time clock.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5853-5854",
+       "sha": "6d5b52ac5ec28c9f6960edaa941c5e2728483c67e0799e76a3ae2cf18e7105a2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The caller should clear CF before the call, to avoid the bug below.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5855",
+       "sha": "7546099c60151a866d24cd3ae78d76512dade8100219a73efa7614dc4502ffd6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear if successful and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5856",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5861",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CH",
+     "of": "doc",
+     "text": "CH is the century, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5857",
+       "sha": "9b3adfc97877ba626d45fbc267825fd65b86c695f6b649e154ded98aaa69f793"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CL",
+     "of": "doc",
+     "text": "CL is the year, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5858",
+       "sha": "8d97659650437e5ee0c19107b13b08935dff228eca90e19bb640d6cdb308c957"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out DH",
+     "of": "doc",
+     "text": "DH is the month, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5859",
+       "sha": "5f0d637af66854d7348b47e423d020b353ea2aeeb19f848238b9f0c61ab34ed9"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out DL",
+     "of": "doc",
+     "text": "DL is the day, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5860",
+       "sha": "dfd4d6b44b4070f285b0a55e8fbd2d902b2e75c4bec4208fe210392cabfcd8f4"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "PC DOS 7 plus Y2K fixes and PC DOS 2000 provide similar but not identical means, which cannot be switched off.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5880-5881",
+       "sha": "cd4bb816150d6981adf854533e9abc45f5279a10eac5385d1259ff646d3b17f3"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "MS-DOS and older PC DOS provide no such correction, so a buggy BIOS needs an extra Y2K TSR.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5882-5883",
+       "sha": "1ee115cb03e1df0bcb8b01833f887e1222b2e408922c858644f21f5eae274595"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Some BIOSes, such as the Compaq Deskpro EP/SB ROM of 1998/07/25, leave CF unchanged on success.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5884-5886",
+       "sha": "4ea4f6cb08a862c6a3fc75918bbc302cc197d21f661663f755bd72c4ea1336ce"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x04 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3145",
+       "sha": "75e427552a477d885c9177a49735e72f71785cf651ee2e3e850b5d003b3bc9b0"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The case selects BCD and 24-hour mode, waits, then reads century, year, month and day from CMOS 32h, 09h, 08h and 07h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3146-3151",
+       "sha": "2bdc344fc0fb1e582e9a2daeeea88bb0b5314f47540944e1a537d05be0200004"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It clears CF and lets the CPU idle four times after the reads.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3155",
+       "sha": "875259829684c91944b65a09cdb70fdda7460ae1281b0b1a9b6a9a5fee441508"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3157",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "14",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is always cleared: the wait cannot fail, so the error the document gives never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3157",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3084-3087",
+       "sha": "85ffbb886f42a1cc9447e4f9c6c9d55b0ae8e90c1f08b5a06ef34b426ceea46e"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5862-5879",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5887",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3146-3148",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3146-3149",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3146-3150",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3146-3151",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x05",
+   "name": "set rtc date",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x05"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5908-5915"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=05h sets the clock date from CH, CL, DH and DL, all in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5908-5913",
+       "sha": "59e9872fae481a05e51cc423d25b64bff590efdd84e39c09a1bd79a88e3befe5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "Nothing is returned: AH is left as the caller passed it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5914",
+       "sha": "d0b820d4a4f84b5fbd6655ba40efab42243fd5dbe441228ba745413913b0b47f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x05 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3159",
+       "sha": "739be9dd230b4334ee48d80ab58e8556d4a32fa88c13d570e7bd29a21a781768"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The case selects BCD and 24-hour mode, waits, stops updates, writes century, year, month and day to CMOS 32h, 09h, 08h and 07h, then allows updates.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3160-3167",
+       "sha": "8693397ffef997fc57c1f65c973b6fc80e77d89c0d23bd852c96aa10c5ea8e18"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5915",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3160-3171",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1",
+   "name": "pci bios",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's tree has no PC BIOS INT 1Ah PCI code, and its headers cite no document for the dispatch."
+    },
+    {
+     "where": "maker",
+     "gave": "The PCI SIG's BIOS specification documents each AX=B1xx function, not the AH=B1h dispatch."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No PCI BIOS specification was found in the archive's catalogue."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Holds no PCI BIOS specification; the list is the public description of these functions."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list has a section per AX=B1xx function and none for the AH=B1h dispatch."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "INT 1Ah AH=B1h is the PCI BIOS call, the AL of AX selecting the function.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184-3187",
+       "sha": "8664b95e14c9d9f78ea78d41996267dc8800249144d209f2d47ccfce714b1680"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0xB1 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "With the PCI bus disabled the case sets CF and leaves AH as it was.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3303-3305",
+       "sha": "73f61503a37dd03d9db137bd4a62f1738aba6fe5746f2d0e3a743e7ba0f771b1"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "An AL that no case takes logs an error and sets CF, leaving AH as it was.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3296-3300",
+       "sha": "37116767392400da329df1d3e76353a7d6454f3c000ce591d2722a7d0d81139e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3188-3200",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x01"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3201-3228",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x02"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3229-3259",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x03"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3260-3265",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x08"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3266-3271",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x09"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3272-3277",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x0A"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3278-3283",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x0B"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3284-3289",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x0C"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3290-3295",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x1A/0xB1/0x0D"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x01",
+   "name": "pci installation",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x01"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "4-22"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B101h with EDI zero checks that the PCI BIOS is installed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "4-6",
+       "sha": "50136b53d6837fcd14c58fe2032aec3cd248376fe215d9ff0c44bdc4a58ac0e5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h if the BIOS is installed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "7",
+       "sha": "8f8b33c7b7e50597778369586f8d14cae664ab16e68605fe89b21a52bf473f5d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear if the BIOS is installed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8",
+       "sha": "de876181f666a87efd7e538da20469425f8e5727166aea743cb35c4a7eadf7d9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "EDX is 20494350h, ' ICP'.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9",
+       "sha": "419d32a541588f338b10d35cd50bfe02f30416a45c74ea86f57fde6433b22f7f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out EDI",
+     "of": "doc",
+     "text": "EDI is the physical address of the protected-mode entry point.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "10",
+       "sha": "dec0f281cddf32cf02e2b178e3fed59419b23d6db6b928f9c8985ec9766aea34"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL holds the PCI hardware characteristics.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "11",
+       "sha": "5d61617399d79db7601b05896d7937ecdb226930ad66957cd0715dfbf3dd1077"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out BH",
+     "of": "doc",
+     "text": "BH is the PCI interface level major version, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "12",
+       "sha": "85fdead31ddd4eb63c0fada16338de8d59b5843c101f3eeaba72936e280c73f2"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the PCI interface level minor version, in BCD.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "13",
+       "sha": "f1879b4433094e2f9a03d81a2c3f33252c80a846b56886adce0686a3026870ca"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out CL",
+     "of": "doc",
+     "text": "CL is the number of the last PCI bus in the system.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "14",
+       "sha": "bf9ef7d7fb7dde3739350a2dbb88b30a893259f457c593f6c30dda265329f664"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "15-16",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "17-18",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "doc",
+     "text": "Some BIOSes do not change EDI, so applications should zero it before the call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "19-21",
+       "sha": "e395e7448f5cf638ee654cf22af870885609b5e34d27ac1c8c77dac305770897"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x01 on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3188",
+       "sha": "bd4583a3b1b97a6801247da396acfc4d3aa7ff89caae0c219b7e5249f6d181c4"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "When the PCI bus is initialised it stores AH 00h, AL 01h, BX 0210h, CX 0000h, the dword 20494350h and the protected-mode entry point.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3189-3195",
+       "sha": "d1dc8af47d93f0f7dd8bbe964457229befcb308c0adc33dcaf3359d4b3c91caa"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "15",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared when the bus is initialised and set when it is not.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3196",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3198",
+       "sha": "7c75074a44ea02993ae3efd2268b6c716bab2f335287e593c4da7b74b0f3e646"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "16",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is left as the caller passed it when the bus is not initialised.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3197-3198",
+       "sha": "21e0c4d8b45c675f6bcca5daaafcb26b12652bf849b0c5cc222ad00db7deff50"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "22",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3190",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3196",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3194",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3195",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3191",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3192",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3192",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3193",
+     "as": "agrees",
+     "row": "9"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x02",
+   "name": "pci find device",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x02"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "47-67"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B102h finds the SI-th PCI device with the vendor ID in DX and the device ID in CX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "47-51",
+       "sha": "2200238b45cc82cbaae1bf06b5cbe212dff12b16878a3c43b8fcbae968aef68f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "52-53",
+       "sha": "1223f7ead9a29fcb23fc7b2c0112d7284f6df3377255e84cc92478a47fac2039"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, one of 00h, 83h or 86h, of which 00h is successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "54-55",
+       "sha": "80641eef764c1602d52282f084acde8b415a6d546d981d117c55479b9477bb79"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BH",
+     "of": "doc",
+     "text": "BH is the bus number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "56",
+       "sha": "d69d0544fd82a2c5bc89dc746835e7b5822befb9428cb09fa526c69d2d8fc890"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the device and function number: bits 7-3 device, bits 2-0 function.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "57",
+       "sha": "5be71da56f858e26d57c4ae18701ed99691cc3917c056553d66202bd3898c3e6"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "58-59",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "60-61",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Device ID FFFFh may be reserved as a wildcard in future implementations.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "62",
+       "sha": "0d3b418758faea2912a5fb48fe84207416dcd7d526538c7c4efdb11cf73fdd2f"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "63-64",
+       "sha": "99aaa34e054d50461a9e8de3242731e30d1b214ff6ea10399d2e488f9026fedc"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Devices sharing one vendor and device ID are enumerated by incrementing SI until error 86h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "65-66",
+       "sha": "d68db627bce2bd90ae2814af30a1801cb981fd090058b1733933d889a272c379"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x02 on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3201",
+       "sha": "f08e02302681dbfa738476a4fa1bd3605f6393e90979dfa8b28be91d38e67d08"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It asks for device/function numbers 0 to 255 of bus 0 and then one more, comparing CX high and DX low and counting matches until the SI-th.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3202-3213",
+       "sha": "a61c6e36c77b4c5f07cb50e3d54f54a96f5308b81f331ae25c58271836791d4f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3214-3217",
+       "sha": "56c97fd42973906c1f97567b9ebe5ef10ca4b9aa9df63454c2cba08ce34e5110"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3218-3226",
+       "sha": "e1b086ec61d554affd7143ba66f75dfebf6834e1652636319cde9d257b7e22d3"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h on a match and 86h when none is found.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3219",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3224",
+       "sha": "16708e3009205a34be4ea403270bdc747c792899e6d98a0da484f252d9ffa278"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "14",
+     "on": "out BH",
+     "of": "dosbox-x",
+     "text": "BH becomes 00h, bus 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3220",
+       "sha": "08c80f7fff5ef14d23edf0fd81f60d4360f1abec870016c3c98d30e4b5522cb5"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "15",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "text": "BL becomes the device number of the match.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3221",
+       "sha": "a6554f79bcffad29dc4d6cd89c337ffe851123e254fd5cfd9edb16dca75c1c12"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "16",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared on a match and set otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3222",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3225",
+       "sha": "7c75074a44ea02993ae3efd2268b6c716bab2f335287e593c4da7b74b0f3e646"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "67",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3222",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3219",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3220",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3221",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3224",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x03",
+   "name": "pci find class",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x03"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2432-2455"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B103h finds the SI-th PCI device of the class in ECX: class, subclass and programming interface.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2432-2439",
+       "sha": "9e5751eae95546069cc817b3e009b731cceea3dec43bd20349b411aef86c6c76"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2440-2441",
+       "sha": "1223f7ead9a29fcb23fc7b2c0112d7284f6df3377255e84cc92478a47fac2039"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status: 00h success, 86h device not found.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2442-2443",
+       "sha": "d45cc61ce586d5de651255c0325d335e1a617e429f732201ad5021b49775da86"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2446",
+       "sha": "4876c20c29a863d69bb825eb236977131f1d848e24f014130fb36c59e830dfa1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BH",
+     "of": "doc",
+     "text": "BH is the bus number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2444",
+       "sha": "d69d0544fd82a2c5bc89dc746835e7b5822befb9428cb09fa526c69d2d8fc890"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the device and function number: bits 7-3 device, bits 2-0 function.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2445",
+       "sha": "5be71da56f858e26d57c4ae18701ed99691cc3917c056553d66202bd3898c3e6"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2447-2448",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2449-2450",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2451-2452",
+       "sha": "99aaa34e054d50461a9e8de3242731e30d1b214ff6ea10399d2e488f9026fedc"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Devices sharing one class code are enumerated by incrementing SI until error 86h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2453-2454",
+       "sha": "6a0b0cbe4c3053ff5890cd25657728d3813e7588f940094cd03ec218b33fdea0"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x03 on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3229",
+       "sha": "01070d08d9208db2d1e1740b0c9769cc51054315397274bdbb65376b761dbfaa"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It scans bus 0's device entries, comparing the class register with the low 24 bits of ECX, and counts matches until the SI-th.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3230-3241",
+       "sha": "5d9757d4b54656ed903abe4fb04268c17b6a5b4e6d1a11ddbf555e3d7c37b912"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3242-3248",
+       "sha": "dffaa9bb74214a1dba153ed30d7c80d7df62a3a4634dc75b2a754d8b48550086"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3249-3256",
+       "sha": "a312a6eb9a2693b669cd648d1d4c7473ce8ef0afeda3a533601aeed7fa8b329d"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h on a match and 86h when none is found.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3250",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3255",
+       "sha": "16708e3009205a34be4ea403270bdc747c792899e6d98a0da484f252d9ffa278"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "out BH",
+     "of": "dosbox-x",
+     "text": "BH becomes 00h, bus 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3251",
+       "sha": "08c80f7fff5ef14d23edf0fd81f60d4360f1abec870016c3c98d30e4b5522cb5"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "14",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "text": "BL becomes the device number of the match.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3252",
+       "sha": "912e560c240f318bd43b12bb2daa260c5b2cbc4ce77a0fe22712278115e62c68"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "15",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared on a match and set otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3253",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3256",
+       "sha": "7c75074a44ea02993ae3efd2268b6c716bab2f335287e593c4da7b74b0f3e646"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2455",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3253",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3250",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3251",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3252",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3255",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x08",
+   "name": "pci read config byte",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x08"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2470-2487"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B108h reads a configuration byte: BH is the bus, BL the device and function, DI the register.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2470-2474",
+       "sha": "eaa023acd6d4b9bf620333db45b694ba4828e2c6c523532cf949974b6c9eb7a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2475",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2477",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CL",
+     "of": "doc",
+     "text": "CL is the byte read.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2476",
+       "sha": "880b28902fc60d85a8a2a998b52af9a5f25a353cebbcba295c0fe7d52aa13bd4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, 00h or 87h, of which 00h is successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2478",
+       "sha": "a51012bbbf495899b8d24d4e654abe49b4bfdfbc193977297af184c17eb43748"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2479-2480",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2481-2482",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH on entry were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2483-2484",
+       "sha": "dc31836caaaac461ced46c1d518cb9739ef0898c36a4eefb03d21e55fbff26d8"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "An Award BIOS 4.51PG of 05/24/96 returns all ones for register 00h when the function number is nonzero.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2485-2486",
+       "sha": "93c85ec42b10c93737a881e3579d9181323ba6dba1b137e16dffdaf7377f8fee"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x08 on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3260",
+       "sha": "d4a493c8277f3fd2edc07f124b69fdfbe30941cf1708142acc0b50f0f226f3ce"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It writes the register selection to port 0CF8h and reads at 0CFCh plus the low bits of DI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3261",
+       "sha": "74b4851480d3c4a053d7ae7d31903d3a23f164449af8b1fb24ad0505445d5b9d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3262",
+       "sha": "7bf8019414ba5ee768108f5e7b9cd067751a2b7248289dcd4370053be8231d42"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "11",
+     "on": "out CL",
+     "of": "dosbox-x",
+     "text": "CL receives the value read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3262",
+       "sha": "7bf8019414ba5ee768108f5e7b9cd067751a2b7248289dcd4370053be8231d42"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3264",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared; the register number is masked rather than checked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3261-3262",
+       "sha": "78f3a487e104c46c25713f2d65b61bbfcbbd91c97eea4fbe9ab3ef721f534fbe"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3263",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "14",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is always 00h; the 87h the document gives for a bad register never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3260-3265",
+       "sha": "60b4328f1c4363451efe5efc8cf60518fece5141bd259236d3cdec14f6721a18"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2487",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3262",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x09",
+   "name": "pci read config word",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x09"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2489-2506"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B109h reads a configuration word: BH is the bus, BL the device and function, DI the register.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2489-2493",
+       "sha": "c146208bc79755de744e99b2e8d07f62f795e0991c72fa2310db7b2a8b27ac58"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2494",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2496",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CX",
+     "of": "doc",
+     "text": "CX is the word read.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2495",
+       "sha": "36b6a48c6fad6630d9e07ddf9f6a7e1df816b5f2d25dc9ca720ac50e33713d55"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, 00h or 87h, of which 00h is successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2497",
+       "sha": "a51012bbbf495899b8d24d4e654abe49b4bfdfbc193977297af184c17eb43748"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2498-2499",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2500-2501",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH on entry were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2502-2503",
+       "sha": "dc31836caaaac461ced46c1d518cb9739ef0898c36a4eefb03d21e55fbff26d8"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "An Award BIOS 4.51PG of 05/24/96 returns all ones for register 00h when the function number is nonzero.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2504-2505",
+       "sha": "88c209565cb83a466c28ae383c18bcec9f93b10dbfb5a6035534b525d7ec8370"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x09 on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3266",
+       "sha": "5d1251d4674cc6ced7638af83ba5d16ffba77a8428c99f5dcc8ac319cd2c8279"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It writes the register selection to port 0CF8h and reads at 0CFCh plus the low bits of DI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3267",
+       "sha": "74b4851480d3c4a053d7ae7d31903d3a23f164449af8b1fb24ad0505445d5b9d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3268",
+       "sha": "334982500d19fec3f5096172767af47280714933759448955160ce9ad87a484b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "11",
+     "on": "out CX",
+     "of": "dosbox-x",
+     "text": "CX receives the value read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3268",
+       "sha": "334982500d19fec3f5096172767af47280714933759448955160ce9ad87a484b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3270",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared; the register number is masked rather than checked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3267-3268",
+       "sha": "0920b2a4d2b3dc7cdcc6ea77954e795d0218317a7ac605cbfe933ab86feba843"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3269",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "14",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is always 00h; the 87h the document gives for a bad register never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3266-3271",
+       "sha": "369f2f7f4bab621d6589d02ea740b39e43dbcaedc65a06a4e59f14e0f065dce7"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2506",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3268",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x0A",
+   "name": "pci read config dword",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x0A"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2508-2525"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B10Ah reads a configuration dword: BH is the bus, BL the device and function, DI the register.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2508-2512",
+       "sha": "fec46267522ad0cac09588d1577902f7f603aabc1012603890d4a95e4b816c12"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2513",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2515",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out ECX",
+     "of": "doc",
+     "text": "ECX is the dword read.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2514",
+       "sha": "cd135b62133138670e7514f3dc6b713eb2819b060724a0b1b528c8a68b88cbb2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, 00h or 87h, of which 00h is successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2516",
+       "sha": "a51012bbbf495899b8d24d4e654abe49b4bfdfbc193977297af184c17eb43748"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2517-2518",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2519-2520",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH on entry were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2521-2522",
+       "sha": "dc31836caaaac461ced46c1d518cb9739ef0898c36a4eefb03d21e55fbff26d8"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "An Award BIOS 4.51PG of 05/24/96 returns all ones for register 00h when the function number is nonzero.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2523-2524",
+       "sha": "cbf69c7bff59aadf705a472dfdb89730e72985ecb5d86677e55c355fb959546c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x0A on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3272",
+       "sha": "3fdc9667c2eac65db1f1f245f73c84469e56ef97c46bb344f4e3ca6fe9946c5b"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It writes the register selection to port 0CF8h and reads at 0CFCh plus the low bits of DI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3273",
+       "sha": "74b4851480d3c4a053d7ae7d31903d3a23f164449af8b1fb24ad0505445d5b9d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3274",
+       "sha": "7964ac1a64307c20b3447674d6be6201ec627abc162b1aec478d9cd72746a539"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "11",
+     "on": "out ECX",
+     "of": "dosbox-x",
+     "text": "ECX receives the value read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3274",
+       "sha": "7964ac1a64307c20b3447674d6be6201ec627abc162b1aec478d9cd72746a539"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3276",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "13",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared; the register number is masked rather than checked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3273-3274",
+       "sha": "2d4c7c4ee007be382f24c0f3e2ddedb8e6b1c9bd8feb6f7826026ba108d33e32"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3275",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "14",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is always 00h; the 87h the document gives for a bad register never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3272-3277",
+       "sha": "4b1b6fd57f397ef0ea8c35071b97ee94518573bed0996b842b58b73bc678ddde"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2525",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3274",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x0B",
+   "name": "pci write config byte",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x0B"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "8834-8849"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B10Bh writes one configuration byte: BH is the bus, BL the device and function, DI the register, CL the byte.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8834-8839",
+       "sha": "8e541798714516465f7e6e51c4a65b8def693701359972d0a8b51cb545297d15"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8840-8841",
+       "sha": "1223f7ead9a29fcb23fc7b2c0112d7284f6df3377255e84cc92478a47fac2039"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, 00h or 87h, of which 00h is successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8842",
+       "sha": "a51012bbbf495899b8d24d4e654abe49b4bfdfbc193977297af184c17eb43748"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8843-8844",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8845-8846",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH on entry were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8847-8848",
+       "sha": "dc31836caaaac461ced46c1d518cb9739ef0898c36a4eefb03d21e55fbff26d8"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x0B on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3278",
+       "sha": "875e80fc4c461468676379d6459f29978f5260c652c9ca87d18af9099565ca38"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It selects the register on port 0CF8h and writes CL to 0CFCh plus the low bits of DI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3279-3280",
+       "sha": "c7ca9dc1ee12e8f2c4e62f22a48f24f1897e0a494339ae9a967f3f2c80de9cf1"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3282",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "10",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared; the register number is masked rather than checked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3279-3280",
+       "sha": "c7ca9dc1ee12e8f2c4e62f22a48f24f1897e0a494339ae9a967f3f2c80de9cf1"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3281",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "11",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is always 00h; the 87h the document gives for a bad register never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3278-3283",
+       "sha": "b7d0ae3fc1c5347bb2350b82682a21bd830d3a29e3896441030ff5e75c5c7067"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "8849",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x0C",
+   "name": "pci write config word",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x0C"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "8851-8866"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B10Ch writes a configuration word: BH is the bus, BL the device and function, DI the register number (multiple of 2 below 0100h), CX the word.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8851-8856",
+       "sha": "faa5f8dde85deb4a8950e438e60f863c82a315192c151900d8ea477b7b15e605"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8857-8858",
+       "sha": "1223f7ead9a29fcb23fc7b2c0112d7284f6df3377255e84cc92478a47fac2039"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, 00h or 87h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8859",
+       "sha": "a51012bbbf495899b8d24d4e654abe49b4bfdfbc193977297af184c17eb43748"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8860-8861",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8862-8863",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH on entry were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8864-8865",
+       "sha": "dc31836caaaac461ced46c1d518cb9739ef0898c36a4eefb03d21e55fbff26d8"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x0C on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3284",
+       "sha": "75d69585a76bdc2072a16a1c234414ddbadc6de6d5f57fc434946bd36b200ff8"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It selects the register on port 0CF8h and writes CX at 0CFCh plus bit 1 of DI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3285",
+       "sha": "74b4851480d3c4a053d7ae7d31903d3a23f164449af8b1fb24ad0505445d5b9d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3286",
+       "sha": "47e8acc5df13dd513d00db14be9ab6e399f2f6ff1dd046208a80a89fcca4ec76"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared; the register number is masked rather than checked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3284-3289",
+       "sha": "4d35fa5b2193702d25ff0ec6347c8e64a1eb5cdec7862443309e9b651de7cb2a"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "10",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is always 00h; the 87h of the status never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3284-3289",
+       "sha": "4d35fa5b2193702d25ff0ec6347c8e64a1eb5cdec7862443309e9b651de7cb2a"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "8866",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0xB1/0x0D",
+   "name": "pci write config dword",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0xb1",
+      "0x0D"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "8868-8883"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=B10Dh writes a configuration dword: BH is the bus, BL the device and function, DI the register number (multiple of 4 below 0100h), ECX the dword.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8868-8873",
+       "sha": "6defed56db2db54254a80326d3025f480959886054c6a6a5b06e39d46f7eb45b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear on success and set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8874-8875",
+       "sha": "1223f7ead9a29fcb23fc7b2c0112d7284f6df3377255e84cc92478a47fac2039"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status, 00h or 87h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8876",
+       "sha": "a51012bbbf495899b8d24d4e654abe49b4bfdfbc193977297af184c17eb43748"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "EAX, EBX, ECX and EDX may be modified, as may all flags except IF.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8877-8878",
+       "sha": "5c2ddd57d73531fec567acfb0a97c1e20b1a98cac0822733ac53745246de09bb"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may use up to 1024 bytes of stack, and does not enable disabled interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8879-8880",
+       "sha": "fd5b9fcb20593814a17d300c1d70b6ee453e63f9c903646a16a9cb648243e995"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The meanings of BL and BH on entry were exchanged between the initial drafts and the final implementation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "8881-8882",
+       "sha": "dc31836caaaac461ced46c1d518cb9739ef0898c36a4eefb03d21e55fbff26d8"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by the case 0xB1 followed by the case 0x0D on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3184",
+       "sha": "ce30ad175b90c038b6d6365945b65c0b8b6097390158eb6c3fce0bbf1b3f5b64"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3185-3186",
+       "sha": "86c2da3d80604bb1e5902ea86781cd6f8a9e2aa0899f353a3966d27c5466f30e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3187",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3290",
+       "sha": "b68f92de99e279c96ee3ed9f31fb8301084ac897781d336fce46a4486aa986c4"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It selects the register on port 0CF8h and writes ECX at 0CFCh plus the low two bits of DI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3291",
+       "sha": "74b4851480d3c4a053d7ae7d31903d3a23f164449af8b1fb24ad0505445d5b9d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3292",
+       "sha": "12b483f9f03af5fc2efdbaa02499bf6015beb6df4e393e2d668fc127dd7bc02f"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is cleared; the register number is masked rather than checked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3290-3295",
+       "sha": "dacd97a2741e7e270e47851c4e6ceddaa002ee094fbd15fe05576b5dd74aeef1"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "10",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH is always 00h; the 87h of the status never happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3290-3295",
+       "sha": "dacd97a2741e7e270e47851c4e6ceddaa002ee094fbd15fe05576b5dd74aeef1"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "8883",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x80",
+   "name": "sound multiplexer",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x80"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6291-6298"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=80h sets the sound multiplexer source: AL 00h is 8253 channel 2, 01h cassette, 02h Audio In, 03h the sound generator.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6291-6296",
+       "sha": "b02e168c4bb0fdc834f01ba2e4070f0db8076520bffd027c16d96badafc28a1e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Although documented in the 1000TL Technical Reference, the 1000TL BIOS has just an IRET for this call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6297-6298",
+       "sha": "ed899594dace88403d3133f8fa5996f89def52c98fbbba85addfb89e877c772a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out none",
+     "of": "doc",
+     "text": "Nothing is returned: the section gives the call no Return line.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6291-6298",
+       "sha": "bb5d3c747850829687cdeea859f9ab376a51cf1f3db81df543c028d6c098b6ec"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah handler reaches it by case 0x80 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3174",
+       "sha": "af2681eb8bcc4d9f34dadbc03cc25be92fe79a62e3af4e547d2c5580fc51dc94"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The case logs the requested source and returns with every register and CF unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3174-3176",
+       "sha": "13f3009f5e5da1caf33963898bd33dc468de06d542796c0abe078c98a46a9fe9"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It sets up no multiplexer, so the source AL names is never selected; it only logs at src/ints/bios.cpp:3175.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3174-3176",
+       "sha": "13f3009f5e5da1caf33963898bd33dc468de06d542796c0abe078c98a46a9fe9"
+      }
+     ],
+     "vs": "absent",
+     "row": "1"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3174-3176",
+     "as": "agrees",
+     "row": "3",
+     "nothing": true
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x81",
+   "name": "tandy sound check",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x81"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "TandyDAC_Handler",
+     "case": [
+      "0x81"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6393-6400"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=8100h is the Tandy digital sound installation check.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6393-6394",
+       "sha": "854772c38fb993a318231f6cb07a27ccd2f345de5d525696476ebd8018251f19"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 00C4h when the sound is supported, its AL above 80h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6395-6396",
+       "sha": "2d1861e02f5c326cf73b9cd63d866c1f80d1f60cfadc4363b90d080b73b2efc2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is set when the sound chip is busy and clear when it is free.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6397-6398",
+       "sha": "9cc7cdd86611a78c66fb9f0a02be9c4a690b36537a403953460351279674965f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The value of CF is not definitive: the call is repeated until CF is clear, then AH=84h is called.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6399-6400",
+       "sha": "a30ed9779edacf91b893959279927a32600c740fd2f59bccfe6a6ef9621d9a90"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah cases 0x81 to 0x85 share a body that calls TandyDAC_Handler, whose case 0x81 answers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3177-3182",
+       "sha": "daa9af1de045412ea6f131a4124e0f1b2910b4405d1d73585267c4c3c6d044c2"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3029",
+       "sha": "08b79354c1c3ec547775ab5b6bde8774b5d349996c37bae406fddd2bb3e9b40c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3030",
+       "sha": "65095fece51d203899ec98cb2cff48faf56742489fef26e2425cd4eae2a020fa"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The handler returns at once when neither a Sound Blaster nor a Tandy DAC is configured.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3028",
+       "sha": "e2dc596e1ff083e97d2921c5e07b2d659e84df4efdbba86bef8f3124c48c93e4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "text": "AX becomes the Tandy DAC port when one exists, else 00C4h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3031-3035",
+       "sha": "265a7e0f30a89f92d955a83b8469b7d2d9066512ec9d68d9d0f8cc1e758737b7"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "8",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF follows Tandy_TransferInProgress, set while a transfer runs.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3036",
+       "sha": "fdaccbf4a73d797b014c2654aa229a4b41e6279c866041c752c6c675a81b70fe"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "text": "The port returned is set at initialisation and reset to 0 when the BIOS post sets the sound up.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "2858-2865",
+       "sha": "311760946685020e7eb8b9b56b08ea92c9464929fff5b8515e0931d71dd0bf3e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10490-10500",
+       "sha": "87c30480063d419d70b5c502b8b2760cb09cee04ba7c0dfbd781dab54ab83fd6"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3032",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3034",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3036",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x82",
+   "name": "tandy sound record",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x82"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "TandyDAC_Handler",
+     "case": [
+      "0x82"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6402-6414"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=82h starts recording digital sound to the buffer at ES:BX, CX bytes long, at the rate in DX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6402-6406",
+       "sha": "b833e41527a8b96a6d7e0d57c764dfd763151454310a7978d803c0b7bdbcb1b3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6407",
+       "sha": "4bf0de7b3c6a3020df4a8eeae07c3b7645c0790b13d9653d915d29936e9b448a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is set if the sound is busy and clear if the sound chip is free.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6408-6409",
+       "sha": "32b98ec9ec86cbd0b5bbcc0baea25d60c844333da30be386c89efccb3c27abd5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The rate should be a tenth of the AH=83h value on the 1000TL, an eleventh and a half on the 1000SL.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6410-6411",
+       "sha": "c5d9209d0185eb68567af2f75a4dd35f02e69344f4c16b52247a8ca960528fec"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "AX=8100h and AH=84h should be called before it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6412",
+       "sha": "42eab85c74ab15ba983bc24d0448fa6d0be3d442ad723e6d4c66ce7204156f10"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS issues INT 15/AX=91FBh when the input completes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6413",
+       "sha": "ac58dd987ff048e633599c99c5fa59bc6cb74c66c99e25efd2e3fea779b85bd7"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "DMA across a 64K boundary is masked by the BIOS.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6414",
+       "sha": "f47c00d0b740b4a0cb505baaa10322195e2a35f0eb3d3694f0e4c66285d41eb4"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah cases 0x81 to 0x85 share a body that calls TandyDAC_Handler, whose case 0x82 answers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3177-3182",
+       "sha": "daa9af1de045412ea6f131a4124e0f1b2910b4405d1d73585267c4c3c6d044c2"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3029",
+       "sha": "08b79354c1c3ec547775ab5b6bde8774b5d349996c37bae406fddd2bb3e9b40c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3038-3039",
+       "sha": "b6489f52ae1eea8354b2c351331d46cda87f927480f95b8bb4e2ebc66ea6e111"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The handler returns at once when neither a Sound Blaster nor a Tandy DAC is configured.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3028",
+       "sha": "e2dc596e1ff083e97d2921c5e07b2d659e84df4efdbba86bef8f3124c48c93e4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "10",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h whether the transfer starts or is refused.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3042",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3051",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "11",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is set when a transfer is in progress and cleared otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3040-3044",
+       "sha": "0e0e6663c60360edd85e9017ad9afabfb36b6d4d41364723cc6a88eec9294d14"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3052",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It stores the length at 0040:00D0 and the delay with the volume from AL at 0040:00D2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3047-3050",
+       "sha": "073665a65617c3e90bd629cc3442c9ecfb17afe0e84cdffd5b4cbc63b252162e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3042",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3051",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3043",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3052",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x83",
+   "name": "tandy sound play",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x83"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "TandyDAC_Handler",
+     "case": [
+      "0x83"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6495-6511"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=83h starts playing digital sound from ES:BX, CX bytes, AL the volume, DX the time between samples.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6495-6501",
+       "sha": "0ebc9a01679a7265a61c3300096aa4bac4aedbf150edf0cf619f49b95029a37f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6502",
+       "sha": "4bf0de7b3c6a3020df4a8eeae07c3b7645c0790b13d9653d915d29936e9b448a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is set if the sound is busy and clear if the sound chip is free.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6503-6504",
+       "sha": "2ce68ba6d6576e05c2b696071ad90c77b7c7da52f86ba2d37cf0542edbf2265a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The call returns while the sound plays in the background, the chip clocked at 3.57 MHz with DX as the divisor.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6505-6507",
+       "sha": "9f93c76cafafb8de59a7264e03b9ce87ef86dbc8bbed4fb04af7e3f242af0f26"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS appears to call INT 15/AX=91FBh on underflow, allowing another call for seamless long sounds.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6508-6510",
+       "sha": "02906cf274debcbb879a956d9084237d09f37cfc925f8040eb870ec92ba77490"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah cases 0x81 to 0x85 share a body that calls TandyDAC_Handler, whose case 0x83 answers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3177-3182",
+       "sha": "daa9af1de045412ea6f131a4124e0f1b2910b4405d1d73585267c4c3c6d044c2"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3029",
+       "sha": "08b79354c1c3ec547775ab5b6bde8774b5d349996c37bae406fddd2bb3e9b40c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3039",
+       "sha": "693d55d0fc441686349001eaf828ef674d80ee79fe8ae7f81392e74a4ac831c1"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The handler returns at once when neither a Sound Blaster nor a Tandy DAC is configured.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3028",
+       "sha": "e2dc596e1ff083e97d2921c5e07b2d659e84df4efdbba86bef8f3124c48c93e4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "8",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h whether the transfer starts or is refused.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3042",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3051",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "text": "CF is set when a transfer is in progress and cleared otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3040-3044",
+       "sha": "0e0e6663c60360edd85e9017ad9afabfb36b6d4d41364723cc6a88eec9294d14"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3052",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "It stores the length at 0040:00D0 and the delay with the volume from AL at 0040:00D2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3047-3050",
+       "sha": "073665a65617c3e90bd629cc3442c9ecfb17afe0e84cdffd5b4cbc63b252162e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3042",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3051",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3043",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3052",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6511",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x84",
+   "name": "tandy sound stop",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x84"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "TandyDAC_Handler",
+     "case": [
+      "0x84"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6527-6531"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=84h stops playing digital sound.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6527-6528",
+       "sha": "f3897d0c4eb0c39288e3bf95804aef9a727f4f7ca59f8c5a937430425d0042b2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out none",
+     "of": "doc",
+     "text": "The document gives no return value.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6529",
+       "sha": "776de8b14dab3db7f737940632ab9a575aec6fad311b2f9849d64b53b0ee01a1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS calls INT 15/AX=91FBh when the sound has stopped.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6530",
+       "sha": "eea64dac5e4df4b76db385f4077e3c557f7ffe8c0ca7bf985cc98070733a3b25"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah cases 0x81 to 0x85 share a body that calls TandyDAC_Handler, whose case 0x84 answers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3177-3182",
+       "sha": "daa9af1de045412ea6f131a4124e0f1b2910b4405d1d73585267c4c3c6d044c2"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3029",
+       "sha": "08b79354c1c3ec547775ab5b6bde8774b5d349996c37bae406fddd2bb3e9b40c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3054",
+       "sha": "d017491acbfae56314ef6ad00e777ccf76be8686d8c606a832bb104be5add1da"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The handler returns at once when neither a Sound Blaster nor a Tandy DAC is configured.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3028",
+       "sha": "e2dc596e1ff083e97d2921c5e07b2d659e84df4efdbba86bef8f3124c48c93e4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The case replaces the transfer with a short silence buffer in the BIOS area at F000:A084.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3057-3060",
+       "sha": "07d1e98f679ed979389139200df213caf253fd3cc1d84bece79b7e0d9625d4c7"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h and CF is cleared, though the document gives no value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3055",
+       "sha": "9581c99ebde2012b23f8fb4956e261e43d508a6851d837ad0436ed94b155fbe0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3061",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6531",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x1A/0x85",
+   "name": "tandy sound reset",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT1A_Handler",
+     "case": [
+      "0x85"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "TandyDAC_Handler",
+     "case": [
+      "0x85"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6566-6571"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "AH=85h is a Tandy 1000L digital sound call whose function the document does not give.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6566-6568",
+       "sha": "53e37457e35e47aa92de5daf49926a18d0aac6d9ff2cb89e686ca2c17cb0e5c8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out none",
+     "of": "doc",
+     "text": "The document gives no return value.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6569",
+       "sha": "776de8b14dab3db7f737940632ab9a575aec6fad311b2f9849d64b53b0ee01a1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The call is not supported by the 1000SL/TL BIOS.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "6570",
+       "sha": "3dc7f591c1390f3790e0edfe4e1215b0c2f3d314a68576b1e6bf6d7f3bb8500d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The INT 1Ah cases 0x81 to 0x85 share a body that calls TandyDAC_Handler, whose case 0x85 answers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3104",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3177-3182",
+       "sha": "daa9af1de045412ea6f131a4124e0f1b2910b4405d1d73585267c4c3c6d044c2"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3029",
+       "sha": "08b79354c1c3ec547775ab5b6bde8774b5d349996c37bae406fddd2bb3e9b40c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3063",
+       "sha": "0d66a236c740e3592d419d29745527fb3321a07e39451286c51b780fcec9cd94"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The handler returns at once when neither a Sound Blaster nor a Tandy DAC is configured.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3028",
+       "sha": "e2dc596e1ff083e97d2921c5e07b2d659e84df4efdbba86bef8f3124c48c93e4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With a Tandy DAC the case clears the low five bits of the control byte at its port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3064-3066",
+       "sha": "e09d8b36d4e6718316c12c568023e099a2aedb809f1f367c36bf38558cb40f73"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "text": "AH becomes 00h and CF is cleared, though the document gives no value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "3067-3068",
+       "sha": "42b57d8528c380dc7839267bb7836bdf3de14b44d7000268ef004256e321c0f8"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "6571",
+     "as": "see-also"
+    }
+   ]
+  }
+ ]
+}

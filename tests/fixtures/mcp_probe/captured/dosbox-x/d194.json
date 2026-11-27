@@ -1,28 +1,28 @@
 {
  "task": {
   "id": "d194",
-  "prompt": "Show me the whole entry the base holds under the id ibm-pc:call:0x2F/0x16/0x80.",
+  "prompt": "Show me the whole entry the base holds under the id ibm-pc:error:5.",
   "tool": "knowledge_find",
   "args": {
-   "id": "ibm-pc:call:0x2F/0x16/0x80"
+   "id": "ibm-pc:error:5"
   }
  },
  "runs": [
   {
    "lines": [
-    "d194: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:call:0x2F/0x16/0x80\"}}"
+    "d194: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:error:5\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d194: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:call:0x2F/0x16/0x80\"}}"
+    "d194: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:error:5\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d194: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:call:0x2F/0x16/0x80\"}}"
+    "d194: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:error:5\"}}"
    ],
    "right": true
   }

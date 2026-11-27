@@ -1,0 +1,1154 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "mpu401",
+ "title": "The MPU-401 data and status ports",
+ "kind": "register",
+ "scope": "mpu401",
+ "covers": "The data port, the status and command port and the IMF ports of a Roland MPU-401 on the IBM PC, the PC-98 and an SB16 interface.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "MPU401-TRM.raw.txt",
+   "variant": "mpu401"
+  }
+ ],
+ "official": {
+  "MPU401-TRM.raw.txt": [
+   "267-289",
+   "2141-2149"
+  ]
+ },
+ "entries": [
+  {
+   "key": "0x330",
+   "name": "MPU-401 data port",
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "267-274"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "2147-2149"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "718"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "720"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "function": "MPU401_ReadData"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "329"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "397"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "A0 = 0 with RD* low is the data port the manual calls DATAPORT.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "269",
+       "sha": "d1398d69a42456693060edd7ef0a37b2e048796ef73d1c821b3cd35eea4883cf"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "271",
+       "sha": "0192e23ace68318e0d12f3d63c561f8241e0b581f9272790059ed41dcb088e75"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "With RD* low, the port at A0 = 0 reads DATAPORT.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "271",
+       "sha": "0192e23ace68318e0d12f3d63c561f8241e0b581f9272790059ed41dcb088e75"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "With WR* low, the port at A0 = 0 writes DATAPORT.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "272",
+       "sha": "f2bf8d01da0b9470c30448ed4a74cd16704dc2df90bb149283886cefc4d7e753"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "After the reset the data port must be read to clear the DSR before interrupts are enabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "2147-2149",
+       "sha": "be7bff68f792e9bde59c0843e88c070fb5258260f9402a3c93cfbc6117164e04"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The base port's write is MPU401_WriteData and its read MPU401_ReadData, as an IBM PC MPU-401.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "715",
+       "sha": "2c773907ea5ce1398593906d4d876823c9e532586a994fdfc9a1c445a7a2da91"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "720",
+       "sha": "fd1475d4a43d28adeaf83cc52a2856064657f7b9fbbba449b1922578ab1c67b8"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns 0xFE when the queue is empty, else pops the queued byte, and in UART mode returns it at once.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "294-300",
+       "sha": "2f5626af09f0e1e862fc5973b3c007218f23f0d120737e942eb8165c18bebb47"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "323",
+       "sha": "67f6db9d4a2e640b2fa88b7ad8e8f66bbcfe38eae9b1e4d974aaa66f5be96cc8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "63",
+       "sha": "d9347e78eda3a069c8e10cb7ef2550fee20cde346e7450bd00c185a9f9197ec2"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read that leaves the queue empty calls PIC_DeActivateIRQ to clear the IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "302",
+       "sha": "1be5fbae077e925846dd4b68b12c8d1f8b0c7917af49c3073adfaad6dc86be0e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of 0xF0-0xF7 takes the channel from the low three bits and clears the conductor request.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "304-307",
+       "sha": "33f26f3bf0501a162f691ceadfc93719c5d90057a04a6468ac34e9682cf6f612"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of 0xF9 with a buffered command calls MPU401_WriteCommand with its first byte and MPU401_WriteData with the second.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "309-317",
+       "sha": "1a6f490d5c3a5c12388a1a1553a30247f0beff75f4c69351a4c8ff0164c64b8a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "60",
+       "sha": "fd2050ba354050b4f10fccad1ab191a96bb9d0f7d4e751ea0dae5c81e19debb4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "10",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of 0xFC, 0xFD or 0xFE calls MPU401_EOIHandlerDispatch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "319-321",
+       "sha": "84a4a6086d0253fb524270944197cac25749d94749c7fb5d8499dfdb5a7e6e7c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "61-63",
+       "sha": "2ce757d75d00c38184501541c12c1fbb603ae4a8d4d921e33884fae8b948ef87"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "11",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "QueueByte and ClrQueue write the queue_pos member that a read also advances.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "110-111",
+       "sha": "0a88015f75e858e09edee854ecdac813b07c73f77a6d08dde3f05b4dc992eb3a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "119-120",
+       "sha": "95c4dd00dc52eca730cdd6b39b26990c98b5db56ef46c30f850588950b35b75f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "298",
+       "sha": "89b14dab26af871edc908cb6133723993779a8df7899cf6a5985bb2ff0fb5d73"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "267-268",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "270",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "273-274",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "720",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "294-297",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "323",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "718",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "329",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "397",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x331",
+   "name": "MPU-401 cmd/status port",
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "275-277"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "283-286"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "2141-2146"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "719"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "721"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "135"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "288"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "function": "MPU401_ReadStatus"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "184-188"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "With RD* low the port is read as STATPORT and with WR* low written as COMPORT.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "275",
+       "sha": "d140e64ae3266b36b6306bfecfa2e671832fd5b79348166255fe3d4ace8d980c"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "276",
+       "sha": "4fbe468f8f03aa3eabc15b8fad1c7a345dd708049e1c29e399468464988b51bc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of the status port returns the MPU status byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "275",
+       "sha": "d140e64ae3266b36b6306bfecfa2e671832fd5b79348166255fe3d4ace8d980c"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "2144",
+       "sha": "4cba9d2a793707dd6f263593ceefab6f4e4fd993d7e23cdcd6279f32f53d093b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to the command port sends an MPU command.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "276",
+       "sha": "4fbe468f8f03aa3eabc15b8fad1c7a345dd708049e1c29e399468464988b51bc"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "2145",
+       "sha": "7266521c70c516f40394e6b037df679da20a1c972bb465d2636cb3f6ba8a6b6a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 7-6",
+     "of": "doc",
+     "text": "Bit 7 of the status byte is DSR and bit 6 DRR, both active low; the table's footnote reads ORR* for DRR.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "284",
+       "sha": "61e1adb6b9a083b5d1884c259e5b569ca87297e21d306331c4265fcc7795c528"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "2142-2143",
+       "sha": "616b884a1fe7355156acebb38e864f7fe576f51f9995d57752bbffb14e67e2ab"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Normally A1 and A2 are zero, as the MPU-401 hardware connects as port 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "285-286",
+       "sha": "aaddb2d7c1202f7f387e4dfa1808c4e8b4b196f58fc6ef62c6c646cc32a18e9d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "All MPU data bytes are sent to or read from DATAPORT.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "2146",
+       "sha": "9b096804476357d6dca827491a6e1a674b47a41e5000e48cc0f46e880f157492"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The command port's write is MPU401_WriteCommand and its read MPU401_ReadStatus.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "721",
+       "sha": "f166f6348ae4fa3f7ac21a71b3a1096e59e17ee706b02466ceae3ab26bc93ea8"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "In UART mode a command write is ignored unless it is 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "135",
+       "sha": "d5a8ca21afbdd381bda06c5eca66ad3cdb04c9de2c66a921a7bb2edceb877201"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "An accepted command ends by queueing the acknowledge 0xFE for the host.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "288",
+       "sha": "233325b7eaa703784d269f25239a9582180795bb6605b40ad65513e69832c7cc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "63",
+       "sha": "d9347e78eda3a069c8e10cb7ef2550fee20cde346e7450bd00c185a9f9197ec2"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "277",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "283",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "2141",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "721",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "126-129",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "719",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "288",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "126-129",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "184-188",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x2A20..0x2A2F",
+   "name": "IMF MIDI ports",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's mpu401 core cites the board schematics; it names no datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "Roland's support site lists no MPU-401 manual."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers lists no Roland folder readable from here."
+    },
+    {
+     "where": "archive-org",
+     "gave": "the MPU-401 Technical Reference Manual, which does not mention this port."
+    },
+    {
+     "where": "index",
+     "gave": "manualslib lists the same manual, which does not mention this port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "746-752"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "753-761"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "function": "IMF_Write"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Sixteen consecutive ports, 0x2A20 to 0x2A2F, each get IMF_Write as write handler, on the build that is not PC-98.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "724-726",
+       "sha": "041d37b7406a993cf2fd95feb71a29f9de6b6841838f1b969e8dab42a8584ac1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "746-752",
+       "sha": "3906a8b47068a12b898000c5bd13b423f14afe0cb0aa40721a117ac718f65fe0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "753-761",
+       "sha": "136c704d5247788f83b05f6d04ecc23548cd54954b8f84e518284f81ce6ba5aa"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "A write to any of them is handled by IMF_Write, on the build that is not PC-98.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "724-726",
+       "sha": "041d37b7406a993cf2fd95feb71a29f9de6b6841838f1b969e8dab42a8584ac1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "746-752",
+       "sha": "3906a8b47068a12b898000c5bd13b423f14afe0cb0aa40721a117ac718f65fe0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "753-761",
+       "sha": "136c704d5247788f83b05f6d04ecc23548cd54954b8f84e518284f81ce6ba5aa"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "IMF_Write only logs the port and the byte; the write changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "654-657",
+       "sha": "5ffbcdf4fb0edc619549ebc91504e170e24ab0273de4088065973a277e06ab74"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0xC8D2",
+   "name": "PC-98 data port at C8D2",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's mpu401 core cites the board schematics; it names no datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "Roland's support site lists no MPU-401 manual."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers lists no Roland folder readable from here."
+    },
+    {
+     "where": "archive-org",
+     "gave": "the MPU-401 Technical Reference Manual, which does not mention this port."
+    },
+    {
+     "where": "index",
+     "gave": "manualslib lists the same manual, which does not mention this port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "691-694"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "718"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "720"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "0xC8D2 passes the PC-98 base check, so the data handlers are installed there and the command handlers at 0xC8D4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "691-694",
+       "sha": "d6f4c712ad3118926434d28c1bceabf95bf66e738a055a74891e5eac2285f7a5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "720",
+       "sha": "fd1475d4a43d28adeaf83cc52a2856064657f7b9fbbba449b1922578ab1c67b8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "721",
+       "sha": "f166f6348ae4fa3f7ac21a71b3a1096e59e17ee706b02466ceae3ab26bc93ea8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "With the base at 0xC8D2, a write there is MPU401_WriteData and a read MPU401_ReadData.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "691",
+       "sha": "231d9f06fc506e0a74d4e625256d236073e18f38249d8634fe89941b22ae8cc9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "720",
+       "sha": "fd1475d4a43d28adeaf83cc52a2856064657f7b9fbbba449b1922578ab1c67b8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With the base at 0xC8D2, a write at that port hands the byte to MPU401_WriteData.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "691",
+       "sha": "231d9f06fc506e0a74d4e625256d236073e18f38249d8634fe89941b22ae8cc9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The SB16 mapping comment names C8D2h and C9D2h, but that branch installs only for bases 0x80D2-0x80DE.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "701-702",
+       "sha": "3bd8684ffa4539e891897901367a7759bdac031e09f3d50308eab4ae06568ff3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "704",
+       "sha": "a44cff637d6e3ae49fec311547bdc72aaec32752487fd86f86f8593f63751fbe"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "707",
+       "sha": "19d164e0b92e809badc7480d741609929903ceac97eb28d027b649b348043789"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0xC9D2",
+   "name": "PC-98 port at C9D2",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's mpu401 core cites the board schematics; it names no datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "Roland's support site lists no MPU-401 manual."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers lists no Roland folder readable from here."
+    },
+    {
+     "where": "archive-org",
+     "gave": "the MPU-401 Technical Reference Manual, which does not mention this port."
+    },
+    {
+     "where": "index",
+     "gave": "manualslib lists the same manual, which does not mention this port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "701"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "707"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "709"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The SB16 mapping comment names C9D2h, but that branch's command installs are base+0x100 and only for bases 0x80D2-0x80DE.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "701-709",
+       "sha": "6fe8fb5d07a5f2c78017739294f1d328506002425c9aaf757fd4de0e5e018211"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A PC-98 base of 0xC9D0 is kept and gets the command and status handlers at base+2, 0xC9D2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "691",
+       "sha": "231d9f06fc506e0a74d4e625256d236073e18f38249d8634fe89941b22ae8cc9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "721",
+       "sha": "f166f6348ae4fa3f7ac21a71b3a1096e59e17ee706b02466ceae3ab26bc93ea8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With the base at 0xC9D0, a write at 0xC9D2 hands the command byte to MPU401_WriteCommand.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "691",
+       "sha": "231d9f06fc506e0a74d4e625256d236073e18f38249d8634fe89941b22ae8cc9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "With the base at 0xC9D2, a write there is MPU401_WriteData and a read MPU401_ReadData.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "691",
+       "sha": "231d9f06fc506e0a74d4e625256d236073e18f38249d8634fe89941b22ae8cc9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "720",
+       "sha": "fd1475d4a43d28adeaf83cc52a2856064657f7b9fbbba449b1922578ab1c67b8"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0xE0D0",
+   "name": "PC-98 MPU-401 data port",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's mpu401 core cites the board schematics; it names no datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "Roland's support site lists no MPU-401 manual."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers lists no Roland folder readable from here."
+    },
+    {
+     "where": "archive-org",
+     "gave": "the MPU-401 Technical Reference Manual, which does not mention this port."
+    },
+    {
+     "where": "index",
+     "gave": "manualslib lists the same manual, which does not mention this port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "678-682"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "688-695"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "718"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "720"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With no configured base, the PC-98 build takes 0xE0D0 and the PC build 0x330.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "677-682",
+       "sha": "e905fe4e684299730f850bb1400efccded81318ac6adc396231f0c03aedf1578"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The PC-98 base is kept only in 0x80D2-0x80DE or 0xC000-0xF8D0; anything else becomes 0xE0D0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "688-695",
+       "sha": "04272d4f0699635518002b3aace0d00b7e76641510edd4558514b1c79fdbd223"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "A write is handled by MPU401_WriteData and a read by MPU401_ReadData.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "720",
+       "sha": "fd1475d4a43d28adeaf83cc52a2856064657f7b9fbbba449b1922578ab1c67b8"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write to the base port hands the byte to MPU401_WriteData.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "718",
+       "sha": "9fc500cca00499e47496530ad1c290df9729f987e5b9bb6ef8a311a4c8278459"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0xE0D2",
+   "name": "PC-98 MPU-401 cmd/status",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's mpu401 core cites the board schematics; it names no datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "Roland's support site lists no MPU-401 manual."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers lists no Roland folder readable from here."
+    },
+    {
+     "where": "archive-org",
+     "gave": "the MPU-401 Technical Reference Manual, which does not mention this port."
+    },
+    {
+     "where": "index",
+     "gave": "manualslib lists the same manual, which does not mention this port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "719"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "721"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With the default PC-98 base 0xE0D0, the command and status port is base+2, 0xE0D2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "679",
+       "sha": "b774b2555249780b93a03accab20d1827659468b7c30a6bdfbfcf59459d364b8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "721",
+       "sha": "f166f6348ae4fa3f7ac21a71b3a1096e59e17ee706b02466ceae3ab26bc93ea8"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "A write is handled by MPU401_WriteCommand and a read by MPU401_ReadStatus.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "721",
+       "sha": "f166f6348ae4fa3f7ac21a71b3a1096e59e17ee706b02466ceae3ab26bc93ea8"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write to the command port hands the command byte to MPU401_WriteCommand.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "719",
+       "sha": "78676f89cc8c9ccf127d6614c8b98fd2208fd5bcf3bcbceffd4a4e0f009170fb"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": []
+  }
+ ],
+ "closed": [
+  {
+   "ref": "datasheet:MPU401-TRM.raw.txt",
+   "lines": "278-282",
+   "as": "key"
+  },
+  {
+   "ref": "datasheet:MPU401-TRM.raw.txt",
+   "lines": "287-289",
+   "as": "see-also"
+  }
+ ],
+ "engine": [
+  "PIC_DeActivateIRQ",
+  "MPU401_WriteCommand",
+  "MPU401_WriteData",
+  "MPU401_EOIHandlerDispatch"
+ ]
+}

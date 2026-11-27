@@ -1,0 +1,555 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "memory",
+ "title": "The PC's memory map",
+ "kind": "memory",
+ "scope": "ibm-pc",
+ "covers": "The areas of the PC's first megabyte and what each of them holds.",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0x00..0x3FF",
+   "name": "interrupt vector table",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "5-7"
+    },
+    {
+     "ref": "dosbox-x:include/mem.h",
+     "lines": "316-318"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The interrupt vector table occupies the first 1024 bytes of memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "5-6",
+       "sha": "f7fb613add2109222c1fe0b9b0fc6cb460425e11c8e164d1c82f136260419cb4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X computes the address of interrupt vector n as n shifted left two bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/mem.h",
+       "lines": "316-318",
+       "sha": "5067e553ac2a661337b301feb5bae35971219036219d73e6102fcf4bf0f7d575"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "7",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0xA0000..0xAFFFF",
+   "name": "EGA/VGA graphics buffer",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "1765-1766"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "279"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "At A000:0000 begins the graphics buffer of EGA and later adapters, 65536 bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "1765-1766",
+       "sha": "1b83ba6bbeae81d9a4ab2f125f08163821fcdca27b6e97a733a143b6a7d904eb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X gives the page where the A0000 window begins as 0xA0000/4096, VGA_PAGE_A0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+       "lines": "279",
+       "sha": "95915cbbaa10a83b48964f4cfb5fd79416cea05627d114710d321eba0ad7af58"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0xB0000..0xB7FFF",
+   "name": "MDA text buffer",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2402-2403"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2412-2413"
+    },
+    {
+     "ref": "rbil61:GLOSSARY.LST",
+     "lines": "443-444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "280"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The MDA text buffer begins at B000:0000 and is 4096 bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2402-2403",
+       "sha": "309f007e1987e836fad1731a098bbc7acb42a066b06d30ad1744184bdd486234"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "A Hercules card puts the 32768-byte graphics buffer of page 0 at the same address.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2412-2413",
+       "sha": "83caf1e0c96250f6baeda8e72e26d1b9d59f1d9e8ba4a03c44f406e9c7ff29b1"
+      },
+      {
+       "ref": "rbil61:GLOSSARY.LST",
+       "lines": "443-444",
+       "sha": "22e0718b821b82a8c5c1857d9b7c11f24c5579e7c290300b591e1c24566d549a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X gives the page where the B0000 window begins as 0xB0000/4096, VGA_PAGE_B0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+       "lines": "280",
+       "sha": "6a98bef2b70fc1b110a2a39de71c9dd531a2379d953bff1b00f6996680c63b0e"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0xB8000..0xBFFFF",
+   "name": "CGA text buffer",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2423-2424"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2426-2427"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "281"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The CGA text and graphics buffer begins at B800:0000 and is 16384 bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2423-2424",
+       "sha": "e6997c29f1fb438a35130ed966de9b5abc13ab2a47f0000885e08cd02a3e724d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "EGA and later adapters use B800:0000 as a text buffer of 32768 bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2426-2427",
+       "sha": "4048daeecb1b69712b20da36751831327b52845ee816f1559be6817093e0fad5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X gives the page where the B8000 window begins as 0xB8000/4096, VGA_PAGE_B8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+       "lines": "281",
+       "sha": "6a861378b11a9ad14571e93bcfd60e721102c823caa77e35290499947acebf3a"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0xC0000..0xC7FFF",
+   "name": "video BIOS",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2572-2573"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "1871"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The video BIOS of EGA and later adapters begins at C000:0000; its size varies, usually 16K-24K for EGA and 24K-32K for VGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2572-2573",
+       "sha": "c5cd744662c1cf0f37f75d7b6b2e3e121d15311ae05a6b2abfe77d1d3eb7e0b3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X maps the VGA BIOS ROM image from 0xC0000 for VGA_BIOS_Size bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "1871",
+       "sha": "043afce4ece357f1cdeec372749e15c761d76dd27687b7fabb3a547d560802a6"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0xC8000..0xCBFFF",
+   "name": "BIOS extension area",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2627-2628"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10994-10996"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "11026"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The hard disk BIOS begins at C800:0000; its size varies, usually 8K or 16K.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2627-2628",
+       "sha": "bdb7d522b8507024bdcc9b714c2eea80de5d647845f28b73d0744fee0ef6b123"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "When the video BIOS scan finds a ROM at 0xC0000, DOSBox-X continues the adapter ROM scan at 0xC0000 plus its size, below 0xF0000.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10994-10996",
+       "sha": "316ec3df19814919d705df6a021dea68b212b7f8a69721f437fab3de812a8d40"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "11026",
+       "sha": "a03c4c1535231e8269bf2f19f76c6c3242a2fc46f7e89afca437bdced5a4b84b"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0xF0000..0xFFFFF",
+   "name": "system BIOS",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2704-2705"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2744-2745"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2747-2748"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2750-2751"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2753-2755"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12965"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12973"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "On the original IBM PC the ROM BIOS is 8192 bytes at F000:E000.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2704-2705",
+       "sha": "2379383c539ae62c9c9ee81c27ba8b52b2b95d77a2daae475b6ff6802ab722e5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The reset jump is five bytes at F000:FFF0.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2744-2745",
+       "sha": "374eb1386edcba627f480b7c7ae35a8c8fd4857315a6b83e1a1fac6239f65548"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "F000:FFF5 holds the ASCII BIOS date, eight bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2747-2748",
+       "sha": "06cf893ad4206041eccce7724342cbe0277dfed271269ff66e6cd0f55ac08e35"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "F000:FFFD holds a byte often used to make the BIOS checksum correct.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2750-2751",
+       "sha": "069fc186a6ddf30efb2d3d1c4274f2c1aa923c9fe2c39bfa4840d3d04eb5864a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "F000:FFFE holds the machine type code, a byte.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "2753-2754",
+       "sha": "01dd18d1f6b23fd35243ed57ec6fc3e267606eea574df0517aff6e95f455ef63"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X maps the ROM BIOS from 0x100000 less its size in bytes, 64 KB by default, so 0xF0000, up to 0xFFFFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12953",
+       "sha": "21efce899f8407154d3f5c034640ac1f2a13938a474283f1c3e1257c512585de"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12956-12961",
+       "sha": "ae1490f8b1b94e27afc2318588a590d70310cafdd8e77f612c618dd9d2e4dc1e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12963",
+       "sha": "3e2f2de86095d7c857e42901a6a9947fc61e3cce4132fa65ba9f579f45abf413"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12965",
+       "sha": "5302309eacef6511bc8932ee2e2661668174fe73a713184594979d2503951e23"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12973",
+       "sha": "fb948e3a8eec90cbb9023c00cb06c543d737684cee530f3a04db8b4bdd1ade34"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "2755",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x9FC00..0x9FFFF",
+   "name": "extended BIOS data area",
+   "regions": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "126-128"
+    },
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "130-133"
+    },
+    {
+     "ref": "dosbox-x:include/bios.h",
+     "lines": "32"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "9696-9700"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "On PS/2 and newer BIOSes a word at 0040:000E holds the extended BIOS data area's segment.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "126-127",
+       "sha": "d39f999e63e63f1007a16823d7128d95170f191ae7cb47a0e5613d9263fc03e5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "In the IBM format the area begins with a byte holding its length in kilobytes, then 15 reserved bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:MEMORY.LST",
+       "lines": "130-133",
+       "sha": "7a1159efc3f68449e0dd6e1661814b2029bc242d42b2fc2329cc2a07dc3052fd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X names the word at 0x40E as the extended BIOS data segment.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/bios.h",
+       "lines": "32",
+       "sha": "0e3162d48a5b86e77ef07f9ae781cfbaba7d12c84b1532426bec32be2d056176"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X's memory map gives conventional memory as 0x00000000 to 0x0009EFFF, the 640 KB less an EBDA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "9696-9700",
+       "sha": "3b201545f8549ba53fc33acf0e638963237e1df62d7d4577544b4ebb99c4ed7a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:MEMORY.LST",
+     "lines": "128",
+     "as": "see-also"
+    }
+   ]
+  }
+ ]
+}

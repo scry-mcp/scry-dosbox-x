@@ -1,0 +1,1632 @@
+{
+  "format": "scry-knowledge/2",
+  "dictionary": "vattr",
+  "title": "The VGA attribute controller registers",
+  "kind": "register",
+  "scope": "vattr",
+  "covers": "The attribute controller of IBM's VGA: the address register at port hex 03C0 and its read port hex 03C1, the sixteen internal palette registers, and the mode control, overscan color, color plane enable, horizontal pel panning and color select registers at indexes hex 10 to 14, as IBM's Video Subsystems guide describes them, and what DOSBox-X does for each",
+  "source": "official",
+  "documents": [
+    {
+      "name": "PS2-Video-Subsystems.raw.txt",
+      "variant": "vga"
+    }
+  ],
+  "official": {
+    "PS2-Video-Subsystems.raw.txt": [
+      "3918-3921",
+      "3939-3940",
+      "3948-3956",
+      "3963-3974",
+      "3975-3977",
+      "3983-3996",
+      "3997-3999",
+      "4018-4053",
+      "4061-4064",
+      "4068-4070",
+      "4071-4073",
+      "4079-4081",
+      "4082-4084",
+      "4091-4096",
+      "4111-4113",
+      "4126-4139",
+      "4056-4060"
+    ]
+  },
+  "engine": [
+    "VGA_SetBlinking",
+    "VGA_DetermineMode",
+    "VGA_StartResize",
+    "VGA_ComplexityCheck_ODDEVEN",
+    "VGA_SetupHandlers",
+    "J3_IsCga4Dcga",
+    "VGA_RenderOnDemandUpTo"
+  ],
+  "entries": [
+    {
+      "key": "0x3C0",
+      "name": "address register",
+      "aliases": [
+        "attribute address register",
+        "index port"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3939-3940"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3948-3956"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3963-3974"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "211-216"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "233-237"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "183-188"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+          "lines": "68"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "195-196"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "451-454"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "239-249"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "422-426"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The Address register is a read/write register at address hex 03C0.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3939-3940",
+              "sha": "56586cc8b6f7a6f47472e439071f0d67f0404541a4c32e7dbd53805aa6bbd25a"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "order",
+          "of": "doc",
+          "text": "The attribute controller has no input bit to select address or data: an internal address flip-flop does it.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3948-3950",
+              "sha": "ebdb2824367139e8d6bb1618d41195737c93bf004dc61144248480bfe5085155"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "order",
+          "of": "doc",
+          "text": "Reading Input Status Register 1 clears the flip-flop and selects the Address register.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3950-3951",
+              "sha": "cbd5985eb4cf3fc61089acbb3eba62a9649ee8688b1b2bf011787c70eab945cf"
+            }
+          ]
+        },
+        {
+          "n": "4",
+          "on": "write",
+          "of": "doc",
+          "text": "After the Address register holds an index, the next write to 03C0 loads the data register.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3952-3953",
+              "sha": "e9c30866689bf7b06283cf03de51d3739afb5a52adefdf92315e8e745958da63"
+            }
+          ]
+        },
+        {
+          "n": "5",
+          "on": "order",
+          "of": "doc",
+          "text": "The flip-flop toggles on each write to 03C0 and does not toggle for a read of 03C0.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3953-3956",
+              "sha": "6a27b7e317ef39db273b22b9a21bd23e527e196a3da6a8a4b381963ac3b0870a"
+            }
+          ]
+        },
+        {
+          "n": "6",
+          "on": "bit 5",
+          "of": "doc",
+          "text": "IPAS, bit 5, is kept: 0 loads color values to the registers of the internal palette, 1 is normal operation of the attribute controller.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3963-3966",
+              "sha": "9c2f4a63cfe3c23f08448d46e697a019b474a82a27b804c73f9292729fbea9fe"
+            }
+          ]
+        },
+        {
+          "n": "7",
+          "on": "is",
+          "of": "doc",
+          "text": "The document advises against accessing the internal palette while IPAS is 1: a Type 1 subsystem disables it, a Type 2 does not and the value cannot be ensured.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3968-3972",
+              "sha": "9e376925aa64838c77ba4ca98657388cbfb7f9df5f7a5bd8759e29d5ac17366b"
+            }
+          ]
+        },
+        {
+          "n": "8",
+          "on": "bits 4-0",
+          "of": "doc",
+          "text": "The Index field, bits 4-0, is stored as the index to the data registers in the attribute controller.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3973-3974",
+              "sha": "ccdd5a660d31863f6c1974392a7d2a7d72fbaf86040928f8e9e28854a592c9bc"
+            }
+          ]
+        },
+        {
+          "n": "9",
+          "on": "read",
+          "of": "doc",
+          "text": "The Address register is readable: the document calls it a read/write register.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3939-3940",
+              "sha": "56586cc8b6f7a6f47472e439071f0d67f0404541a4c32e7dbd53805aa6bbd25a"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A write to 03C0 returns untouched while the guest has DOSBox-X's VGA register lockout flag set.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "195-196",
+              "sha": "2ac51aaef5d0cbe7a01ab858b54ef2de34df23538626a3a93ba02a1c573d48ab"
+            }
+          ]
+        },
+        {
+          "n": "102",
+          "on": "read",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A read of 03C0 returns the index in bits 4-0 and sets bit 5 when IPAS was written 1; bits 7-6 read as 0.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "185-187",
+              "sha": "0107dcf021e2ea5f736d71159195e959efbb05f0da4f0d3ef50f1edf85a6b1a9"
+            },
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "214-215",
+              "sha": "a826f91d4014426404d49bd6bef1b26e499968f0944f34deb546ae39c84a3a6a"
+            }
+          ]
+        },
+        {
+          "n": "103",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "With render-on-demand on, a write to 03C0 renders the screen up to the current point while the screen is enabled, before latching and after.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "211-216",
+              "sha": "b3c5c8e525efb6a6a7ab4ec51a6580d32a66ecf91e0ab679e8347f7997c4a454"
+            }
+          ]
+        },
+        {
+          "n": "104",
+          "on": "read",
+          "of": "dosbox-x",
+          "vs": "differs",
+          "text": "On an EGA machine no read handler is installed at 03C0; reads are registered for the VGA only.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "451-454",
+              "sha": "b7992ebc4f46a43ac781d0dbbab0fd7d6a40af30a8b3af5ef03b6dd97d29a903"
+            }
+          ],
+          "row": "1"
+        },
+        {
+          "n": "105",
+          "on": "read",
+          "of": "dosbox-x",
+          "vs": "differs",
+          "text": "A read of 3DA clears the flip-flop unless the guest has set DOSBox-X's 3DA lockout flag, in which case it returns 0.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+              "lines": "60-61",
+              "sha": "bda9fcdea39a29fea26a9cb7149b902cbb797c2ba94e0046cd8125baf9920fb6"
+            },
+            {
+              "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+              "lines": "68",
+              "sha": "30b84b4f73eb627d0bdb7f253806e12d33567657b929313b56df787f6d9f93c5"
+            }
+          ],
+          "row": "3"
+        },
+        {
+          "n": "10",
+          "on": "order",
+          "of": "doc",
+          "text": "A read of 03C1 does not toggle the flip-flop.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3954-3956",
+              "sha": "abe5950442e98170ef04aadd19625af33a0e5a08b49402a52cfa72933b66da1f"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "212-213",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "236-237",
+          "as": "agrees",
+          "row": "4"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "236",
+          "as": "agrees",
+          "row": "5"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "183-188",
+          "as": "agrees",
+          "row": "5",
+          "nothing": true
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "214-215",
+          "as": "agrees",
+          "row": "6"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "212",
+          "as": "agrees",
+          "row": "8"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "185-187",
+          "as": "agrees",
+          "row": "9"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "211-237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "183-188",
+          "as": "structure"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3967",
+          "as": "layout"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "451-454",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "249",
+          "as": "agrees",
+          "row": "4"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "239-248",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "422-426",
+          "as": "agrees",
+          "row": "10",
+          "nothing": true
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "212-213",
+          "as": "agrees",
+          "row": "5"
+        }
+      ]
+    },
+    {
+      "key": "0x3C1",
+      "name": "attribute read port",
+      "aliases": [
+        "attribute read address"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3918-3921"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "449-450"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "451-453"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x00"
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "Each attribute controller register has two addresses: hex 03C0 is the write address and hex 03C1 the read address.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3918-3921",
+              "sha": "9b8ae639f51f0e4848acdae10b66e9e587b235fdd1cb137c8de6a705275dfd19"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "read",
+          "of": "doc",
+          "text": "A read of 03C1 returns the data register selected by the index written to the Address register.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3918-3921",
+              "sha": "9b8ae639f51f0e4848acdae10b66e9e587b235fdd1cb137c8de6a705275dfd19"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "is",
+          "of": "dosbox-x",
+          "vs": "differs",
+          "text": "On the EGA machine DOSBox-X also registers the write handler at 03C1, an alias the document gives only as the read address.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "449-450",
+              "sha": "c32e53e3f77d16c6d914cbf18906a2a7cd7d96ffd7e6c2060fff07ba828fda30"
+            }
+          ],
+          "row": "1"
+        },
+        {
+          "n": "102",
+          "on": "read",
+          "of": "dosbox-x",
+          "vs": "differs",
+          "text": "On a VGA machine a read of 03C1 returns the selected data register; on an EGA no read handler is registered and the unhandled read returns hex FF.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "451-453",
+              "sha": "18b5f00dc8c64dccbc5efd49239434a43db868df4e641af3ea2a90fd54f2dae0"
+            },
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "426",
+              "sha": "afc21889a51d81a77826c6d67de22f069cec7e32150eea4a5ce460bb5168e284"
+            },
+            {
+              "ref": "dosbox-x:src/hardware/iohandler.cpp",
+              "lines": "58-59",
+              "sha": "ddb05d69daf8886b0b482c4a4f3989e617d2b25c8d7fcdab043a6d4a5c58bfe9"
+            },
+            {
+              "ref": "dosbox-x:src/hardware/iohandler.cpp",
+              "lines": "183-184",
+              "sha": "bc5e2cc6b877788904592bb44f67844659b5419f62377dc0fc0e7d3c64817bb2"
+            },
+            {
+              "ref": "dosbox-x:src/hardware/iohandler.cpp",
+              "lines": "239",
+              "sha": "9d886c56b4b60cce3a6228c7f5cfc964baed6c518866cf4fcb67bf61d45865a7"
+            }
+          ],
+          "row": "2"
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420-425",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "451-453",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "212",
+          "as": "parent",
+          "owner": "vattr:register:0x3C0"
+        }
+      ]
+    },
+    {
+      "key": "0x00..0x0F",
+      "name": "palette registers",
+      "aliases": [
+        "internal palette",
+        "attribute palette"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3975-3977"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3983-3996"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "write_p3c0",
+          "case": [
+            "0x00"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x00"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "112-115"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "153-154"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "214-215"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The internal palette registers are at indexes hex 00 through 0F, written at 03C0 and read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3975-3977",
+              "sha": "b104175cadca7624dcaab6e7ccf596a53e498d3668e55530bf5f9b62c58075d6"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "write",
+          "of": "doc",
+          "text": "Each is a 6-bit register, bits 5-0, mapping the text attribute or graphic color input value to a display color.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3983-3987",
+              "sha": "47eaa7053a573a2c3ff806f2b11255093d6a8338c83711d4b85a855432ca7be6"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "write",
+          "of": "doc",
+          "text": "The palette values are sent off-chip to the video DAC, which uses them as addresses into its registers.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3990-3993",
+              "sha": "089b03ec128b4109d97e340217c87a86e476b2129bdf6b707037073ea2da0f5e"
+            }
+          ]
+        },
+        {
+          "n": "4",
+          "on": "is",
+          "of": "doc",
+          "text": "The document advises modifying the internal palette registers only during the vertical retrace interval.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3987-3989",
+              "sha": "ed603580898ccf9753bbe09a36f63c6e4693a04434d02213c6b850f383597cdb"
+            }
+          ]
+        },
+        {
+          "n": "5",
+          "on": "write",
+          "of": "doc",
+          "text": "These registers can be accessed only while bit 5 of the Address register is 0; with it 1, writes are don't care.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3994-3996",
+              "sha": "223ecdc5cc69184bbb20aa487f4a9125dccff4333cec6e79b109445e19423293"
+            }
+          ]
+        },
+        {
+          "n": "6",
+          "on": "read",
+          "of": "doc",
+          "text": "The registers are read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3975-3977",
+              "sha": "b104175cadca7624dcaab6e7ccf596a53e498d3668e55530bf5f9b62c58075d6"
+            }
+          ]
+        },
+        {
+          "n": "7",
+          "on": "read",
+          "of": "doc",
+          "text": "With bit 5 of the Address register at 1, a read of a palette register returns undefined data.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3995-3996",
+              "sha": "0a2283b5a1cb8949c5c5902481c0504beb15a42c9611695e34b5fa89015b300e"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "When the enabled-plane mask is not hex 0F, a palette write re-sends the other fifteen entries to the DAC.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "256-264",
+              "sha": "60235d510eb12b705f95651aaf52d7813441cc5348061fe417f0f7114bbf735d"
+            }
+          ]
+        },
+        {
+          "n": "102",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "On a CGA-4/DCGA machine a nonzero value written to palette index 0 is stored as 0.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "243-247",
+              "sha": "ee3f83121892e36edf6eb1812abe43267292ef37e638f43f27657469506a7b0f"
+            }
+          ]
+        },
+        {
+          "n": "103",
+          "on": "read",
+          "of": "dosbox-x",
+          "vs": "differs",
+          "row": "7",
+          "text": "A read returns the stored six-bit value where the document leaves the value undefined.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "426",
+              "sha": "afc21889a51d81a77826c6d67de22f069cec7e32150eea4a5ce460bb5168e284"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "112-115",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "153-154",
+          "as": "agrees",
+          "row": "3"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "248-249",
+          "as": "agrees",
+          "row": "5"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "426",
+          "as": "agrees",
+          "row": "6"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "196-198",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "239-247",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420-425",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "212",
+          "as": "parent",
+          "owner": "vattr:register:0x3C0"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "214-215",
+          "as": "agrees",
+          "row": "5"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453",
+          "as": "agrees",
+          "row": "6"
+        }
+      ]
+    },
+    {
+      "key": "0x10",
+      "name": "attribute mode control",
+      "aliases": [
+        "mode control register",
+        "attribute controller mode"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "3997-3999"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4018-4053"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "write_p3c0",
+          "case": [
+            "0x10"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x10"
+          ]
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4056-4060"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The Attribute Mode Control register is a read/write register at index hex 10, written at 03C0 and read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3997-3999",
+              "sha": "ea35c61125836627919797c5e568584476f999161f13222eabe6de9c8ccd6166"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "bit 7",
+          "of": "doc",
+          "text": "Bit 7 (PS) is stored; 0 takes P5 and P4 from the internal palette, 1 from Color Select bits 1 and 0 (capture reads `oof`).",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4018-4024",
+              "sha": "2ad3a5f273d6331d2df1e1be86ce5db4135fa7330eb6d3c5bfd4e100c1bfa404"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "bit 6",
+          "of": "doc",
+          "text": "Bit 6 (PW) is stored; the document samples the video data so 8 bits select a color in 256-color mode, and sets it to 0 in all other modes.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4025-4028",
+              "sha": "21f6ff47141296db3a30cd478f7016b42151465569f6ef53f57ae064f083fceb"
+            }
+          ]
+        },
+        {
+          "n": "4",
+          "on": "bit 5",
+          "of": "doc",
+          "text": "Bit 5 (PP) is stored; the document forces pel panning to 0 from a successful line compare until the next vertical sync, and has no effect when 0.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4029-4036",
+              "sha": "a572615ece3808d7274f9c1ead374c70e9700a03aac3119e0e4f8ec0dec7f37e"
+            }
+          ]
+        },
+        {
+          "n": "5",
+          "on": "bit 3",
+          "of": "doc",
+          "text": "Bit 3 (EB) is stored; the document has the attribute's most-significant bit select background intensity when 0 and blinking when 1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4037-4040",
+              "sha": "2f05dd8f7d875845bb561c064235341b617c116ee74f51751a30c33f39c4314e"
+            }
+          ]
+        },
+        {
+          "n": "6",
+          "on": "bit 2",
+          "of": "doc",
+          "text": "Bit 2 (ELG) is stored; the document makes the ninth dot equal to the background when 0 and enables line-graphics codes C0 through 0F in monochrome emulation when 1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4041-4049",
+              "sha": "e5eb0cbfbe525d542a25753ea2d87683199bbaad65a42c29ad152542b72d6c4f"
+            }
+          ]
+        },
+        {
+          "n": "7",
+          "on": "is",
+          "of": "doc",
+          "text": "For fonts that do not use the line-graphics codes the document advises setting bit 2 to 0.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4050-4053",
+              "sha": "35cf192e7e02586e06716061b3bb55ca5ac8b17fe23e3eed670a2ca5144bf150"
+            }
+          ]
+        },
+        {
+          "n": "8",
+          "on": "bit 1",
+          "of": "doc",
+          "text": "Bit 1 (ME) is stored; the document selects monochrome emulation when it is 1 and color emulation when 0.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4056-4058",
+              "sha": "dc5c33dfd8db7fbae7dea3920b20b354fcc99402ea32e2e0777fac71dc3bca38"
+            }
+          ]
+        },
+        {
+          "n": "9",
+          "on": "bit 0",
+          "of": "doc",
+          "text": "Bit 0 (G) is stored; the document selects the graphics mode when it is 1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4059-4060",
+              "sha": "c1d62efd143e4c0038a2aa70ad4d2529ff30ca19d0f7334e02c62f848c71a9bc"
+            }
+          ]
+        },
+        {
+          "n": "10",
+          "on": "read",
+          "of": "doc",
+          "text": "The register is read at port hex 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "3998-3999",
+              "sha": "9046a290fac81c180e97058313aba12c6f314ff58c0f7df705f8d41a1518eac2"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "bit 7",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A change of bit 7 makes DOSBox-X re-send all sixteen palette entries to the DAC.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "276-280",
+              "sha": "830b792f3df356b77d56f673ab4123183a2300c01f8df3b4d5455301538f671f"
+            }
+          ]
+        },
+        {
+          "n": "102",
+          "on": "bit 3",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A change of bit 3 calls VGA_SetBlinking with the bit.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "281-284",
+              "sha": "5b596f33e44f595c4b73899f0cd5e5dc5f2d8f48666efda2d34d6aa88c213f45"
+            }
+          ]
+        },
+        {
+          "n": "103",
+          "on": "bit 0",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A change of bits 0 or 6 calls VGA_DetermineMode and the odd-even complexity check, and that of bit 6 resizes the screen in the 256-color mode.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "286-291",
+              "sha": "6ca25e9f069933b5c6b8f9bdc00a2bcf19b420a1d424db2f1f2a293837d7827a"
+            }
+          ]
+        },
+        {
+          "n": "104",
+          "on": "bit 2",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A change of bit 2 recomputes a text mode's pel panning from the panning register, adding one for 9-dot characters.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "296-306",
+              "sha": "291eb4b1ff7f3c86087fa48eb1306aaa2afedeef525b5d75d044d3ea8bc07bfe"
+            }
+          ]
+        },
+        {
+          "n": "105",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "While emulating an EGA, only the low five bits of the value are kept before it is stored.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "272-274",
+              "sha": "90fd09b46a10e9610a0d3f80652352d27b2cf744206d99583ba65a350895244e"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "3"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "4"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "5"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "6"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "8"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "274",
+          "as": "agrees",
+          "row": "9"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "428",
+          "as": "agrees",
+          "row": "10"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "196-198",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "272-274",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "293-308",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453",
+          "as": "agrees",
+          "row": "10"
+        }
+      ]
+    },
+    {
+      "key": "0x11",
+      "name": "overscan color",
+      "aliases": [
+        "overscan color register",
+        "border color"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4061-4064"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4068-4070"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "write_p3c0",
+          "case": [
+            "0x11"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x11"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The Overscan Color register is a read/write register at index hex 11, written at 03C0 and read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4061-4064",
+              "sha": "d4aac462cbca8747d4944e43ff038c9ac117659e17c6cec25481b34d4e3f16d6"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "write",
+          "of": "doc",
+          "text": "Bits 7-0 are stored and select the border color of the 80-column alphanumeric modes (capture reads `SO`) and of graphics modes other than 4, 5 and D.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4068-4070",
+              "sha": "ccd3c121a999a173e4ce717139151fc658f77fe8eb828e7f966ddffcaaf8727a"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "read",
+          "of": "doc",
+          "text": "The register is read at port hex 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4062-4063",
+              "sha": "dfae0f896e1b33618199e91c357a3161af25da9bce2f361e1e46fdbecbdd686a"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "329",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "430",
+          "as": "agrees",
+          "row": "3"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "195-198",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453",
+          "as": "agrees",
+          "row": "3"
+        }
+      ]
+    },
+    {
+      "key": "0x12",
+      "name": "color plane enable",
+      "aliases": [
+        "color plane enable register",
+        "enable color plane"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4071-4073"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4079-4081"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "write_p3c0",
+          "case": [
+            "0x12"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x12"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The Color Plane Enable register is a read/write register at index hex 12, written at 03C0 and read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4071-4073",
+              "sha": "bac6c211296529ce80d4c43012b94981543ddfd6ebd61d1a7de289c37cbad62d"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "bits 3-0",
+          "of": "doc",
+          "text": "The field is stored; a bit set in the Enable Color Plane field, bits 3-0, enables the corresponding display-memory color plane.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4079-4081",
+              "sha": "2a7fc8d7601b5567fffd8c5f0ab658dc9f4fab886caa9470a33a97260149b11d"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "read",
+          "of": "doc",
+          "text": "The register is read at port hex 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4072-4073",
+              "sha": "b7e116450b291343fda1c9b57e7ae86916373cba45287744d84286b774a16af6"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "bits 3-0",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A change of bits 0-3 makes DOSBox-X re-send all sixteen palette entries to the DAC.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "335-340",
+              "sha": "53094e8f8b92f90f91e3eccca8627e8e4c241b9f59c916dee2745fd5bdc0551c"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "335-342",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "432",
+          "as": "agrees",
+          "row": "3"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "195-198",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453",
+          "as": "agrees",
+          "row": "3"
+        }
+      ]
+    },
+    {
+      "key": "0x13",
+      "name": "horizontal pel panning",
+      "aliases": [
+        "horizontal pel panning register",
+        "pel panning"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4082-4084"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4091-4096"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "write_p3c0",
+          "case": [
+            "0x13"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x13"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The Horizontal Pel Panning register is a read/write register at index hex 13, written at 03C0 and read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4082-4084",
+              "sha": "e48506dce5de0b801b38c822952420aba3c788bde1b45b6341896f41ea2bd5c4"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "bits 3-0",
+          "of": "doc",
+          "text": "Bits 3-0 (HPP) are stored; the document selects the number of pels the video data is shifted to the left, in alphanumeric and graphics modes.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4091-4096",
+              "sha": "c11e1ee64c1855fa01413f90fefeffd85172878c033722e1170911441d1b8ced"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "read",
+          "of": "doc",
+          "text": "The register is read at port hex 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4083-4084",
+              "sha": "7c56d3c3e81fdad312e492918cfd5337716293f51808b4fce2e28ea184de787b"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A write marks the frame for a complete redraw, and the panning takes effect on the next frame.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "354-356",
+              "sha": "974353626dbf927d9541fee96381f1e109c302613b3ef356f23b122e7c6f9033"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "356",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "434",
+          "as": "agrees",
+          "row": "3"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "354-372",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "195-198",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453",
+          "as": "agrees",
+          "row": "3"
+        }
+      ]
+    },
+    {
+      "key": "0x14",
+      "name": "color select",
+      "aliases": [
+        "color select register",
+        "S_color"
+      ],
+      "regions": [
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4111-4113"
+        },
+        {
+          "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+          "lines": "4126-4139"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "write_p3c0",
+          "case": [
+            "0x14"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "function": "read_p3c1",
+          "case": [
+            "0x14"
+          ]
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453"
+        }
+      ],
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "The Color Select register is a read/write register at index hex 14, written at 03C0 and read at 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4111-4113",
+              "sha": "57da8ca565a81986be0fcb75b30d783f79cda5078e7c943cd5997356f40a1142"
+            }
+          ]
+        },
+        {
+          "n": "2",
+          "on": "bits 3-2",
+          "of": "doc",
+          "text": "Bits 3 and 2 are stored; outside mode hex 13 they are the DAC value's top two bits, and in mode hex 13 the attribute itself is the value.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4126-4133",
+              "sha": "92476939e468fe6cfd6a8a019515739cbe0e01c4ff3c1c3f23cc403b68685c8d"
+            }
+          ]
+        },
+        {
+          "n": "3",
+          "on": "bits 1-0",
+          "of": "doc",
+          "text": "Bits 1 and 0 are stored; they can replace P4 and P5 of the Internal Palette registers to form the 8-bit DAC value.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4134-4139",
+              "sha": "943930ea97524b602665a389ae8aa9fb5634d0e875e38e162a5dfc069158d036"
+            }
+          ]
+        },
+        {
+          "n": "4",
+          "on": "read",
+          "of": "doc",
+          "text": "The register is read at port hex 03C1.",
+          "quotes": [
+            {
+              "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+              "lines": "4112-4113",
+              "sha": "61ad05d335f5e0bceaefe343ef11a108bbcbf6c433e40b1f3d801e0a77e4521d"
+            }
+          ]
+        },
+        {
+          "n": "101",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "While emulating an EGA, a write to index hex 14 stores 0 instead of the written value.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "389-391",
+              "sha": "640f9a5ea6bd5a37cf6c19007238711c3b75be7af398173b39e6799959adeedc"
+            }
+          ]
+        },
+        {
+          "n": "102",
+          "on": "write",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A change of the register makes DOSBox-X re-send all sixteen palette entries to the DAC.",
+          "quotes": [
+            {
+              "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+              "lines": "393-397",
+              "sha": "31f4ecadc5c2e2be7ef6f3700033b38cfce996e46e37e2b0336eecb8e9c6faad"
+            }
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "393-395",
+          "as": "agrees",
+          "row": "2"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "393-395",
+          "as": "agrees",
+          "row": "3"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "436",
+          "as": "agrees",
+          "row": "4"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "195-198",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "237",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "394-397",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "420",
+          "as": "structure"
+        },
+        {
+          "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+          "lines": "453",
+          "as": "agrees",
+          "row": "4"
+        }
+      ]
+    }
+  ]
+}

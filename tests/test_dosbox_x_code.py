@@ -652,6 +652,7 @@ def test_a_stop_takes_its_instruction_from_memory() -> None:
     got = picture(s)["instruction"]
     assert got == {"address": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
                    "code_bits": 16, "bytes_from": "memory",
+                   "note": "breakpoint (0x03)",
                    "symbol": {"available": False, "why": "no symbol table is loaded"},
                    "delta": {"available": False, "why": "no symbol table is loaded"}}
     assert s.d_reads == [(LOAD, 0x102, disasm.INSN_MAX)]

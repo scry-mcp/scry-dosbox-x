@@ -2778,10 +2778,10 @@
   },
   {
    "id": "d194",
-   "prompt": "Show me the whole entry the base holds under the id ibm-pc:call:0x2F/0x16/0x80.",
+   "prompt": "Show me the whole entry the base holds under the id ibm-pc:error:5.",
    "tool": "knowledge_find",
    "args": {
-    "id": "ibm-pc:call:0x2F/0x16/0x80"
+    "id": "ibm-pc:error:5"
    }
   },
   {
@@ -2827,6 +2827,14 @@
    "grammar": [
     "register"
    ]
+  },
+  {
+   "id": "d198",
+   "prompt": "Show me only row 2 of the knowledge base entry ibm-pc:error:5, with the links to its lines.",
+   "tool": "knowledge_find",
+   "args": {
+    "id": "ibm-pc:error:5#2"
+   }
   }
  ]
 }

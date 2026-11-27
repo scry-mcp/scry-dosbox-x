@@ -1,0 +1,859 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "cms",
+ "title": "The Game Blaster's CMS ports and detection",
+ "kind": "register",
+ "scope": "gameblaster",
+ "covers": "the Game Blaster's four SAA1099 port offsets and its detection ports, as the SAA1099 data sheet describes the chip and DOSBox-X handles each offset",
+ "source": "official",
+ "documents": [
+  {
+   "name": "SAA1099.raw.txt",
+   "variant": "saa1099"
+  }
+ ],
+ "official": {
+  "SAA1099.raw.txt": [
+   "114-115",
+   "207-213",
+   "339-341",
+   "342-343",
+   "369-370"
+  ]
+ },
+ "entries": [
+  {
+   "key": "0x00",
+   "name": "CMS data 1",
+   "aliases": [
+    "Game Blaster #1 data register",
+    "SAA1099 #1 data register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "369"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "114-115"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "340-341"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "49-51"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "399-403"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "374"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "With A0 low, the data bus carries data for the internal registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "369",
+       "sha": "ee717d9f777ef005f5bb6a3d4d04a88931b72ef4c914e3203f127cd305fa6e6d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The data sheet calls the A0 = 0 byte the control register's data and the A0 = 1 byte the address buffer.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "114-115",
+       "sha": "e84ea6c6d600c4c3ae465fdb62acedb9ec8e4beaab69e0659399dc018508e4f9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "After a register's address is loaded, the data bus loads the data to it, and multiple data loads may follow.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "340-341",
+       "sha": "a259c4f03a95755e8f147b5683acbfe01650f344677a0a9df52a71d1cadafd73"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "49-51",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "399-403",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "374",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "CMS control 1",
+   "aliases": [
+    "Game Blaster #1 control register",
+    "SAA1099 #1 address buffer",
+    "register select 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "370"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "207"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "208"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "46-48"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "374"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "With A0 high, D4 to D0 on the data bus are the internal register address.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "370",
+       "sha": "4b67a41c3bfc43bc1fa10cb9a653653de5f54a3bac5c8b93471b179730e4eca2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The command and control information is multiplexed to simplify the microprocessor interface.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "207",
+       "sha": "c49ad51a1efc1054122b7cc5d6848b8fe8f8621223d48bc7a0247aa543e90b91"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "To select a register, the command register has to be loaded.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "208",
+       "sha": "1e16c582f324eb339950ee2503ded90dd50bdaad46a46ed12e9b7dafeb04fee1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "46-48",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "374",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "CMS data 2",
+   "aliases": [
+    "Game Blaster #2 data register",
+    "SAA1099 #2 data register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "342-343"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "210-211"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "339"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "55-57"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "399-403"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "106-117"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "137-141"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The selection of address or data is made by the single address bit A0.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "342-343",
+       "sha": "e553b8aa27bddeea8cd2aaa9f3b80f9ec2d873f07b44cd51d54d37f0fc77843a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "If a continuous update of the control register is needed, only the control-information has to be written; the command-information does not change.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "210-211",
+       "sha": "d0d3b191ba5ca891f82c63b4f7f2093e91f632e3a9497bc75934b77ad475745e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A data bus based write only structure is used to load the on-board registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "339",
+       "sha": "b393992e8bce4e372795e171296c7ae78d17679f28327fbe8fa633f2852af65d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "55-57",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "399-403",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "106-117",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "137-141",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "CMS control 2",
+   "aliases": [
+    "Game Blaster #2 control register",
+    "SAA1099 #2 address buffer",
+    "register select 2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "212-213"
+    },
+    {
+     "ref": "datasheet:SAA1099.raw.txt",
+     "lines": "209"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "52-54"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "374"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "396-403"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "With the command/control select at logic 0 the byte transfer is control; at logic 1 it is command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "212-213",
+       "sha": "23754940a0d2cd13d01c6324d4651d5d4114e4fdeaa56f6f82ac0cd2fe7ad623"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The contents of the command register decide which register the next data byte is written to.",
+     "quotes": [
+      {
+       "ref": "datasheet:SAA1099.raw.txt",
+       "lines": "209",
+       "sha": "6aefb5a43a2d3f39419012ef68ecba682bd8cb49457268aaeaf111c3afbca037"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "52-54",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "374",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "390",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/saa1099.cpp",
+     "lines": "396-403",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "Detect read 0x04",
+   "aliases": [
+    "Game Blaster detection read port"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "gblaster.cpp names no document for the detection chip"
+    },
+    {
+     "where": "maker",
+     "gave": "Creative Labs lists the Game Blaster and publishes no manual"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "no Creative Labs directory, only the SAA1099 data sheet"
+    },
+    {
+     "where": "archive-org",
+     "gave": "texts search returns no Creative Music System or Game Blaster manual"
+    },
+    {
+     "where": "index",
+     "gave": "datasheet indexes give only the Philips SAA1099 data sheet"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "109-111"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The detection handlers are installed only when sbtype is gb: the read handler covers sixteen ports from base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "137-141",
+       "sha": "6a1146f31b265d8b6d7d59af640cf6552450aad724d3a2d5780aebbd7111930a"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "148",
+       "sha": "fc00b9714689415f9ad611d0c66a3e235c4db026a9b4ec4ee561edb380593fb0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "306-313",
+       "sha": "6f1b6261f6e0d0c24b80f0141ac1f6230eeb700800f25f7963700448bcbc5a04"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of offset 4 returns 0x7F.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "106-111",
+       "sha": "ecb6a89e6eab1b199de8a1615c7b0520cb889857dd3e5d9ff8633dbe0af4cfca"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "117",
+       "sha": "0a89eb8c0a4302ffb4a3bd00d05417530a7c6c893af3ccfdba6c4707213d88ba"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x06",
+   "name": "Detect write 0x06",
+   "aliases": [
+    "Game Blaster detect write"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "gblaster.cpp names no document for the detection chip"
+    },
+    {
+     "where": "maker",
+     "gave": "Creative Labs lists the Game Blaster and publishes no manual"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "no Creative Labs directory, only the SAA1099 data sheet"
+    },
+    {
+     "where": "archive-org",
+     "gave": "texts search returns no Creative Music System or Game Blaster manual"
+    },
+    {
+     "where": "index",
+     "gave": "datasheet indexes give only the Philips SAA1099 data sheet"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "99-102"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The detection handlers are installed only when sbtype is gb: the write handler covers twelve ports from base plus 4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "137-141",
+       "sha": "6a1146f31b265d8b6d7d59af640cf6552450aad724d3a2d5780aebbd7111930a"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "155",
+       "sha": "76cce2d4666bd2ff6a265c2efbe9e9a468649b35ed2a2c98417bb913a2bbae02"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "316-324",
+       "sha": "66fc75d4165faa65c06cf4959e83500e6a3db592ce6f1d07c141176d072ba264"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to offset 6 or 7 stores the byte in cms_detect_register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "97-104",
+       "sha": "2f92165d91076cfbdf317197ae9165b04c704791139a28c7837bc09e8256339e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x07",
+   "name": "Detect write 0x07",
+   "aliases": [
+    "Game Blaster detect write"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "gblaster.cpp names no document for the detection chip"
+    },
+    {
+     "where": "maker",
+     "gave": "Creative Labs lists the Game Blaster and publishes no manual"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "no Creative Labs directory, only the SAA1099 data sheet"
+    },
+    {
+     "where": "archive-org",
+     "gave": "texts search returns no Creative Music System or Game Blaster manual"
+    },
+    {
+     "where": "index",
+     "gave": "datasheet indexes give only the Philips SAA1099 data sheet"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "100-102"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The detection handlers are installed only when sbtype is gb: the write handler covers twelve ports from base plus 4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "137-141",
+       "sha": "6a1146f31b265d8b6d7d59af640cf6552450aad724d3a2d5780aebbd7111930a"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "155",
+       "sha": "76cce2d4666bd2ff6a265c2efbe9e9a468649b35ed2a2c98417bb913a2bbae02"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "316-324",
+       "sha": "66fc75d4165faa65c06cf4959e83500e6a3db592ce6f1d07c141176d072ba264"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to offset 7 stores the byte in cms_detect_register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "97-104",
+       "sha": "2f92165d91076cfbdf317197ae9165b04c704791139a28c7837bc09e8256339e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x0A",
+   "name": "Detect read 0x0A",
+   "aliases": [
+    "Game Blaster detection read port"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "gblaster.cpp names no document for the detection chip"
+    },
+    {
+     "where": "maker",
+     "gave": "Creative Labs lists the Game Blaster and publishes no manual"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "no Creative Labs directory, only the SAA1099 data sheet"
+    },
+    {
+     "where": "archive-org",
+     "gave": "texts search returns no Creative Music System or Game Blaster manual"
+    },
+    {
+     "where": "index",
+     "gave": "datasheet indexes give only the Philips SAA1099 data sheet"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "112-115"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The detection handlers are installed only when sbtype is gb: the read handler covers sixteen ports from base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "137-141",
+       "sha": "6a1146f31b265d8b6d7d59af640cf6552450aad724d3a2d5780aebbd7111930a"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "148",
+       "sha": "fc00b9714689415f9ad611d0c66a3e235c4db026a9b4ec4ee561edb380593fb0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "306-313",
+       "sha": "6f1b6261f6e0d0c24b80f0141ac1f6230eeb700800f25f7963700448bcbc5a04"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of offset 10 or 11 returns cms_detect_register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "106-115",
+       "sha": "53550dc48fb98fad001a9a0d592b650527150117d89c9f64e6d53712742d0bf4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "117",
+       "sha": "0a89eb8c0a4302ffb4a3bd00d05417530a7c6c893af3ccfdba6c4707213d88ba"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "cms_detect_register starts at 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "95",
+       "sha": "21cde52d527f1ce469edfd95e18b98ef19ff065c3fc687f019458f10458800c8"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x0B",
+   "name": "Detect read 0x0B",
+   "aliases": [
+    "Game Blaster detection read port"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "gblaster.cpp names no document for the detection chip"
+    },
+    {
+     "where": "maker",
+     "gave": "Creative Labs lists the Game Blaster and publishes no manual"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "no Creative Labs directory, only the SAA1099 data sheet"
+    },
+    {
+     "where": "archive-org",
+     "gave": "texts search returns no Creative Music System or Game Blaster manual"
+    },
+    {
+     "where": "index",
+     "gave": "datasheet indexes give only the Philips SAA1099 data sheet"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+     "lines": "113-115"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The detection handlers are installed only when sbtype is gb: the read handler covers sixteen ports from base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "137-141",
+       "sha": "6a1146f31b265d8b6d7d59af640cf6552450aad724d3a2d5780aebbd7111930a"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "148",
+       "sha": "fc00b9714689415f9ad611d0c66a3e235c4db026a9b4ec4ee561edb380593fb0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "306-313",
+       "sha": "6f1b6261f6e0d0c24b80f0141ac1f6230eeb700800f25f7963700448bcbc5a04"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of offset 11 returns cms_detect_register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "106-115",
+       "sha": "53550dc48fb98fad001a9a0d592b650527150117d89c9f64e6d53712742d0bf4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "117",
+       "sha": "0a89eb8c0a4302ffb4a3bd00d05417530a7c6c893af3ccfdba6c4707213d88ba"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "cms_detect_register starts at 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gameblaster.cpp",
+       "lines": "95",
+       "sha": "21cde52d527f1ce469edfd95e18b98ef19ff065c3fc687f019458f10458800c8"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  }
+ ]
+}

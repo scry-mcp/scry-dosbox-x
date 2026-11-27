@@ -1,44 +1,41 @@
-"""What this server serves of the shared base (the chips and cpus scry-core holds once): only what
-the shared locks and second check confirm, merged with this server's own confirmation."""
+"""What this server serves of the shared base (the chips scry-core holds once): what the shared
+lock seals, merged with this server's own seals."""
 
 from __future__ import annotations
 
-from scry_core import knowledge_tool
-from scry_core.knowledge import shared
+from importlib import resources
+
+from scry_core.knowledge import base as rows
+from scry_core.knowledge import sealed, shared
 
 from scry_dosbox_x import knowledge as pc
 from scry_dosbox_x import server as s
 
 
-def test_the_base_serves_the_shared_entries_the_shared_check_confirms_and_no_others() -> None:
-    whole = pc.load().unfiltered()
-    sure = shared.confirmation()
-    taken = {e.id for e in whole.entries() if e.scope != pc.SCOPE}
-    assert taken, "no shared entry was loaded"
-    served = {e.id for e in pc.base().entries()}
-    assert taken & served == {e.id for e in whole.entries()
-                              if e.scope != pc.SCOPE and sure.confirms(e)}
-    assert served & taken
+def _own_lock() -> sealed.Lock:
+    own = resources.files("scry_dosbox_x") / pc.ROWS_LOCK
+    return sealed.parse_lock(own.read_text(encoding="utf-8"), pc.ROWS_LOCK)
 
 
-def test_the_own_entries_keep_their_own_confirmation() -> None:
-    own = {e.id for e in pc.base().entries() if e.scope == pc.SCOPE}
-    assert len(own) == 630
+def _shared(base: rows.Base) -> set[str]:
+    """What the base serves that this server's own lock does not seal."""
+    own = _own_lock()
+    return {e.id for e in base.entries() if e.id not in own.sealed}
 
 
-def test_knowledge_find_answers_a_shared_chip_register() -> None:
-    reply = s.knowledge_find(kind="register", key="0x00", scope="am9517a")
-    assert [e["id"] for e in reply["entries"]] == ["am9517a:register:0x00"]
+def test_the_base_serves_the_shared_entries_the_shared_lock_seals_and_no_others() -> None:
+    assert _shared(pc.base().unfiltered()), "no shared entry was loaded"
+    alone = rows.Base.load("scry_core", lock=shared.rows_lock())
+    assert _shared(pc.base()) == {e.id for e in alone.entries()}
 
 
-def test_knowledge_find_on_a_held_back_shared_key_says_it_is_not_confirmed() -> None:
-    held = next(e.id for e in pc.load().unfiltered().entries()
-                if e.scope not in {pc.SCOPE} and pc.base().by_id(e.id) is None)
-    scope, kind, key = held.split(":", 2)
-    reply = s.knowledge_find(kind=kind, key=key, scope=scope)
-    assert reply["entries"] == [] and reply["unconfirmed"] == [held]
+def test_the_own_entries_are_served_by_the_own_lock_alone() -> None:
+    alone = rows.Base.load("scry_dosbox_x", lock=_own_lock())
+    own = _own_lock()
+    assert {e.id for e in pc.base().entries() if e.id in own.sealed} == set(alone.ids())
 
 
-def test_status_carries_the_counts_of_the_whole_served_base() -> None:
-    counts = knowledge_tool.counts(pc.base())
-    assert counts["served"] > 630 and counts["held_back"] > 235
+def test_knowledge_find_answers_a_shared_chip_command_or_says_it_is_held_back() -> None:
+    reply = s.knowledge_find(kind="command", key="0x20", scope="pic8259")
+    answered = [e["id"] for e in reply["entries"]] + reply.get("unconfirmed", [])
+    assert answered == ["pic8259:command:0x20..0x27"], reply

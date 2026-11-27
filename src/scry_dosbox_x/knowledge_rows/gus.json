@@ -1,0 +1,5621 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "gus",
+ "title": "Gravis UltraSound ports and GF1 registers",
+ "kind": "register",
+ "scope": "ibm-pc",
+ "covers": "The Gravis UltraSound's I/O ports at the card's base block, 2X0/2X6/2X9/2XB/2XF and 3X0-3X7 plus the mixer's 7X6 and the UltraMax codec's four ports, and the GF1's indexed registers: the voice registers 0x00-0x0E with the read aliases 0x80-0x8F, and the global registers 0x41-0x4C, as the Lowlevel ToolKit documents them and DOSBox-X handles them.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "GUS-Lowlevel-Toolkit-222.raw.txt",
+   "variant": "UltraSound Lowlevel ToolKit 2.22"
+  }
+ ],
+ "official": {
+  "GUS-Lowlevel-Toolkit-222.raw.txt": [
+   "683-775",
+   "1353-1377",
+   "1385-1417",
+   "1425-1461",
+   "1465-1509",
+   "1513-1553",
+   "1557-1595",
+   "779-805",
+   "809-835",
+   "839",
+   "843",
+   "1345",
+   "1349",
+   "1421",
+   "1599",
+   "1603",
+   "1607-1617",
+   "1621",
+   "1625-1659",
+   "1107-1147",
+   "1149-1157",
+   "1159-1163",
+   "1165-1171",
+   "1173-1177",
+   "1179-1185",
+   "1187-1193",
+   "1195-1203",
+   "1067-1071",
+   "1073",
+   "875-937",
+   "939-943",
+   "945-947",
+   "949-973",
+   "975-977",
+   "985-1025",
+   "1031-1063",
+   "1205-1215",
+   "1217-1231",
+   "1233-1237",
+   "1239-1243",
+   "1245-1249",
+   "1251-1293",
+   "1295-1301",
+   "1099",
+   "1101",
+   "1303-1341",
+   "1379-1381"
+  ]
+ },
+ "closed": [
+  {
+   "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+   "lines": "683-753",
+   "as": "key"
+  },
+  {
+   "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+   "lines": "773",
+   "as": "key"
+  },
+  {
+   "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+   "lines": "775",
+   "as": "see-also"
+  }
+ ],
+ "engine": [
+  "FillUp",
+  "UpdateVolumes",
+  "UpdateWaveRamp",
+  "SetFreq",
+  "GUS_CheckIRQ",
+  "CheckVoiceIrq",
+  "GUS_StartDMA",
+  "GUS_StopDMA",
+  "GUS_Update_DMA_Event_transfer",
+  "GUS_EmulationEvent",
+  "GUS_MidiCheckIRQ",
+  "PIC_AddEvent",
+  "PIC_RemoveEvents",
+  "MIDI_RawOutByte",
+  "GUSReset",
+  "gus_max_map_codec",
+  "Register_Callback",
+  "SetIRQ",
+  "SetPlaybackDMA",
+  "ExecuteGlobRegister",
+  "ExecuteReadRegister",
+  "Install",
+  "Uninstall"
+ ],
+ "entries": [
+  {
+   "key": "0x200",
+   "name": "mix control",
+   "aliases": [
+    "2X0"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1425-1461"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x200"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 2X0 sets the mix control byte: bits 0-2 enable line in, line out and mic in, and bit 3 powers the latches.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1433-1439",
+       "sha": "fa7d6e4a1bce0dbb8d9c4aa302e6be50d0b3b1c2ff87df06868f2fc7d9b99da1"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1449-1453",
+       "sha": "10d1dc1f441b38e7e2b58e850b68c6ce5fb4ba5b95eb93b3f8503f7fd13c6e05"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The same write sets bits 4-6: IRQ combining, MIDI loopback, and which latch set, IRQ or DMA, the next write to 2XB reaches.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1441-1447",
+       "sha": "e1a710e3a97b505885ad03f667ca58cffd0084767b3ed59df04ad2c33347e9eb"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1457-1461",
+       "sha": "a5174a4f9fd4197a98e481fffd7e7fd70a2c2a7dfb3f068aa6c015cc7be09286"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The document warns that the latch supply must stay on once enabled, or the IRQ and DMA lines float and raise random IRQs.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1455",
+       "sha": "ce7f71dfdb3dad733eeb046c7ba4d2834f8665c4f3a6176f670e675a6cd314a3"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write also clears the control register select and marks the IRQ and DMA latches as reprogrammed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1653-1655",
+       "sha": "4a93845bd3fb66a45fd0a3712e66c05d261cf7ca239c3b63526bc2e87493e344"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1425-1431",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1652-1656",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1653-1655",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x206",
+   "name": "IRQ status",
+   "aliases": [
+    "2X6"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1353-1377"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x206"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x206"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The IRQ status register is at 2X6, not at 3X6.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1353",
+       "sha": "cbc27103d46ee6195fe8d565476fba049abee802638a504c7ddede24e0677e9e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 2X6 gives the pending IRQ bits: 0 MIDI transmit, 1 MIDI receive, 2 timer 1, 3 timer 2, 5 wavetable, 6 volume ramp, 7 DMA terminal count.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1363-1373",
+       "sha": "feb28d3b75b77209d84d4434a57097f925cfbc47a6484d5ee62e765909ce2ca6"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1375-1377",
+       "sha": "9f128de0d5a59bc3857e18543552f9aa996c8aaefda634594ef8f974794042a6"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read also counts rapid polls under the clear-on-polling option and, after five hundred, clears the DMA terminal count bit so a stuck game continues.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1502",
+       "sha": "4636c03349fe09d84f00288cc0aa7baa1e70c57e522aff7c1bea3e36c69c7351"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1516-1525",
+       "sha": "0051ad7f3fecf1376c0c0b1fc81999c30004e94015ed11e04eac0496753993eb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1527-1531",
+       "sha": "413314ae78549378b89fabc2d067c9bed7319687f32c499236d7c037a257b4b2"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Y",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write sets the Sound Blaster reset flag and, with the capture bit on, notifies the Sound Blaster emulation.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1657-1659",
+       "sha": "8a0c82a82ef9f5c8d64f0b78e30ef42c0f55586d94400b95b33fdd1a35a436a3"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1535",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1355-1361",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x208",
+   "name": "AdLib control and status",
+   "aliases": [
+    "2X8"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1379-1381"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x208"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x208"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "2X8 maps to the same location as the AdLib board's control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1379-1381",
+       "sha": "d815e7ecfc52580deb64c1d8cdc0e08344e63cb200134c4ed39df0a8eb839906"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing 4 to 2X8 selects the timers.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1381",
+       "sha": "3c2d4ea7a6d9ffc2240c66ca4a0e3b630fdaa1c325d078fe72ec8e7377f1e114"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 2X8 sets bit 6 when timer 1 has expired and bit 5 when timer 2 has.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1381",
+       "sha": "3c2d4ea7a6d9ffc2240c66ca4a0e3b630fdaa1c325d078fe72ec8e7377f1e114"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The read also reports the captured writes in bits 0, 3 and 4, the timer IRQs in bits 1 and 2, and a timer expiry in bit 7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1539-1544",
+       "sha": "d124fdcb553418f746ac7089391d13c0fc5f7258acb4bc26c770386baaf2c134"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Y",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "While the Sound Blaster emulation poses as the AdLib, a read returns the status byte it left in the latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1537",
+       "sha": "367331ba33fb07ac16d925267e49f63cdf685bc5e9cfbb277def6fb03863cb84"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1661-1663",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1539-1545",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1547",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x209"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1693",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x20A"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "691",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x4C"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1176",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x45"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1658",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x206"
+    }
+   ]
+  },
+  {
+   "key": "0x209",
+   "name": "timer data",
+   "aliases": [
+    "2X9"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1385-1417"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x209"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x209"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "Once 4 is written to 2X8, 2X9 is timer control: bit 0 starts timer 1, bit 1 timer 2, bits 6-5 mask them, bit 7 clears the IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1391-1401",
+       "sha": "17dc732e53446b3f0c34eb51c164a9ef3e998fb2af8e47bc3c9e9860caac5767"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1403-1407",
+       "sha": "bad8df73a8954d8e1a2c6e288ca7f414ac1edab3382ba3afe6785384891728df"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-4 are reserved, bit 5 masks timer 2, bit 6 masks timer 1 and bit 7 clears the timer IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1409-1417",
+       "sha": "3edce96b6e75eeea0c498b97594e83fec61506053d9d05f41145d8f91271d00c"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "Without the tool kit in charge, the byte is captured as AdLib data for the Sound Blaster emulation instead of driving the timers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1667-1671",
+       "sha": "c58260a7c54180e4a923de2269ad0f352e10f2471bbf46c82b4397d1bf90e21e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Y",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read clears the captured-write flag and returns the byte the Sound Blaster emulation left.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1546-1548",
+       "sha": "a159cb8350c8917091b4bae40c6a7e76ecd39155c907f44c39e18e5660db5df6"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1672-1675",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1676-1685",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1686-1690",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1385-1389",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1666",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x20B",
+   "name": "IRQ and DMA control",
+   "aliases": [
+    "2XB"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1465-1509"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1513-1553"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1561-1595"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x20b"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "2XB is the IRQ control register while bit 6 of 2X0 is set and the DMA control register while it is clear.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1465-1467",
+       "sha": "bec621b14302888ea0ef9473c1404a4131701372e26bb92a90cf6c55a619b700"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1513-1515",
+       "sha": "673199e027939d3cdfbba65f9db0201200427ba0d2f6ddbfed7771e3bbbc2f3b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The IRQ control register selects the GF1 IRQ in bits 2-0 and the MIDI IRQ in bits 5-3: 1 to 7 are IRQ 2, 5, 3, 7, 11, 12, 15.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1469-1479",
+       "sha": "866f7e467bd744781a101473d2b27f5f26643658d8d85086e91ee98a22eb1116"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1481-1489",
+       "sha": "b1f75efd2868ad2450c46b7c1e9fc45f1b4a505d5c7e6d92fff55058ba2888cf"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1491-1495",
+       "sha": "05da4d0cccd56d7f971d348eb7e38c651e51a8733731efe19f09e641a272bb9d"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1497-1503",
+       "sha": "908acca80655b2658513ac3cd51aeb59bbd57433f450844316ccfdb85a2b32aa"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 combines both IRQs on channel 1's, and the note says the second selector must then be 0 or a bus conflict arises.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1505-1507",
+       "sha": "3cdd57df7a9c5b3b8a4e02c45b25f3ecc1f0d3cb5f487bb768bbabe1d7b65b76"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1509",
+       "sha": "a7a09bb9d66fbe3dacb050f6a71ee1a044d953876349eaede2cb6fe8821f8ab8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The DMA control register selects the first DMA channel in bits 2-0 and the second in bits 5-3, 1 to 5 choosing DMA 1, 3, 5, 6 or 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1517-1523",
+       "sha": "76a1df682522949d81203bd162272bc4c993e4fc39ae2ecb2c68d7770f077483"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1525-1529",
+       "sha": "8de019b3404a15ede1276a76cbf4720fa9d6d6baed539d694d43df1a195812f1"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1531-1537",
+       "sha": "e692e1476bfd68242d2b60cff24f9e6a78248538707e9ed80e10c13e4e2a7e03"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1539-1543",
+       "sha": "8de019b3404a15ede1276a76cbf4720fa9d6d6baed539d694d43df1a195812f1"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 combines both channels on the first, and the document notes that sharing a DMA without it raises a bus conflict.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1545-1547",
+       "sha": "85dceb4ad54ff04460b098e8a567476e4156be3023ade5b16a575eba2a811334"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1549",
+       "sha": "7b5bad85b3e52ed697fe322801fc6c5d8511b406ac3060c7447594bb46e1734f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The document says the two latches must be written in the right order or unpredictable things may happen.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1551",
+       "sha": "7815490495106a9cf14a34db716b870f7afc8b6cac27796728d0ce341eaa2bee"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1553",
+       "sha": "cb80a518e471502270071acc073591200580e02be9f5c146d4667fd8f8da1c71"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The IRQ and DMA selectors decode through two tables of eight entries: 0 none, then IRQ 2, 5, 3, 7, 11, 12, 15 and DMA 1, 3, 5, 6, 7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "81",
+       "sha": "9f6e24821dd0fc144e5d54b433be5baf92ee6692ab5acb063c78c43054687095"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "82",
+       "sha": "07911b0a3bab33fa06efec05df88f99850313fbb177b699497cfb748a17e2eed"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Y",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The card accepts the write only on the I/O cycle right after 2X0 or 2XF armed the latches, and ignores it otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1707-1708",
+       "sha": "620387957512a56387e82e878f4dd320ceaa31f6d52634bbb485b464ba5d6303"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1830",
+       "sha": "b20211cf08515fdd02471b5ee9de86650eb552246a9a4ff8ea628cfc8ce66f4b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Z",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write also records whether the two selectors name the same IRQ or DMA, for the conflict warning.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1769",
+       "sha": "10cb3a46169c116a39dfbfce6cb8cea8d842a218453f9c886738183e24ff5f84"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1820",
+       "sha": "713d9df39f5690bc256bc099136bb72ee117f71afb7d0efae2d789fd706fe9fb"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0 is the pre-3.4 control register and registers 1-4 are unused.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1561-1565",
+       "sha": "12b76aff417c2bc8b19d7273f34d0d40a8656a06c2aff77f130b149ddf6f138d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "With register 5 selected, a write of 0 clears the IRQs at power-up.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1567",
+       "sha": "c98599da5a5472e45ee370c403e3282d0ba1e0798d6bfbf7fa7acaf9bc4afa38"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "doc",
+     "text": "With register 6 selected, a write's bits 1 and 2 enable the MIDI and joystick port address decode.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1569-1571",
+       "sha": "2c30a5f34eaad4ccacf24d4bb491706a5f2e4f0198f5cd2f3a6f5070263c15cd"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1573-1583",
+       "sha": "8cb97da4396ffe9e42c61a16f4d76f2f8e2978f87b2d76b5afbe88b5ffcf7bbc"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1585-1595",
+       "sha": "3edda2d180bfdb010e76eed1a3264a6aefb24ad399d968c9a472d6c248c0c3d6"
+      }
+     ]
+    },
+    {
+     "n": "D8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "8",
+     "text": "With register 5 selected, the write only logs the value at src/hardware/gus.cpp:1726 and clears no IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1724-1727",
+       "sha": "30c25fd3c15bce81e6aa388fee274700bf047bfa207c24736ba94f1e1d02ac82"
+      }
+     ]
+    },
+    {
+     "n": "D9",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "9",
+     "text": "With register 6 selected, the write only logs the value at src/hardware/gus.cpp:1722 and enables neither decode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1710-1723",
+       "sha": "955472a7ae3a0e499efde76bbf6618c9c0d11c26e5ac9a77c99ae39455ba35fc"
+      }
+     ]
+    },
+    {
+     "n": "W",
+     "of": "dosbox-x",
+     "on": "write",
+     "vs": "differs",
+     "row": "2",
+     "text": "Bits 2-0 and 5-3 select the GF1 and MIDI IRQs as documented, but bit 7, which the document reserves, makes a captured Sound Blaster write raise an NMI instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1754-1762",
+       "sha": "899b87c00abc6b54f7912db69301dec9054488669b822fbdcb26d879ac42f843"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "838",
+       "sha": "259393039566d4e7033a6c6d8b6b1ad421054826e5582e9ed1030fffb670e94f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1710-1727",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1802-1808",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1728",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1770",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1823",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1729",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1766",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1814",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x20F",
+   "name": "register bank select",
+   "aliases": [
+    "2XF"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1557-1559"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x20f"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x20f"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "2XF is valid only on boards of revision 3.4 and above, where a bank of six registers exists at 2XB.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1557-1559",
+       "sha": "e9f312537d4ba0a0bfdd69dc7899a629deda74ed8bed08e4ad176ca5b352ec5f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 2XF selects which of the six registers at 2XB is talked to.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1559",
+       "sha": "3408c2c19425bd4653039193ab888bf944a783725727f1b2a3d2e56a92bff533"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of 2XF gives 02h on a MAX or ICS card and ffh otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1555-1558",
+       "sha": "ef2b2d95e69b5092bdca31dddf2369d64a7e5076c5687dae2841387ec564be1e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1827-1832",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x20A",
+   "name": "SBOS AdLib command latch",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The MAME GUS header cites the GUS SDK's lowsrc.doc; that tool kit's text has no SBOS port."
+    },
+    {
+     "where": "maker",
+     "gave": "Advanced Gravis no longer exists; no maker page documents the Sound Blaster ports on the card."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers refused its folder listing; a search of the archive found no Gravis UltraSound document."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the GUS SDK zips, gusdk-222 and gusdk-201, whose tool kit text names no 2XA-2XE port."
+    },
+    {
+     "where": "index",
+     "gave": "The datasheet indexes searched list no Gravis UltraSound document."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x20A"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x20A"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of 2XA stores the AdLib command byte in the Sound Blaster latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1693",
+       "sha": "0ece8efef2309a9085ed225f777f7f46f8143756f1b77e830adcb713754d6908"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 2XA returns the AdLib command byte last written to 2X8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1549-1550",
+       "sha": "5c27a45c1d8b58c3fc5ada7420b832ee2c401e3b95158f1172e6344f497ae8d8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "689",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x4C"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1662",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x208"
+    }
+   ]
+  },
+  {
+   "key": "0x20C",
+   "name": "SBOS DSP command latch",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The MAME GUS header cites the GUS SDK's lowsrc.doc; that tool kit's text has no SBOS port."
+    },
+    {
+     "where": "maker",
+     "gave": "Advanced Gravis no longer exists; no maker page documents the Sound Blaster ports on the card."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers refused its folder listing; a search of the archive found no Gravis UltraSound document."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the GUS SDK zips, gusdk-222 and gusdk-201, whose tool kit text names no 2XA-2XE port."
+    },
+    {
+     "where": "index",
+     "gave": "The datasheet indexes searched list no Gravis UltraSound document."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x20C"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x20C"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "2XC is the Sound Blaster DSP command port the emulation adds at the card's base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1695",
+       "sha": "bb944d9391d8521cf0b29de8444bcc368e75b02e726b1b07fd508da32b6d7080"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of 2XC stores the byte in the latch and marks a captured Sound Blaster write.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1695-1699",
+       "sha": "1d39d7f71b0eb915e232d640ab995152eb823e74daaf636a1d737249f8117cc4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 2XC returns the byte last stored in that latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1551-1552",
+       "sha": "0abe7fe0ec68b1ea58e725b5b1c9ef872a64f2dc167f0d27f9a13a086e251312"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1701",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x20D"
+    }
+   ]
+  },
+  {
+   "key": "0x20D",
+   "name": "SBOS DSP data latch",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The MAME GUS header cites the GUS SDK's lowsrc.doc; that tool kit's text has no SBOS port."
+    },
+    {
+     "where": "maker",
+     "gave": "Advanced Gravis no longer exists; no maker page documents the Sound Blaster ports on the card."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers refused its folder listing; a search of the archive found no Gravis UltraSound document."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the GUS SDK zips, gusdk-222 and gusdk-201, whose tool kit text names no 2XA-2XE port."
+    },
+    {
+     "where": "index",
+     "gave": "The datasheet indexes searched list no Gravis UltraSound document."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x20D"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "2XD is a second Sound Blaster data port at the card's base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1700",
+       "sha": "17c358691eb6c87badd907565adeec38d26025af7a22c747bdc7fd467ebda903"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of 2XD stores into the same latch as 2XC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1700-1702",
+       "sha": "5bd4cac925a00d2a29f3c3e302a5daed890b20d4f2a388a29372692d3ec67902"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x20E",
+   "name": "SBOS capture latch",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The MAME GUS header cites the GUS SDK's lowsrc.doc; that tool kit's text has no SBOS port."
+    },
+    {
+     "where": "maker",
+     "gave": "Advanced Gravis no longer exists; no maker page documents the Sound Blaster ports on the card."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers refused its folder listing; a search of the archive found no Gravis UltraSound document."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the GUS SDK zips, gusdk-222 and gusdk-201, whose tool kit text names no 2XA-2XE port."
+    },
+    {
+     "where": "index",
+     "gave": "The datasheet indexes searched list no Gravis UltraSound document."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x20E"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x20E"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "2XE is a Sound Blaster port the emulation keeps at the card's base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1703",
+       "sha": "ac4ca8f4eaca3030737a946a25bd0ac8c590037e164893aa0a018cf45695e120"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of 2XE stores the byte in the latch it owns.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1703-1705",
+       "sha": "0117d64c1feef7eb6330ac8acc355501da27341c23afd8f808647772873bffa4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 2XE returns the byte last stored there.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1553-1554",
+       "sha": "abf2ced351d7ae979d0c41a54dd9f8a66a00e12d6af0c872691b94e7cce2a1f5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x300",
+   "name": "MIDI control and status",
+   "aliases": [
+    "3X0"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "779-805"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "809-835"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x300"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x300"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X0 is write-only for the MIDI control byte and read-only for the MIDI status byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "779",
+       "sha": "094b708c870f9c71f6b41c6a6e5de2ae2431c4c1d431821b6c8b5a6b603fa04e"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "809",
+       "sha": "5b3c798bd02f50da1dd31c7892185f4db45c8f943b8c3a1aaf19ab9ea9b27aba"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The control byte's bits 0 and 1 master-reset the interface when set, and toggling them will normally raise a transmit-buffer-empty IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "789-791",
+       "sha": "336ff375b228e8993fc5a82e414cb876903d01d5ec90ac7db61511434257a983"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "805",
+       "sha": "36dafcdb75ed1ad15186b3ed5f747a3bfa6ab928f5b1c5f71e63f6daf2dc6efc"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 5 and 6 together enable the transmit IRQ and bit 7 the receive IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "799-803",
+       "sha": "1ed8133b438c08d610a352414aa02b60df5de95fccc2876d3bf18afe12b2290a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The status byte reports receive full in bit 0, transmit empty in bit 1, framing and overrun errors in bits 4 and 5, and a pending interrupt in bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "817-827",
+       "sha": "29c1024724c66f53990482fe8a622a9fe215601d9669b1aca26c113431fe9f88"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "829-833",
+       "sha": "1c27612a9b107417004bc7b895c8cf7c2d09172641b64aaec46e681e2ced5749"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The MIDI interface behaves identically to a 6850 UART.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "835",
+       "sha": "1bc2b8b584b1ce50c9e6251ab0400f30c59e6feae925ccbb22721ba2d09ee21e"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The status bits are set by the MIDI interrupt check and by the transmit completion.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "828",
+       "sha": "9d4f234d78fed086d2ddcd68243f1a3693b51f7089447cdbe201be00f2bec65c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "850-860",
+       "sha": "d0fbe9c0c57cc6f68633f35f31fc00d0ba516fcc7060c40ea2e691a5f7ab413c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "781-787",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1833-1842",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1559-1560",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1562",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x301"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1846",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x301"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "811-815",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "793-797",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x301",
+   "name": "MIDI data",
+   "aliases": [
+    "3X1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "839"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x301"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x301"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X1 holds the MIDI transmit and receive registers, each eight bits wide.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "839",
+       "sha": "843816439189ef7aa948b301dd1dc56c9bed830d1838d7804880aa027f891c8a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 3X1 transmits the byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "839",
+       "sha": "843816439189ef7aa948b301dd1dc56c9bed830d1838d7804880aa027f891c8a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 3X1 returns the received byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "839",
+       "sha": "843816439189ef7aa948b301dd1dc56c9bed830d1838d7804880aa027f891c8a"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write while the interface is held in reset is dropped.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1845",
+       "sha": "bb3cd31b61b793fecfedb45938cb84888648e8d6f5caffc5c963a99add191a2b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Y",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is delivered when the transmit event fires, and loops back into the receiver when loopback is on.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "850-857",
+       "sha": "fbb589fdc275d4ccf98e47c538a1d240dc471206b4fb2709634b5ff27281d59d"
+      }
+     ]
+    },
+    {
+     "n": "Z",
+     "of": "dosbox-x",
+     "on": "read",
+     "vs": "extra",
+     "text": "A read also clears the receive-full status bit and rechecks the MIDI IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1562-1563",
+       "sha": "65a805349354725359b35d92e61049b42e73fa987355ce277d25e64c64510753"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1844-1848",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1561-1564",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x302",
+   "name": "voice select",
+   "aliases": [
+    "3X2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "843"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x302"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x302"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X2 is the page or voice select register: it chooses which voice's registers the next accesses reach, from 0 to the active voice count.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "843",
+       "sha": "10689df93cac91f2e9a5121cc225b84793e8d8fde9594dcfd2ed7a8bf65f9298"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 3X2 selects the voice.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "843",
+       "sha": "10689df93cac91f2e9a5121cc225b84793e8d8fde9594dcfd2ed7a8bf65f9298"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns the last value written to 3X2 or to the data ports on pre-InterWave cards.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1565-1566",
+       "sha": "5176617559941d08935e19a5c570923314bd79eaf2916df77feacc3460850e8f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1850-1853",
+       "sha": "dd412b3f4a09540e9e2a6536a3f831168bee2f4ec88cf68f3f9a370131d41b6c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1861-1871",
+       "sha": "cd6c2b6ed8ed920be3fe2e1f5bb570251725308071f823708e17f24debcf6947"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1850-1856",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1574",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x304"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1858",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x303"
+    }
+   ]
+  },
+  {
+   "key": "0x303",
+   "name": "register select",
+   "aliases": [
+    "3X3"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "3017-3018"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x303"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x303"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X3 is the GF1 and global register select, read and written.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3017",
+       "sha": "1e143811e5e5fd7468708547bf5e89f5b37d91fc5481412bafcb1787675a44da"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 3X3 selects the indexed register the data port reaches.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3017",
+       "sha": "1e143811e5e5fd7468708547bf5e89f5b37d91fc5481412bafcb1787675a44da"
+      },
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3018",
+       "sha": "9bf1f7c9618c9ec185262d62dbacb1950368f07ccf436ad104f02a49648fc9de"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns the last value written to 3X2-3X5, which need not be the index selected.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1567-1568",
+       "sha": "7335033731ee7bcaa0a4f49e22a07abcf48d84629fc24584f296d51d7cf1e9e7"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "Y",
+     "of": "dosbox-x",
+     "on": "write",
+     "vs": "extra",
+     "text": "A write also clears the stored 16-bit data latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1859",
+       "sha": "6b35c9ab6a92741b329e769cb8f56d3a284c6fc4084b4914bf1ae5c42d0d5a17"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1857-1860",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1574",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x304"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1853",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x302"
+    }
+   ]
+  },
+  {
+   "key": "0x304",
+   "name": "global data low",
+   "aliases": [
+    "3X4"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1345"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x304"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x304"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X4 is the global data low byte: a 16-bit I/O there transfers a whole 16-bit register, and an 8-bit I/O only its low part.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1345",
+       "sha": "ad83d30e7f07d73c453979546d3d6bf3bab3936cd217a9c626f7fe7d4e455779"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 3X4 stores the low byte, and a 16-bit write executes the register at once.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1345",
+       "sha": "ad83d30e7f07d73c453979546d3d6bf3bab3936cd217a9c626f7fe7d4e455779"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 3X4 returns the selected register's value, executing the read.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1345",
+       "sha": "ad83d30e7f07d73c453979546d3d6bf3bab3936cd217a9c626f7fe7d4e455779"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1569-1576",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1861-1872",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x305",
+   "name": "global data high",
+   "aliases": [
+    "3X5"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1349"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x305"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x305"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X5 is the global data high byte: an 8-bit transfer for an 8-bit register, or the high part of a 16-bit one.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1349",
+       "sha": "9438d6974a1100969177c7e735279497781900f2464cfbb3b5b4cdf4d2435d36"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 3X5 stores the high byte and executes the register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1349",
+       "sha": "9438d6974a1100969177c7e735279497781900f2464cfbb3b5b4cdf4d2435d36"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 3X5 returns the high byte of the selected register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1349",
+       "sha": "9438d6974a1100969177c7e735279497781900f2464cfbb3b5b4cdf4d2435d36"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1875-1880",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1577-1583",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x306",
+   "name": "mixer data and MAX ctrl",
+   "aliases": [
+    "3X6"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1603"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1625-1659"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x306"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x306"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X6 is the ICS-2101 mixer data port, or on a MAX the write-only UltraMax control register, and the software must know which device is there.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1603",
+       "sha": "e4bc6db06dd2e4c4897b9be7bc56cbdb31cd538db7b66f227655cd227dac3939"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1625",
+       "sha": "cca6f7595f8edd6e4a360e211bbcee3e1e8e5944efa176428202876cd9636c61"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The UltraMax control register's bits 0-3 choose the X of the codec's base 3XC, bits 4 and 5 the capture and playback DMA width, and bit 6 enables the codec.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1627-1637",
+       "sha": "f0c91a4d613eb015146d9e572cac372e11026f702a9b638664c4a94e9a4888a6"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1639-1649",
+       "sha": "a88c065ebace8b8a8d665be24edb2df3d3762a8221f8fef27ce993dc95f1a8ef"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1651-1659",
+       "sha": "fa99041e2b3bfae6f9f2be9dfd625d4cff5f6ebf63c8352805b6fb3dd2c35259"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "On a card with the ICS mixer the byte goes to the mixer's data port instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1905-1909",
+       "sha": "0eff8d9427296761e3783b188bae9820e8cb7d08883eb984ef4c9cc3cb682bbe"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a MAX a read of 3X6 gives the revision id byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1594-1595",
+       "sha": "c0af33736c33efc7172490a09bd3c13914cde8b4f6fba3e69dcfe45eccac1061"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1892-1901",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1902-1904",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1890-1891",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1593",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x706"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1596-1602",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x706"
+    }
+   ]
+  },
+  {
+   "key": "0x307",
+   "name": "DRAM data",
+   "aliases": [
+    "3X7"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1421"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x307"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x307"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "3X7 reads or writes the DRAM byte at the address that registers 43 and 44 point at.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1421",
+       "sha": "1f1c40ddb371a704ebb5160f78711c3dd847364e6f05c9ddc91f3b1e93599bf0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 3X7 stores the byte into DRAM at that address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1421",
+       "sha": "1f1c40ddb371a704ebb5160f78711c3dd847364e6f05c9ddc91f3b1e93599bf0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 3X7 returns the DRAM byte at that address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1421",
+       "sha": "1f1c40ddb371a704ebb5160f78711c3dd847364e6f05c9ddc91f3b1e93599bf0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1882-1889",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1584-1591",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1592-1601",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x306"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1602",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x706"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "732",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x4C"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1165",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x43..0x44"
+    }
+   ]
+  },
+  {
+   "key": "0x706",
+   "name": "mixer control, revision",
+   "aliases": [
+    "7X6"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1599"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1607-1617"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus",
+     "case": [
+      "0x706"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus",
+     "case": [
+      "0x706"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "7X6 reads the board revision on cards of 3.7 or later.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1607",
+       "sha": "64eb61728f0a96dce17882f285321bd8c1206fe7190a6ea5e8b55e94562f7dd8"
+      }
+     ]
+    },
+    {
+     "n": "1B",
+     "on": "is",
+     "of": "doc",
+     "text": "ff means no ICS mixer, 5 a 3.7 with flip problems, 6-9 a 3.7 or later with the mixer, and 0Ah and up an UltraMax.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1609-1617",
+       "sha": "ca1106db903c3ac9083b68bbf280c2d32b5fcd04433e6a038b296b0fa112e685"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 7X6 gives that revision byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1607",
+       "sha": "64eb61728f0a96dce17882f285321bd8c1206fe7190a6ea5e8b55e94562f7dd8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "7X6 is the ICS-2101 mixer's control port, whose registers Chapter 5 describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1599",
+       "sha": "bc1abed919ba957326ba2424274db7ade9b2d8dda6662be5ec735b18bf882ec6"
+      }
+     ]
+    },
+    {
+     "n": "X",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of 7X6 sets the mixer's register address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1905-1909",
+       "sha": "0eff8d9427296761e3783b188bae9820e8cb7d08883eb984ef4c9cc3cb682bbe"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1494-1497",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1500",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1643-1647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1651",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1592-1602",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1891-1904",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x306"
+    }
+   ]
+  },
+  {
+   "key": "0x10C..0x10F",
+   "name": "UltraMax codec ports",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "755-771"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1621"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "read_gus_cs4231"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "write_gus_cs4231"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "gus_max_map_codec"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The codec answers at 3XC-3XF as four ports: address select, data, status and PIO, one address each.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "763-771",
+       "sha": "1080e2fa018c769a3496e7104c89cd6c5953fa8e98cc94bb3ace701c96a7352f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "On a daughter card the codec sits at 530, 604, E80 or F40 instead, and its register map is the CS4231's own datasheet.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "755-761",
+       "sha": "9af0319185750211b869e07c16840427ee9b82b58a9921a4a5e1ae3cffa52a6c"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1621",
+       "sha": "a37bfedcd87c107cec201d1a0e7cf4539a94988da382d26d2e3673d660863425"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The four codec ports are all read and written.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "765-771",
+       "sha": "9bab52921b454a9808d1370e9ca67b6b54423ef10593772f58b52628d110079f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read gives ff while the codec is disabled and the codec's own port value once it is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1433-1435",
+       "sha": "1bc3bf7295039a39b98e8e955f7e086073311cce57742a154387b559dc6529bd"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The four codec ports are installed at the base the UltraMax control register selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1898-1900",
+       "sha": "cc73cb76f320c247ca1134d30b8ac8e0799d8562ab8dd1b16f4a5f23f91a979e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1465-1471",
+       "sha": "1e59815510f966cd2a976eb65324886593cae1eb64a8bf3b44a6464554319607"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "of": "dosbox-x",
+     "on": "write",
+     "vs": "extra",
+     "text": "A write is dropped while the codec is disabled, and a new sample rate retunes the mixer channel.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1440-1447",
+       "sha": "4c675f5426f8210c387c2421dcc514dfc121bbf138ea3afb2e4288211f48bfa8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1440-1450",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1433-1435",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x00",
+   "name": "voice control",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1107-1147"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1067-1071"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "942-944"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0 is the 8-bit Voice Control register of a voice.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1107",
+       "sha": "1f87bd8fe0718263a77fc790428ce4fdafbfcc00d64ad4a44039f0da233ed436"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1067-1071",
+       "sha": "4d0d84e9316a091b71ddf1746f07ce149ba87d5b9d185c63d7fab85ef297017b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 reports the voice stopped, bit 1 stops it, bit 2 chooses 16-bit data, bit 3 loops and bit 4 loops bidirectionally.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1117-1127",
+       "sha": "65c92148e0611009dbf5422789b6b1e5bc9d6bf2a0dbb56649531c5fddde556c"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1133-1141",
+       "sha": "ba2fcb44e4b6c57d469d761b72796a54174df9084633a227ff9e61874f015c64"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 5 enables the wavetable IRQ, bit 6 sets the direction and bit 7 reports an IRQ pending.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1127-1131",
+       "sha": "4dcebfa1225e2ace4789d82726534acd86c1a951ac697c478963db9732ef4a37"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1143-1147",
+       "sha": "85b36d1c83d8ace08a33efc4a23ceb778f2c29ad84d1d203d2a27e988575fe86"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 0, 6 and 7 are self-modifying: the GF1 sets them when the voice stops, changes direction or holds an IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1133",
+       "sha": "548e469f719dbcd1d083a7682b25ac3504d2857fd92c1f414928096db51e5a1f"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1145-1147",
+       "sha": "807a5fbf5274afa06af3529db1bd277b96bbb9715e79801b75f42636f82b2f53"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x80 reads the voice control register back.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1107",
+       "sha": "1f87bd8fe0718263a77fc790428ce4fdafbfcc00d64ad4a44039f0da233ed436"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1067-1071",
+       "sha": "4d0d84e9316a091b71ddf1746f07ce149ba87d5b9d185c63d7fab85ef297017b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1010-1013",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1010-1013",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1109-1115",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "942-944",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "frequency control",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1149-1157"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1073"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "945-947"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 1 is the 16-bit Frequency Control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1149",
+       "sha": "6d3c37feae4c53872e42a748293f910792b69f55735e8253b5cb5da4c80719b8"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1073",
+       "sha": "610396cc178a3f25681507e6d7eae39e9907e2216eb9e6922d21c59c27b3e99a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 15-10 are the integer part and bits 9-1 the fraction; bit 0 is not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1151-1155",
+       "sha": "07c21dfb0e4526b3a612a0133c8665dea1e2bda89a43fac7baa5e046beb6c6f7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The amount added to (or subtracted from) the current position gives the next: less than 0 it interpolates, greater than 1 it skips data bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1157",
+       "sha": "963b6cfdbe809cbf17ef36b5b5fdb3864ca05b7e5244a47caa1cbc047aea558c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x81 is the read counterpart of the frequency control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1149",
+       "sha": "6d3c37feae4c53872e42a748293f910792b69f55735e8253b5cb5da4c80719b8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1014-1017",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "945-947",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "start address high",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1159-1163"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "948-950"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 2 is the high part of the voice's start address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1159",
+       "sha": "977f1e3b8a5b220eff6da147291c1c3da148d70fb693a64ae7fe956c5ef26e2c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Its bits 12-0 are address lines 19-7 of the start; bits 15-13 are not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1161-1163",
+       "sha": "e8e7a7fe584b9e6f6b1cdf9441faa1f0c3ab27d6ecebe05a3926020cdc274ea3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x82 is the read counterpart of the start address high register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1159",
+       "sha": "977f1e3b8a5b220eff6da147291c1c3da148d70fb693a64ae7fe956c5ef26e2c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1018-1023",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "948-950",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "start address low",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1165-1171"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "951-953"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 3 is the low part of the voice's start address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1165",
+       "sha": "b83c086291694c8593e7d8e9b391ea77b0ad9c212621c8b515cfaf5ad283940b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 15-9 are address lines 6-0 and bits 8-5 the fractional start address; bits 4-0 are not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1167-1171",
+       "sha": "99c0bb038036ba45b3988f1bca68731ac0be4948718f57d131abad527298d00e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x83 is the read counterpart of the start address low register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1165",
+       "sha": "b83c086291694c8593e7d8e9b391ea77b0ad9c212621c8b515cfaf5ad283940b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1024-1029",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "951-953",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "end address high",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1173-1177"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "954-956"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 4 is the high part of the voice's end address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1173",
+       "sha": "964c52821fdb39fbec0ecc5f118f53e9a3adc278d6ce72194520fcfaac610587"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Its bits 12-0 are address lines 19-7 of the end; bits 15-13 are not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1175-1177",
+       "sha": "868370b37b254d81128eb49bbd66c002194201fcf4633fc36e574335c3f9bcf1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x84 is the read counterpart of the end address high register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1173",
+       "sha": "964c52821fdb39fbec0ecc5f118f53e9a3adc278d6ce72194520fcfaac610587"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1030-1035",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "954-956",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "end address low",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1179-1185"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x5"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "957-959"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 5 is the low part of the voice's end address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1179",
+       "sha": "a857aaff6f4c7685af478f22327ac95cca6fffbe4ba74f9735b885cfb1032d34"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 15-9 are address lines 6-0 and bits 8-5 the fractional end address; bits 4-0 are not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1181-1185",
+       "sha": "9dbcc8f86e6550df1b6283b40c5388739e74d36a4315b7c5ea232ce5efd8f57b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x85 is the read counterpart of the end address low register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1179",
+       "sha": "a857aaff6f4c7685af478f22327ac95cca6fffbe4ba74f9735b885cfb1032d34"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1036-1041",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "957-959",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "volume ramp rate",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1187-1193"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 6 is the volume ramp rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1187",
+       "sha": "a68d8c0ad5ec44ccb6b245c27930950055657701054a6ff9e6dc6d78ce32541a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 5-0 are the step added each time, from 1 to 63, and bits 7-6 define how often it is applied.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1189-1191",
+       "sha": "a6b77a17e84f2270804995fc2c1cbe097c08ee3f117939beca5e676ff123d7fb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1042-1048",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1193",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "volume ramp start",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1195-1203"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 7 is the starting volume of a ramp.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1195",
+       "sha": "0b925119a48a2fb9de5c50aff4cf3e3899cf4b6b8230d8d2d76a251befd2ff7b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 7-4 are the exponent and bits 3-0 the mantissa of that starting volume.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1197-1201",
+       "sha": "7b29f98592435271c02f922848d7abbba65e65fbdb55ef64b7df16ca4ea0d388"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1049-1054",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1203",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "volume ramp end",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1205-1215"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 8 is the Volume Ramp End register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1205",
+       "sha": "858b2daf87ac7c1b868404d7e8e6b62c6223456f38f815d77fe42433df70bdb1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 7-4 are the exponent and bits 3-0 the mantissa; the register sets the ending position of a volume ramp.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1207-1211",
+       "sha": "e0d87482c144e54e7bc7409eae018f4537012dbdcc3b5d991c510bb335582e86"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The document asks for a starting volume below the ending one, turning on the decreasing bit to ramp down.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1213",
+       "sha": "cab28d720879b477216186ace009b0d063963da0e661d232c3e6475322c51b6f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1055-1059",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1215",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "current volume",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1217-1231"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x9"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "961-963"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 9 is the Current Volume register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1217",
+       "sha": "4889b6757f6490d79d1c1190030f9ca033dca1263847aa7627b1452ff6f89d6d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 15-12 are the exponent and bits 11-4 the mantissa, stored as the current volume; bits 3-0 are reserved and set to zero.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1219-1223",
+       "sha": "06df6210c3b180985623b5058d2190702b78cdb3ec49d6a4cf7216cfab29d1cc"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The register carries four extra bits of precision that a volume ramp uses.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1225",
+       "sha": "ddf3800c9b7941f9638b2703d9719ec10319c5b0143e6f337bd623c6726eb164"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The GF1 updates this register itself while it ramps.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1227",
+       "sha": "b6d2a2ccdd04ceacc63deb0646dbd91a9545888543c67c7446044d547b8cd1b2"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The document asks the register to be set to the volume the ramp begins at.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1229",
+       "sha": "d2a6501a84166e552b5b190972d5e8138a53ede03ef1ab6463fae6ffee95dd60"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x89 is the read counterpart of the current volume register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1217",
+       "sha": "4889b6757f6490d79d1c1190030f9ca033dca1263847aa7627b1452ff6f89d6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1061-1067",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "961-963",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1231",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x0A",
+   "name": "current address high",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1233-1237"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0xA"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "964-966"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0xA is the Current Location HIGH register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1233",
+       "sha": "40316fa6dbd6ee28608481569c7a6a4ef24fb2a994eff19b8e8d1a95de126da9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 12-0 are the high 13 address bits, lines 19-7, stored into the current address; bits 15-13 are reserved and set to zero.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1235-1237",
+       "sha": "c57cec22bf3b1c8b2a099cf1d7a1c51b59c979b7860638f2c17bd5e17805f885"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x8A is the read counterpart of the current location HIGH register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1233",
+       "sha": "40316fa6dbd6ee28608481569c7a6a4ef24fb2a994eff19b8e8d1a95de126da9"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1069-1075",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "964-966",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x0B",
+   "name": "current address low",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1239-1243"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0xB"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "967-969"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0xB is the Current Location LOW register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1239",
+       "sha": "114d8c8576f8f7535934f02e8be3408b4a0985d611dda899504d11aff84c5906"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 15-9 are the low seven address bits, lines 6-0, and bits 8-0 a nine-bit fractional position, stored into the current address.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1241-1243",
+       "sha": "cd5639b49077cf1dcc92edc6da2c2f65448ec6937e2eac43442f75eb26492f01"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x8B is the read counterpart of the current location LOW register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1239",
+       "sha": "114d8c8576f8f7535934f02e8be3408b4a0985d611dda899504d11aff84c5906"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1076-1082",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "967-969",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "pan position",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1245-1249"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0xC"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "970-972"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0xC is the Pan Position register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1245",
+       "sha": "84a47a8a58bba61d6dc140e81651fb585b9cef19f273f2d7d8916c700e3ca226"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 3-0 are stored as the pan position, 0 full left and 15 full right; bits 8-4 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1247-1249",
+       "sha": "057327ed3b78249caee6b89f90077b25ee51a726c06a8c2eb70eb85874e3d632"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x8C is the read counterpart of the pan position register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1245",
+       "sha": "84a47a8a58bba61d6dc140e81651fb585b9cef19f273f2d7d8916c700e3ca226"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1083-1086",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "970-972",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x0D",
+   "name": "volume ramp control",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1251-1293"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0xD"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "973-975"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "342-346"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0xD is the Volume Ramp Control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1251",
+       "sha": "f3943d9af6c000c224217c24a77706daea57ce25a8da0173e4fadb1757c37b00"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 reports the ramp stopped, bit 1 stops it by hand and bit 2 raises an IRQ at the rollover without stopping; bits 0-2 are stored.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1253-1263",
+       "sha": "87a02cdb5671137da944ddd06f499f4f6410bf5393536978d37bbb93f64baefb"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1265",
+       "sha": "704f79e54a2b89807365d4f1b16e4111ea72612b09f3572db07fe0868799cbbd"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1277-1281",
+       "sha": "3c8f06210147524953693b8c51c9964353a442ac81b11c644cb1ab0adf38c04f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 3 loops from end to start, bit 4 loops both ways and bit 5 enables the IRQ at the end of the ramp; bits 3-5 are stored.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1267-1271",
+       "sha": "94708a29ecc8f033266d78e2406b2aa9d4d8e1bfdee0f21722574dfee95bd0c8"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1283-1287",
+       "sha": "fddcfa85672a6c6ab4dc8affd624847b78e88f6f448f8d5a5717991133fc0bbf"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 6 is stored as the ramp direction, 0 increasing and 1 decreasing.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1273",
+       "sha": "fae67fe9b005f995ecd5db80508777feff6456fdaf1f2f417249fbaafd1878aa"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1289",
+       "sha": "b9ea23d33fd23eb91fbdaf8fd2e3b2f8d995274ece4b7eda0961a2831f2113f4"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "Register 0x8D is the read counterpart of the ramp control register, and its bit 7 reports a pending ramp IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1275",
+       "sha": "fc8260fd17634e477f371f6e278c97fa8a43fbe1bdae137a6670aed520de0be2"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1251",
+       "sha": "f3943d9af6c000c224217c24a77706daea57ce25a8da0173e4fadb1757c37b00"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1291",
+       "sha": "8ea6d22d2ccd3afce3e3a276fcb5e1611e580f587a020c218e1d38fa30d2fbb0"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The document points the reader to its section on hardware volume ramping.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1293",
+       "sha": "ea847d44cf84ef5a8f0f12e786b6ad8c1df1ba3127e499dba353e2d5c032121c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X raises the voice's ramp IRQ when bits 7 and 5 of the written byte are both set, and clears it otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "334-338",
+       "sha": "5faa6d10df7385ed2aee709197e5562e16520f63f854cdaedc81ccea29e99781"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1087-1090",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1087-1090",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1087-1090",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "973-975",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "342-346",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "active voices",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1295-1301"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0xE"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0xE is the Active Voices register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1295",
+       "sha": "2d5c2e83e7f6446a22701553036848f278bb2ac328e633d56959105bfbb31266"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 7-6 must be set to one and bits 5-0 hold the number of voices less one.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1297-1299",
+       "sha": "15b73aeb2728d5468602a6e132f86d8377751803059892334b28b297bdba93fe"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The document gives a range of 14 to 32 voices and forces any smaller value up to 14.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1301",
+       "sha": "40a219890ac99262bf20baafb5b9d69500c148e026493473e31bb7b445f1966e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X takes bits 4-0 of the byte as the count less one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1107",
+       "sha": "071461a07cfd3f107b84739803b93b0690551d2c318b86961db0d660b084f744"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write of 0xE also copies the byte into the register-select index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1106",
+       "sha": "2594fc7826e5b832791b7241a51c98efc9d68f93d715518b6a748394c47e62c0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X raises a count below three by two on a Classic or MAX, and only a Interwave is forced up to fourteen.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1127-1138",
+       "sha": "7f744413466d4ab52a86e74424248db95422625e53623a9b0b84843637316846"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "With ignore channel count while active set, DOSBox-X refuses a write to 0xE while the DAC is enabled and logs it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1098-1103",
+       "sha": "7f77187e45a074ed422a158891bc1df9cac75b6d1c8fc4e6ce97724e4ddcc029"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "Writing 0xE also recomputes the active mask, the base frequency and each voice's ramp and sample rate.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1140-1149",
+       "sha": "569b7a52ead473f84d6ee5e4f11f0d87d472ff520dc5967d7e9efadcf1854cda"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x41",
+   "name": "DRAM DMA control",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "875-937"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x41"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteReadRegister",
+     "case": [
+      "0x41"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x41 is the DRAM DMA Control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "875",
+       "sha": "a7d6250c899edc2ab06365e9d2dda87d1e5738dcf56d2e8d88e22496ea7c4be2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 starts the DMA transfer and bit 1 is stored as its direction, 1 taking data out of the card.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "877-887",
+       "sha": "4ce8de614579dc75311543704e63981332f79e72e1919f5821e76f0c5ba6026a"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "903-905",
+       "sha": "7402eca88f3308188261ed2d4128d15d0dbb52efab0cd1822ffb3cc93935fdf2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 2-4 are stored: bit 2 picks an 8- or 16-bit DMA channel and bits 3-4 divide the DMA rate by one to four.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "889-893",
+       "sha": "ae1e8cfb7b57a77a85986f25554a1dc5ee09f94cfba94a9f2c2a40032f47eb6f"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "907-911",
+       "sha": "d2e0318eda503054ea8227b265df5310646cf9e2b87a2e7ec26c1d2646736146"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "913-921",
+       "sha": "b284a55fbfcfbcda10966e5d1ce753548dda0f5a44e27629956b32cf46921912"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 5-7 are stored: bit 5 enables the terminal count interrupt, bit 6 is the data size and bit 7 inverts the high bit.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "895",
+       "sha": "a673030f31d1a7c8dee1f89af3f33471e16cfec9a224ff8695527c29abcf838e"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "899",
+       "sha": "6176a3aed8e9849139373dba7644773bb77496b76b17b28ec0af983a9b8b6051"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "901",
+       "sha": "fd5fb33b1171ac1607d460a7212ed0c3c07017d1a6877b7ac0f7960ae7da0bc8"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "923-931",
+       "sha": "eb7af9f3ab039dab5eae5a1e039361567c01bda4306875f26c2ea2d040e246cf"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "933-937",
+       "sha": "2903cf5d590d0c9deee396d4c64da15f9e2f9265316451e2910eac17e182d6f5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 0x41 returns bit 6 set while the terminal count IRQ is pending.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "897",
+       "sha": "bab69c96a210703ccc3acc83c68100e68bcd1bf8903f0940d366f38a8ce57a1b"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "925",
+       "sha": "860ce8a35b2fcb3a47870d903c4b630da115179a803feec248b62e53aeb4377c"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "Reading 0x41 also acknowledges and clears the pending terminal count IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "923-928",
+       "sha": "132be0f52899bb4dfbacf3bbf081cfca7c2423cb738f2fa99662de6ded040b7b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of 0x41 starts a DMA transfer when dma_enable_on_dma_control_polling is set and the channel is unmasked, DMA is off and no terminal count is pending.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "915-921",
+       "sha": "4444a847327e9bd31a759bfd2e37aa564a3553d7b8c30896b132142266077a40"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "910",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1153-1159",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1153-1159",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1153-1159",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "923-926",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "935",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x49"
+    }
+   ]
+  },
+  {
+   "key": "0x42",
+   "name": "DMA start address",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "939-943"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x42"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteReadRegister",
+     "case": [
+      "0x42"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x42 is the DMA Start Address register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "939",
+       "sha": "b7a3cc54930894148999ff9732a1755d1dc7f04e524058dd316e22c51da0a8b5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 15-0 are address lines 19-4, so a transfer starts on a 16-byte boundary, or 32-byte on a 16-bit channel.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "941-943",
+       "sha": "ceef73f331a3353f9b78b868911f811c30d6bad1d49dd39ed3d8c53691ecc538"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "DOSBox-X also returns the DMA start address on a read of 0x42.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "929-930",
+       "sha": "124a46cf5f0cca2a684bbc6eb563869c1994111186982c4c860423b103064d23"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A card reset and a DMA event transfer also rewrite the DMA start address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "728",
+       "sha": "323fcf2d2dacbc0f2e9947304811d8eeec2cab87a517f3968eee2ba7a60b349e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "2078",
+       "sha": "480bb7f46f72863b79fd1965aa258dd18ede09592cee51b78ca7c86512d909d3"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "910",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1160-1163",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x43..0x44",
+   "name": "DRAM I/O address",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "945-947"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x43"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x44"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 0x43 and 0x44 are the DRAM I/O address registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "945",
+       "sha": "b4f0f4bfd76e08e853a748a15a375595e68c2bf0bd273a96f4cfa71bd1e98a2e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Register 0x43 is the lower 16 address lines and register 0x44 the upper four.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "947",
+       "sha": "a9e29cc4169b746e0751f0423866a9e74b207484f030d776e6819ed8117e7c0f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The address picks the DRAM byte that port 3X7 reads or writes.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "947",
+       "sha": "a9e29cc4169b746e0751f0423866a9e74b207484f030d776e6819ed8117e7c0f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1164-1166",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1167-1169",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x45",
+   "name": "timer control",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "949-973"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x45"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x45 is the Timer Control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "949",
+       "sha": "2802bcac6d12c1bd864e2b52b4974a5b3fb0a758f428dca5c091df95f798c190"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The byte is stored as the timer control: bit 2 enables timer 1's IRQ and bit 3 timer 2's, the other bits reserved and set to zero.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "951-961",
+       "sha": "b484326a654d20f404f56cec358079c83710f88a2a06f1bf491aae6a12b36ac6"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "963-973",
+       "sha": "6dfdd5731850befbf894a7b284f2fd0f83e4b86afb0ce2f7b9407caf101b8a7c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of 0x45 returns the timer control byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "931-933",
+       "sha": "27060571d99d5a42a06bb58e49fb53d7359b1ac5ea6a546b2a45fbe182024632"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X stores the byte, sets the timers' IRQ enables from bits 2 and 3, but uses reserved bits 5 and 1 for the 2X6 capture and AdLib data capture.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1170-1179",
+       "sha": "3b68627dca1aca750384d75c8d04dc3086e8b82a44f899b58af921f7b05106d3"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x46..0x47",
+   "name": "timer counts",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "975-977"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x46"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x47"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 0x46 and 0x47 are the Timer 1 and Timer 2 counts.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "975",
+       "sha": "2e46fb9e8b2a5c5d59b00a74d39d040bdb4f52bec398fc7b323282b5431fd706"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The counts are loaded, count up to 0xFF and generate an IRQ; timer 1 ticks every 80 microseconds, timer 2 every 320.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "977",
+       "sha": "777146533b1161f66e95fa4b56e8e432f6a538342495fdcd15a19f2d573ebae5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X ticks timer 1 every 80 microseconds and timer 2 every 320, timing each from the written value up to 0x100, one count past the document's 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1180-1187",
+       "sha": "bfd3a696a1971fd717abe46286d5bc75c6c32b04ff6163d5363b8149699fde2e"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x49",
+   "name": "sampling control",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "985-1025"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x49"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "934-937"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x49 is the Sampling Control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "985",
+       "sha": "d37c0d75c57b2ec56a9bd7a434e378166c8a2831a7f4ebaeba031838feb85c3d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 starts sampling, bit 1 picks stereo over mono and bit 2 the 8- or 16-bit DMA width.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "987-997",
+       "sha": "a05a8a886b93c986b2f2e47b74a160e3f7d951b3657d667c0aeb9d91a4947686"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "999",
+       "sha": "918e0b8332a1f048a3f491bbe33f964f9abfb1d286f8efc9226882babcf522e9"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1011-1019",
+       "sha": "70235074a17105357f967f90433387eb3ca88406c397e56358369b25c0addbe1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 3-4 are reserved and set to zero, bit 5 enables the terminal count IRQ and bit 7 inverts the high bit; these bits are stored.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1001-1005",
+       "sha": "ec4dad0a4598080d5145cff47400a4946e795e9666c7a09915aa1a830b235fe9"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1009",
+       "sha": "a2a618aba95f630f4c79d46c3f1823380957c4a66757f1daf626c53c9056a12f"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1021",
+       "sha": "ab7331de1ed6ab9fb956aa1f5bd2ad3411f7b168eaaa2b7faf529d79cad8f1f4"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1025",
+       "sha": "af8e700b5b0727d36391de73ca64d95a55c0c5a953bf814dff7cfba00443eba0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 0x49 returns bit 6 set while the DMA terminal count IRQ is pending.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1007",
+       "sha": "ef0ad936bcf9b1d32e7b76042c973d12f187080d426f1318823498af55f438cf"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1023",
+       "sha": "6f4956b98c8b88d9ad9118d5ab824793c945d9bbd2eb49f13fad918e5a1da5ff"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Reading 0x49 returns the DMA control byte with its terminal count bit, not the sampling byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "934-937",
+       "sha": "99d9cc27d32f79a6f66dcf2a655c9a71fcb41fe693893ae1aed109d7b5727445"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X stores the sampling byte but starts or stops the transfer from bit 0 of the DMA control byte, not from these bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1188-1192",
+       "sha": "d3502d33e1a9c5389dea58c1d88cdf26d45880a44f6e836ac746fd8df2b62a91"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "DOSBox-X stores bit 5 and bit 7 of the sampling byte and acts on the DMA control byte instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1189-1191",
+       "sha": "efc4fa6f68259acf24251d2af8f6e38776cfb7b0e841fd69aa0bfb2028750014"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "934-937",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x4C",
+   "name": "reset",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1031-1063"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x4c"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x4C is the reset register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1031",
+       "sha": "32398280aef95636ad2bfe7bf13a552de5b8dc3961a8446276069b78ada62f5c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 holds the GF1 in reset while zero and runs it while one.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1033-1041",
+       "sha": "d274f1e3e4de89c3e8ca96a610f7155a7cb6a72308e48fed57e3d7c59a136d29"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1057",
+       "sha": "495830a4df64f4d91c7071b77deb94ce5347053a0ac66a96bd547d2d00c65321"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 1 enables the DAC output and bit 2 the GF1's master IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1043-1053",
+       "sha": "a90319469d79aa83f5b74bb2cbba521ebe7faedf50f36759fee6709e9a058f9a"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1055",
+       "sha": "023589307ee5af2b88e628cc8a7393fc2384b4956a406314279dfe304e430756"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1059-1061",
+       "sha": "953078ec10910a23a1e49370619d2dc5ce881a47d8c7769a060aafca0ed58ffb"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The register normally holds 0x07 while the application runs.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1063",
+       "sha": "0e7c487ea0511eafc02d5893fc7bc5f2c147e27b40e7e6d3599734a8e306b67c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "Reading 0x4C returns the reset byte, its bit 2 taken from the IRQ enable.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "938-941",
+       "sha": "b84e3f4cfbc022fdc77b0a4ef0e4fb9c2aee215f58a03b4a92e7ef8e283ae11a"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "With globalread80alias on, DOSBox-X clears bit 7 of an index above 0x8F, so a read of 0xCC reaches 0x4C.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "906",
+       "sha": "59343f2b6874c54c5222acc571a588c786941879445374102ccb56287625e828"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "888-892",
+       "sha": "36b722dd8cc4a24dfb63fd75d4a3bbfd840c7c6007461b1c3bf8e86eba43750f"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A reset also sets the AdLib command register to 85, clears the AdLib status and clears the DRAM peek and poke address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "689",
+       "sha": "640ea60af79b8c191f50d275952aff8b3f1fd01d97d7d6e89196e20306809c79"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "691",
+       "sha": "63f1405a3ffad2aefb8693a9757a4e7c154eb90e9937758d95443b65d95d2aa1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "732",
+       "sha": "c48a206bb18f0192dd010aac13579184e84bf5d58df86e1c28112a9527fea451"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1193-1195",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1193-1195",
+     "as": "unfollowed",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x10",
+   "name": "Fast Tracker 2 register",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The MAME GUS header cites the GUS SDK's lowsrc.doc, whose text lists the global registers 41-4C and says nothing of a register 0x10."
+    },
+    {
+     "where": "maker",
+     "gave": "Advanced Gravis no longer exists; no maker page documents a register 0x10."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers refused its folder listing; a search of the archive found no Gravis UltraSound document."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the GUS SDK zips, gusdk-222 and gusdk-201, whose tool kit text names no register 0x10."
+    },
+    {
+     "where": "index",
+     "gave": "The datasheet indexes searched list no Gravis UltraSound document."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteGlobRegister",
+     "case": [
+      "0x10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Register 0x10 is the undocumented register DOSBox-X names for Fast Tracker 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1151",
+       "sha": "c507fd420506d7c92a41460d67e3c83567da77bd9f44950cc5971c9888ae86a4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X accepts a write to register 0x10 and does nothing with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1151-1152",
+       "sha": "05be33b650a3e19ac30d25f88aa43e9a5d660fb583483bfb2378a8cb3ff48ffe"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1009",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x8E",
+   "name": "active voices, read",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1099"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteReadRegister",
+     "case": [
+      "0x8E"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x8E is the Active Voices register.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1099",
+       "sha": "08009bdb137bb956b87de158d6ee0f662eed9a09e589b7b598226b445c9962b3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The Active Voices value is voice independent.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1099",
+       "sha": "08009bdb137bb956b87de158d6ee0f662eed9a09e589b7b598226b445c9962b3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "DOSBox-X returns bits 7-5 set and, in bits 4-0, the channel count the program wrote less one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "913",
+       "sha": "50ab04fbeb4191d39a7a167e500fef6f095aaff0e5d628e9cf7db756c72c3fd1"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A reset sets the count to 14, so a read of 0x8E after a reset returns 0xED.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "716-717",
+       "sha": "69bc76075dcf92606a9afc36379f75b0f9b7b2a28108b54edfcb1347478f6c87"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "911-913",
+       "sha": "1c39fa34599929ff0ebd935bca71f7323783c953a370933244f70a31cacd9be2"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "910",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "911-913",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1107",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x0E"
+    }
+   ]
+  },
+  {
+   "key": "0x8F",
+   "name": "IRQ source, read",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1101"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1303-1341"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "function": "ExecuteReadRegister",
+     "case": [
+      "0x8f"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1196-1200"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register 0x8F is the IRQ Source register, listed as IRQ Status (Voice independent).",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1303",
+       "sha": "1f0d17451ba2302d2c9ab8b0660b73319a9957544c1ee0f80b543a8c5f440d5e"
+      },
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1101",
+       "sha": "322bfdfaf09fadb4bbea70b2352b4ea7acf8e10767e3edcb51f84d4ef3b52aea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Bits 0-4 hold the number, 0-31, of the interrupting voice and bit 5 is always 1; bits 6 and 7 read 0 for a volume ramp or wavetable IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1329-1335",
+       "sha": "90388209d22eb44c5bc4bffc95d23dfd39a0582e8ea521f1128286724f335f53"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The IRQ Source register is global and read-only: one copy serves all voices.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1337",
+       "sha": "bd0e895b15ec879d66dfd5ccec622dcf17da8f58cc7ada934531aeda2ddbb40f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read clears the associated IRQ bits of the interrupting voice.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1337",
+       "sha": "bd0e895b15ec879d66dfd5ccec622dcf17da8f58cc7ada934531aeda2ddbb40f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "Voices interrupting at once make the register read like a FIFO, each read reporting the next pending voice.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1339",
+       "sha": "074406e2fcbf7a21fdff77c3327a860cf224ab97a26cd6167bac764e210b916a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The handler is asked to keep reading until a read has both IRQ bits set, which leaves no voice IRQ to service.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1339",
+       "sha": "074406e2fcbf7a21fdff77c3327a860cf224ab97a26cd6167bac764e210b916a"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The handler is asked to ignore a further IRQ from the same voice and reason until the voice stops, its IRQ enable is off or its end moves.",
+     "quotes": [
+      {
+       "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+       "lines": "1341",
+       "sha": "ba160891dc9af153f1a530f1bf88e5bacab0ace4d104d28603c1654be66d699c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "DOSBox-X also clears bits 5 and 6 of the IRQ status register 2X6 when 0x8F is read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "976-977",
+       "sha": "e2c27ca0e4a2bc35294b8fc7d2e36f978cb780b34260c85a04b16061acc609a7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "984",
+       "sha": "4517a150e4cde6d4e2a7c1ef0d9d2f41bd14f49749d9abe742a4920623f74561"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "870-871",
+       "sha": "d9f7dd862625fd210bc48e607e2ee80652ffc0e23f9b6604e90218ee6fdc9a85"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1501",
+       "sha": "c7f99f05d2986848dd07241fa9bdfa22739e8f2924114b1129f6109af1298caa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "1535",
+       "sha": "8afcd0e0032677754d1705290502f4fc8c04ae88eef3bf834fcb8ae188a3ca6a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/gus.cpp",
+       "lines": "774-783",
+       "sha": "67a70047663075a1842b2f562ab786206984d6043f15c676f373d90351fc9b4b"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "910",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:GUS-Lowlevel-Toolkit-222.raw.txt",
+     "lines": "1305-1327",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "977-981",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "986",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "977",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "986",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "1196-1200",
+     "as": "agrees",
+     "row": "3",
+     "nothing": true
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "982-983",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "985",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/gus.cpp",
+     "lines": "923",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x41"
+    }
+   ]
+  }
+ ]
+}

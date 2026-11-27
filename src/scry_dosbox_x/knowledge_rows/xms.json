@@ -1,0 +1,3472 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "xms",
+ "kind": "call",
+ "title": "XMS, the extended memory driver functions",
+ "scope": "ibm-pc",
+ "covers": "The functions of the XMS driver, reached through the far entry point that INT 2Fh AX=4310h returns and selected by AH.",
+ "source": "official",
+ "defines": {
+  "dosbox-x": []
+ },
+ "engine": [
+  "XMS_QueryFreeMemory",
+  "XMS_AllocateMemory",
+  "XMS_FreeMemory",
+  "XMS_MoveMemory",
+  "XMS_LockMemory",
+  "XMS_UnlockMemory",
+  "XMS_GetHandleInformation",
+  "XMS_ResizeMemory",
+  "XMS_LocalEnableA20",
+  "XMS_LocalDisableA20",
+  "XMS_GetEnabledA20",
+  "XMS_EnableA20",
+  "DOS_LinkUMBsToMemChain",
+  "DOS_GetMemAllocStrategy",
+  "DOS_SetMemAllocStrategy",
+  "DOS_AllocateMemory",
+  "DOS_FreeMemory",
+  "DOS_IS_IN_HMA"
+ ],
+ "entries": [
+  {
+   "key": "0x43/0x00",
+   "name": "get xms version",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "44"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_GET_VERSION"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6012-6019"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=00h function gets the version number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6012",
+       "sha": "7e456ec82a416cc4d4b1e89be157fb3dc9ff171a60b6917cdc6df6bfd7e45cdc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is the XMS version in BCD, with the major version in AH and the minor in AL.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6014",
+       "sha": "4aa47eeec371bccb39734c84ce0c7df347cfe6926e169d0d79055b8792a10d6f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BX",
+     "of": "doc",
+     "text": "BX is the driver's internal revision number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6015",
+       "sha": "fa6518121664197afb221a48851339eb79ab5467b1877223bcd70c06356faa36"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out DX",
+     "of": "doc",
+     "text": "DX is 0001h when the high memory area exists and 0000h when it does not.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6016-6018",
+       "sha": "092ed93fd712701dd48a0b8759ce0713c8d948c29f4d7b64a4ef906769d06133"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_GET_VERSION of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "499",
+       "sha": "bff9f1af0fdb6512640d4d6edf53881b29735acc4fb8bb42950a44b7bb440e76"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6013",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6019",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "500",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "501",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "502",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "44",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x01",
+   "name": "request hma",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_ALLOCATE_HIGH_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6022-6032"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=01h function requests the high memory area.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6022",
+       "sha": "c387ad02a201b4f41aeadc40e436fef7b62043ed6230aa82e2188f18615bf2d9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the memory wanted in bytes for a TSR or device driver, or FFFFh for an application program.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6024-6025",
+       "sha": "8cb9cff89450fe854136a00db779415202c5d8285b29039957aa2dda2e5ccbb8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6026-6028",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h, 90h, 91h or 92h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6029",
+       "sha": "9e6bb1343e7db614d7a0ddc851c6b5b7100d3bc8a4778f6eede175f3457d9504"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_ALLOCATE_HIGH_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "504",
+       "sha": "f4e755a02922b21010140d955c2c8aca47f5e3079283ecda5066bc5c460bc108"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "in DX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "When the HMA exists and is free, DX is compared with the configured minimum allocation and any DX at or above it takes the HMA; FFFFh is not treated apart.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "505-510",
+       "sha": "bd6a0ecfade12d251dbc85c1b2a333226cc69a25461f12a7cf607e723ba58ed9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "511-519",
+       "sha": "a9b5a5e68c8603ed1f6e2a083e39082b0cf2c6b434a564b6f65c35ac310197f6"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "73",
+       "sha": "0819c4f4540e1bf2d30260f517e567ff52216bd207ae35c9b1e0c7c602d3c4e7"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "7",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When no HMA exists, the request is refused with 90h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "522-524",
+       "sha": "c0734dc70f4ac37810a4d067738688c0b158cef749322a3dd3cfe50dfc04212d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "71",
+       "sha": "e4038379ad024af7cb127ebd8b00917fa795f3f9d24f0bea42a38c8e3c6b79bd"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the application or the DOS kernel already holds the HMA, the request is refused with 91h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "505-510",
+       "sha": "bd6a0ecfade12d251dbc85c1b2a333226cc69a25461f12a7cf607e723ba58ed9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "72",
+       "sha": "df4f23e1577d15be12218bc359e94d35d0f85174d4e004b45dc804cf6445d06f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6023",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6030-6031",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6032",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "518-519",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "523",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "509",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "514",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "524",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x02",
+   "name": "release hma",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_FREE_HIGH_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6035-6041"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=02h function releases the high memory area.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6035",
+       "sha": "69474d31fa0d76547c3b942fa51e4d842c00cea2d9e2f7254306731368538592"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6037-6039",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h, 90h or 93h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6040",
+       "sha": "8f05cf9e3ca9f98994d582f9428d70414c080ecd8f6ac9ccdcbd7f6132094993"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_FREE_HIGH_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "527",
+       "sha": "e3d7af80c32b5f76e7455a59554beef1e734d0ea9ca5bda6fbf9101e4a8219c3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the DOS kernel occupies the HMA, the case logs a warning and still frees the area if an application holds it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "529-533",
+       "sha": "3ec7f7913dd9b54313d9f96a7d77a2217794ecefed770b8d02bf69176b3dca8d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6036",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6041",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "534",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "537",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "542",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "538",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "543",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "528",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "536",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "541",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x03",
+   "name": "global enable a20",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_GLOBAL_ENABLE_A20"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6044-6050"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=03h function enables the A20 line globally for the HMA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6044",
+       "sha": "412786e35770d064cac8ac043a6018e84a98e917a56ed9ea1353b9bc5b65b721"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6046-6048",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On an error, BL is 80h, 81h or 82h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6049",
+       "sha": "a1e2f2d4fed23df19294bcf2721ebe33c98762ba383216b79b2433dc6786bbe5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_GLOBAL_ENABLE_A20 of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "546",
+       "sha": "75e41bb825ef72511e3589193a9e93b51f73b0b85dbe9b671fd84f1076f7e515"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The local enable runs only when no global enable is in effect; a repeat call stores 0 in the result and takes no further action.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "548-553",
+       "sha": "02081152b3e78b456b3be2121746a3f0f4c277630f7de8abc81e026a916efe18"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "SET_RESULT stores 0001h in AX and 00h in BL on every call, since the local enable always returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "555",
+       "sha": "80c975194b7519cee6dbc6b09a435e4712ecaa5726ab82d34b44b8c00c2dee9e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "419",
+       "sha": "6be2e46a3d0765fd4d08def164c35b75afcc481db6fd11cc5118c4e2c20b634d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "409-412",
+       "sha": "e5737153524aa09c3a4cbaab3ef9aca060ce8983b7773253ef526fb50ef6690d"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6045",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6050",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "555",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x04",
+   "name": "global disable a20",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_GLOBAL_DISABLE_A20"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6053-6059"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=04h function disables the A20 line globally.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6053",
+       "sha": "dffcad4007fb50c72d85db9a43ef0c080f92f7f0c7454e98108bdb1a8fafd325"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6055-6057",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On an error, BL is 80h, 81h, 82h or 94h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6058",
+       "sha": "a8874a5e4a4e3c0206fb83a9b5d166ad8165dc413bdeaa4d71431f94114def2c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_GLOBAL_DISABLE_A20 of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "557",
+       "sha": "a5259f5a5e7f8b8ad1c8676dd4c9ca6b2658c236b8d5d8e98e332a0b4837afeb"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The local disable runs only when a global enable is in effect; a repeat call stores 0 in the result.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "559-564",
+       "sha": "57bf499347103955b0d55826384d6ab26959b6701c64086e0583112b0940e133"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "SET_RESULT also stores 00h in BL on a success, a case the list does not give.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "566",
+       "sha": "80c975194b7519cee6dbc6b09a435e4712ecaa5726ab82d34b44b8c00c2dee9e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "409-412",
+       "sha": "e5737153524aa09c3a4cbaab3ef9aca060ce8983b7773253ef526fb50ef6690d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6054",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6059",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "566",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "566",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x05",
+   "name": "local enable a20",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_LOCAL_ENABLE_A20"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6062-6069"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=05h function enables the A20 line locally.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6062",
+       "sha": "321b4234574a7c1eeca6091ccba839d570049d16fd2f17225dc7d2922028aa8c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6064-6066",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On an error, BL is 80h, 81h or 82h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6067",
+       "sha": "a1e2f2d4fed23df19294bcf2721ebe33c98762ba383216b79b2433dc6786bbe5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The function is used for direct access to extended memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6068",
+       "sha": "0aef7f21fa4a54ba3403332e98ea6fe3092c64ad6a0e17116c0ad1412f3d6de9"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_LOCAL_ENABLE_A20 of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "568",
+       "sha": "49b485db6edc93e71d2f1550e9d48b43a58e852962e75986798332bcc5dd8f96"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "SET_RESULT stores 0001h in AX and 00h in BL on every call, since the local enable always returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "569",
+       "sha": "53cb3c4b740392f9252b3ce59c87a35915b2e622703b2616c0bba3f52a774977"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "419",
+       "sha": "6be2e46a3d0765fd4d08def164c35b75afcc481db6fd11cc5118c4e2c20b634d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "409-412",
+       "sha": "e5737153524aa09c3a4cbaab3ef9aca060ce8983b7773253ef526fb50ef6690d"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6063",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6069",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "569",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x06",
+   "name": "local disable a20",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_LOCAL_DISABLE_A20"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6072-6078"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=06h function disables the A20 line locally.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6072",
+       "sha": "51cc31fdbb8480118fc20f1c0ea303c0f4c2872bbecfa1370464420b1a38230a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6074-6076",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On an error, BL is 80h, 81h, 82h or 94h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6077",
+       "sha": "a8874a5e4a4e3c0206fb83a9b5d166ad8165dc413bdeaa4d71431f94114def2c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_LOCAL_DISABLE_A20 of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "571",
+       "sha": "674b67610a848e2e86287278d718f5bf35724095d33531c68fef3a2ce8a94078"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "SET_RESULT also stores 00h in BL on a success, a case the list does not give.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "572",
+       "sha": "b3ebb9ebd10d72c1169952a0a7b34a8a84877fa74980f6d8bae7d3a7f6965936"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "409-412",
+       "sha": "e5737153524aa09c3a4cbaab3ef9aca060ce8983b7773253ef526fb50ef6690d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6073",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6078",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "572",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "572",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x07",
+   "name": "query a20",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_QUERY_A20"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6081-6087"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=07h function queries the A20 line state.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6081",
+       "sha": "ff91f4db4a9d3c29b6d03ff0062cfbba1a0c0caca660dddf5d14e01f8499d10c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h when the A20 line is enabled and 0000h when it is disabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6083-6085",
+       "sha": "c3d8016c10b2f3770fdc850a5ecafad00c1d31ee93f311178d6c41c19ce0427f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the error code 00h, 80h or 81h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6086",
+       "sha": "d981ef06ff3ca6e3f689fa80abc1b4f59509e3d6c3b752a060559470c9502cb0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_QUERY_A20 of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "574",
+       "sha": "f3e200217d683b09697de8df71bb7a06169109d817112f30024be130f451f91d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6082",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6087",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "575",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "576",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x08",
+   "name": "query free ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_QUERY_FREE_EXTENDED_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6090-6097"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=08h function queries the free extended memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6090",
+       "sha": "00ab6b2d19d6196fe6ad28903b6b31f7a79e23aa1be56183374a5a8cf799b58f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The function takes BL as 00h, and some implementations leave BL unchanged on success.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6092",
+       "sha": "239f9963d12aaef9becb3eb6a59d4e517c791e1c816c21d700103ab5cb6850db"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is the size in KB of the largest free extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6093",
+       "sha": "6de479bd464be656e3ac5deab4db9c50cbe36c9110a5b3ec951e26e0402e0305"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out DX",
+     "of": "doc",
+     "text": "DX is the total extended memory in KB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6094",
+       "sha": "514a919cb099a8d92a8d606867f294732093a59b9c0fa4a2380a829c427c69be"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the error code 00h, 80h, 81h or A0h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6095",
+       "sha": "8f94a6c6604d3983a3668a57eae1f2cdc199457353e2782c6915b15632fdef32"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The returned sizes do not include the HMA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6096",
+       "sha": "187d88d151453310cd6db3214042a2f624af339cfb30606ebaadb28e14946c3f"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_QUERY_FREE_EXTENDED_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "578",
+       "sha": "c5b7c28dd480c095fb1c59d09f06beb87d05c6c224c9d76fa3396d81163eb721"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case caps AX and DX at FFFFh.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "580-581",
+       "sha": "01a6c4507a2e7055fd7401ea82af423c5b56a3448191921ab2c663967750c6a6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6091",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6097",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "579",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "579",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "579",
+     "as": "unfollowed",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x09",
+   "name": "allocate ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_ALLOCATE_EXTENDED_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6100-6108"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=09h function allocates an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6100",
+       "sha": "eae9716c96c885f069f042380ed2f7017bdac040d0599291cc8097d53e32c4a5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the number of kilobytes needed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6102",
+       "sha": "3040e4eeff2908f5526f05bcc4d90739bad68b2938650b6f72047ae58c9c1468"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6103-6106",
+       "sha": "684f96d5710f74319bb6ed1b9a1fc35d3b5cb598a2d6386e8b2a46f1dc3924ef"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out DX",
+     "of": "doc",
+     "text": "On success, DX is the handle of the block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6105",
+       "sha": "a2937e3022a8220b80a7330b3e7a02ebb473441c44788b28307a4fe9acf1c379"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h or A0h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6107",
+       "sha": "e1da43b0e0477d3c7629be7480e1c02051a389686a95044c8d1434360c36e8d2"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_ALLOCATE_EXTENDED_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "591",
+       "sha": "2b04151e3a92a4d9153a0489b2264f7578f26906c4efb0af772e03d5dd83291b"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The helper stores A1h in BL when every handle is taken, a code the list does not give.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "594",
+       "sha": "19d946c48b3e223653276e4707cdad87a0ed4099c83cf1c50e0bb1923ab58a54"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "234-235",
+       "sha": "ea34a7469bbbcd606fc4501ebc462fda5e1995ecdadeabfe52b0f5a9af6a2228"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "76",
+       "sha": "c2b4530b1c30b55d87e049c56aef5d63f66362afa8499c07e5b288716ab4f315"
+      }
+     ],
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6101",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6108",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "595",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x0A",
+   "name": "free ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_FREE_EXTENDED_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6111-6118"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=0Ah function frees an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6111",
+       "sha": "95a7ad5f6fae60829355b4549868522cf1b586a55e2b8c74dcf03212634af86e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle of the block to free.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6113",
+       "sha": "5bfb53a5e719bf5d4fbb63fae0c66caa5d0e411e5633653bd7a2ae084f99c10b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6114-6116",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h, A2h or ABh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6117",
+       "sha": "65216c911dc3c857044bcf99db75a8647b8fa4bae68a7a5a9170183b4d6e0717"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_FREE_EXTENDED_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "597",
+       "sha": "38da2651328229a46fd9010f95324161d11157a391921c2caea67e82a419629e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6112",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6118",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "598",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "598",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "598",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x0B",
+   "name": "move ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_MOVE_EXTENDED_MEMORY_BLOCK"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6121-6131"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=0Bh function moves an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6121",
+       "sha": "41ce420b67eb466d5c97f19ae33961320499ff33176034e3611eebbc4a7e8699"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DS:SI",
+     "of": "doc",
+     "text": "DS:SI points to the move structure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6123",
+       "sha": "c003a41fc08c37e888f078b59818678bcc81dd0f74e2fb523e5a6ac56d72153c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6124-6126",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h through 82h or A3h through A9h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6127",
+       "sha": "8d9a8ef73e342ebe80b1e9b0b509b6be182d4ecbf41499aa8e5ceb206b5bb5c9"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "When either handle in the structure is 0000h, the corresponding offset is an absolute address in directly addressable memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6128-6130",
+       "sha": "290da51fcdcbaba7fc195283e722978bcea0279162392ee423ef5146bb01a2ab"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_MOVE_EXTENDED_MEMORY_BLOCK of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "600",
+       "sha": "ebbea12c4a126d35e39312096ef80a6c890166f5444e5203bcd431e406ddfc48"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6122",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6131",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "601",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "601",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "601",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x0C",
+   "name": "lock ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_LOCK_EXTENDED_MEMORY_BLOCK"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6134-6144"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=0Ch function locks an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6134",
+       "sha": "4854b8ecde20815c8dc93d43634c022ccd43fe1d000909e5eb6aa7fb5d9b84ce"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle of the block to lock.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6136",
+       "sha": "b1127a105a891b097dc0f29488ba24955cacb475d88bd4ef03db3bad45ddc932"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6137-6138",
+       "sha": "fa19eb88ac3c38ecf48be8f54b4ff761b892aca28a9b0a38f9e462ad5168c4cb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6140",
+       "sha": "ec33ec7c418149a07a5b137dbe7ca4433d719cb6309eeb9d0732e21c05531bd5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out DX:BX",
+     "of": "doc",
+     "text": "On success, DX:BX is the 32-bit physical address of the locked block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6139",
+       "sha": "08ca16074ee9ae75c37a4e0e49dc5176cfc4bf03fc87dec0bba7de5f4a461186"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h, A2h, ACh or ADh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6141",
+       "sha": "543569b2cedf330f9e3747f6be39fec60d5df72ac9e98de8d340adcf9f2fc7dc"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_LOCK_EXTENDED_MEMORY_BLOCK of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "603",
+       "sha": "bd48d10bdce5a00a77652dd0f21b2b2790f2f2d84c1c5828158b5a592b0946e6"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "BL keeps the caller's value on success: the case stores the helper's result in BL only when it is nonzero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "606",
+       "sha": "7d41ee9c89d2664028aad913c735c264d0669a71ee12016e815e4649f5bdc660"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "608-610",
+       "sha": "79986ac91baf030c1aa8992d16fe065b0d9efec5edd9c888f9026e4b6fd9d9ba"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6135",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6142-6143",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6144",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "605",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "607",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "609-610",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "606",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x0D",
+   "name": "unlock ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_UNLOCK_EXTENDED_MEMORY_BLOCK"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6147-6154"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=0Dh function unlocks an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6147",
+       "sha": "3d09a0689f80751f2e061fac3d978a800609c11af994a6c559200448e15c55c8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle of the block to unlock.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6149",
+       "sha": "9ab177d35108922c9fd80d1da2e5fc0d6afe0d76262da5eb348ba32ceac1ab88"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6150-6153",
+       "sha": "ed2f3804cc6f2814a02e5bc1efa356783c29f01d0de4374e3afff36fb18bd922"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h, A2h or AAh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6153",
+       "sha": "1196536457f49d0bbcad1f8883b27867b67c15db0a47e939434eff4ba3d4922f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_UNLOCK_EXTENDED_MEMORY_BLOCK of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "613",
+       "sha": "21f7857081a0e33e836af587571991a4114d98901fdfdc910c415248519ef8b9"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6148",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6154",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "614",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "614",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "614",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x0E",
+   "name": "get handle info",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_GET_EMB_HANDLE_INFORMATION"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6157-6169"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=0Eh function gets the information of an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6157",
+       "sha": "9663d661438fcdac7f4b65dca826619f61144ad424b0ac85d78c96e67aadb76b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle to get information for.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6159",
+       "sha": "490147822283076dc16bc4c5d27d8bdad66fb0c707106f216387532edd6ec30e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6160-6161",
+       "sha": "fa19eb88ac3c38ecf48be8f54b4ff761b892aca28a9b0a38f9e462ad5168c4cb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6165",
+       "sha": "ec33ec7c418149a07a5b137dbe7ca4433d719cb6309eeb9d0732e21c05531bd5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BH",
+     "of": "doc",
+     "text": "On success, BH is the block's lock count.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6162",
+       "sha": "dcd97aedfb33ea448b715a6d86e9f1f3db5dbef4895dce3373377b6b3c0ef85c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On success, BL is the number of free handles left.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6163",
+       "sha": "14aebeeb15d2de5b114ff81146609bc517a44501549cb889706e8ea1a7269787"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out DX",
+     "of": "doc",
+     "text": "On success, DX is the block size in KB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6164",
+       "sha": "7973df50f2125287b61ad83dc1505a733bad2e72943f8a2d125552fd45aad567"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h or A2h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6166",
+       "sha": "f216e28039d956a598e633fef62a9e23af0171eaf98f911b637aae7009ec7155"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_GET_EMB_HANDLE_INFORMATION of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "616",
+       "sha": "cf4ae8fc255b1e0a375db9d65f0eb4582c78fc8a2af9e92b9dcd4ddb872728e8"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out DX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case truncates EDX to its low 16 bits before returning.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "618",
+       "sha": "eb7e8bc76d09b2dcf11e274bdcefb3cb667b073128d62398182505aee046c569"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6158",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6167",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6168",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6169",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "617",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "617",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "617",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "617",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "617",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "617",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x0F",
+   "name": "resize ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_RESIZE_EXTENDED_MEMORY_BLOCK"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6172-6180"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=0Fh function resizes an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6172",
+       "sha": "bbd37d74992c1a6ff67fcd14836898607fe9de65f81b3fabb6947da899438b41"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle of the block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6174",
+       "sha": "608d35316106f5a0276b2a70e08140564aaf46d08516bf8ac1c6f502cf37e9cb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is the new size of the block in KB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6175",
+       "sha": "8d836382f1140364c157815ae416faef995f0077eb92562fdd20278b150923c1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6176-6178",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, 81h, A0h through A2h or ABh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6179",
+       "sha": "e1f47d19dd31f37def455f26763da575a25f90f26e2e919c3ed2cea9061d682a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_RESIZE_EXTENDED_MEMORY_BLOCK of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "623",
+       "sha": "8733962e481eb3366803a479147b586d47dd1b9f13185efbed1fd2e341056ac0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6173",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6180",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "624",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "624",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "624",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "624",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x10",
+   "name": "request umb",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_ALLOCATE_UMB"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6183-6199"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=10h function requests an upper memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6183",
+       "sha": "89c7615e12e714d4caea85034afb07caa710f5f6a5034036c722ef85c5651aff"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the size of the block in paragraphs.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6185",
+       "sha": "8108a8806f835fa742e723d689974c2949e851580dff21b744ac0e1c56fc55d9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6186-6187",
+       "sha": "fa19eb88ac3c38ecf48be8f54b4ff761b892aca28a9b0a38f9e462ad5168c4cb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6190",
+       "sha": "ec33ec7c418149a07a5b137dbe7ca4433d719cb6309eeb9d0732e21c05531bd5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BX",
+     "of": "doc",
+     "text": "On success, BX is the segment address of the UMB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6188",
+       "sha": "4799df95b8ab864ed05f9b20457d4ce65f307e1d9280c81c57ea6b86e69b44c7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out DX",
+     "of": "doc",
+     "text": "On success, DX is the actual size of the block; on failure, it is the largest available block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6189",
+       "sha": "aa422d2868d209e2489ca6ef44ffa8e740be466a73d77af5ef65deb2b6ba19d2"
+      },
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6192",
+       "sha": "aaef11188c59b847b2b982e7166930956706648cab280c5bf31e12a35244214b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h, B0h or B1h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6191",
+       "sha": "144bc2e78e300b9ff4cb987e00a72e213ac5d41ebc6f512ba7dc2e6d60ed665c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Upper memory is non-EMS memory between 640K and 1024K.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6193",
+       "sha": "9ffb82d5be7bda80a546c1a42856ccc03bcb47af026ded87ddfa1ff84c2472e5"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "A driver need not implement functions 10h through 12h to be compliant with the standard.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6194-6195",
+       "sha": "096ff8249114c8d3f3fba4fa3932eb7798cd99da0de97b09131f07d489d88614"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Under DOS 5 and later, a CONFIG.SYS line DOS=UMB leaves no upper memory blocks to allocate.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6196-6198",
+       "sha": "582cc3502e446773692a19cbd9be24777d81fd74714ff584134785ef65969d2b"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_ALLOCATE_UMB of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "626",
+       "sha": "74b14b317f4764afadb5799ee2d4e1db58bf4d9f2170ed1d11fa2da020a47a09"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Before allocating, the case links the UMB chain into the MCB chain and searches UMBs only, then restores both.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "641-644",
+       "sha": "c21afa213ecd349249976b17a4a54fbd617268d096224f3fe605a8a38e465673"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "657-660",
+       "sha": "3e3ca2858cefc264cdbfee759ec675019a14ddc02ed567ec9002fbd135707b7d"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "out DX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "The failure stores give DX 0 or the largest free block; on success the case never writes DX, so the caller reads back its request.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "636",
+       "sha": "3816464247a08213596227ee0afad09f94acd061ee274c124ff8b560b032eddf"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "647-649",
+       "sha": "9a58e6bcd4f158b5793eecaf4055478e0ec995f422e60cd375046e185b1640ce"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "654",
+       "sha": "61da9b3d0f4c6e23cf2a3c3d03e272740ba815bc6244da33eb9ce6584211a7b3"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6184",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6199",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "646-647",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "628",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "634",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "648",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "651",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "649",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "629",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "635",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "652",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "653",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "627",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "630",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "633",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "637",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "647",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "650",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x11",
+   "name": "release umb",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_DEALLOCATE_UMB"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6202-6211"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS driver's AH=11h function releases an upper memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6202",
+       "sha": "173f225e18bc67b2dd0ec15aa3721eb421bf84d8b384625fd3a732b5428d9e19"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the segment address of the UMB to release.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6204",
+       "sha": "d740468e656afa7b8a6b18dea48d3a0b546fe90db9761c83dc1805bf0ca084db"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6205-6207",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the error code 80h or B2h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6208",
+       "sha": "6fe2a25b650bb883bc682888535eaa87c0c39a877ab3da729bc130b54085c1af"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "A driver need not implement functions 10h through 12h to be compliant with the standard.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6209-6210",
+       "sha": "bada37aace85cab971c9cd4dc7f35e53e11506ac96d8f480c8dd13d5e09d2d3f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_DEALLOCATE_UMB of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "663",
+       "sha": "4e42c348f0f4485a21cfdd88167e68bcd27cd6356fdf97dc3b0a594ca005ce0d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "When the block cannot be freed, the case stores B1h in BL, a code the list does not give.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "675-676",
+       "sha": "da33f01299109d249fc77b85c80c9e50c78ec41570d2bddd2556b02943745929"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "86",
+       "sha": "6fe70e00f0addc814c21d8d2994b177527ad0549a6e2942a5c3fd01e0a6ff90c"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "8",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When UMBs are unavailable, the case stores 0000h in AX and 80h in BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "664-666",
+       "sha": "1cc30c9f35b5532b9b9bad328e99e69c753129a5a84238a912242db84b85952f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "70",
+       "sha": "bbed05323056c1b7399263b8d16d0bd1ab81352fee7d1c11e60d6eca9293f9dc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6203",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6211",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "670",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "671",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "671",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "675",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "664",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "667",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "669",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "672",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x88",
+   "name": "query any free memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_QUERY_ANY_FREE_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6242-6251"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS v3.0 driver's AH=88h function queries the free extended memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6242",
+       "sha": "5bc85249e345242084172861c2c7eb13a365c13b99b2b7b2534469d704067db0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out EAX",
+     "of": "doc",
+     "text": "EAX is the size in KB of the largest free extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6244",
+       "sha": "7675b3caecb37f3f1236dfb5520961f4d1370b0021a4c6d6e8e03bea265f2295"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the status 00h, 80h, 81h or A0h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6245",
+       "sha": "9e104e343b4df10754dc9038368ff14d2ec431c78412800576c642a1489f18a0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out ECX",
+     "of": "doc",
+     "text": "ECX is the physical address of the highest byte of memory, valid even on the error codes 81h and A0h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6246-6247",
+       "sha": "ca08d77a3d6f4293cd5ef916998cff48863850cf9130a24c14da227b154dcbe5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "EDX is the total extended memory in KB, and 0 when the status is A0h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6248",
+       "sha": "08ea2a76b7ac8ad7b719f50cffcbba5c9eff0661d9aee6675e357608d2b9565c"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_QUERY_ANY_FREE_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "678",
+       "sha": "db99c57f803c8a25d22a6519f370ddba53fd6ec053f4ec4cdc29630691875b18"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6243",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6249-6250",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6251",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "679",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "679",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "680",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "679",
+     "as": "unfollowed",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x89",
+   "name": "allocate any memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_ALLOCATE_ANY_MEMORY"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6254-6262"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS v3.0 driver's AH=89h function allocates any extended memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6254",
+       "sha": "53a959bc215d7a7852b00f3404e09321c046708d79474405276edb2bfee0b514"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in EDX",
+     "of": "doc",
+     "text": "EDX is the number of kilobytes needed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6256",
+       "sha": "312f4b2764b4c7de0f8207784ce08fbc246a960c503551369f691bf2331701e8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6257-6258",
+       "sha": "fa19eb88ac3c38ecf48be8f54b4ff761b892aca28a9b0a38f9e462ad5168c4cb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6260",
+       "sha": "ec33ec7c418149a07a5b137dbe7ca4433d719cb6309eeb9d0732e21c05531bd5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out DX",
+     "of": "doc",
+     "text": "On success, DX is the handle of the allocated block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6259",
+       "sha": "454602169b8ce565bbf9b0bb3b71db3e953b474bca230b07b252ebb692da5dfd"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the status 80h, 81h, A0h, A1h or A2h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6261",
+       "sha": "499133a21d2dc64bc97d70d7c861f9a5b4b13cf1ceb4c296cffd068f72d7cc88"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_ALLOCATE_ANY_MEMORY of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "583",
+       "sha": "d96b79d162b4a5008f2c6e9c8a440b70bf2e0bd112e669f40d9d0fd5a30de677"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6255",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6262",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "588",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "588",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "589",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "588",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x8E",
+   "name": "get ext handle info",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_GET_EMB_HANDLE_INFORMATION_EXT"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6265-6276"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS v3.0 driver's AH=8Eh function gets the information of an extended memory block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6265",
+       "sha": "14db46cbadef60e1b7e14f67a4815d01b4331a21e6a5c5ffbe362b343fb7a678"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6267",
+       "sha": "e7b0ffb4a912f9aa63b875ad2c8aba1a6a24053a64cee9a9162aad3e112eadd9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6268-6269",
+       "sha": "fa19eb88ac3c38ecf48be8f54b4ff761b892aca28a9b0a38f9e462ad5168c4cb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6273",
+       "sha": "ec33ec7c418149a07a5b137dbe7ca4433d719cb6309eeb9d0732e21c05531bd5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BH",
+     "of": "doc",
+     "text": "On success, BH is the block's lock count.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6270",
+       "sha": "dcd97aedfb33ea448b715a6d86e9f1f3db5dbef4895dce3373377b6b3c0ef85c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CX",
+     "of": "doc",
+     "text": "On success, CX is the number of free handles left.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6271",
+       "sha": "e10d812d35d9e1ea70a4a2993fa73685b5250e436bc8aa691acecd10892784bb"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "On success, EDX is the block size in KB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6272",
+       "sha": "34f796beb7a3a9a48699ec4a2519b0bb230ca6710e2d1d5711298dce79bb1a50"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the status 80h, 81h or A2h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6274",
+       "sha": "6f5d7a1ad76d5a70a775203787f85b2dbd8b111ec0cbde4a008874152bfa542f"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_GET_EMB_HANDLE_INFORMATION_EXT of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "682",
+       "sha": "832c978eb829983c078b09a7c110ca170c3eb550b15916698933e57c697c9b04"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6266",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6275",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6276",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "684",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "687",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "684",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "686",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "684",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "685",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x43/0x8F",
+   "name": "resize any ext memory",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "function": "XMS_Handler",
+     "case": [
+      "XMS_RESIZE_ANY_EXTENDED_MEMORY_BLOCK"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6279-6289"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The XMS v3.0 driver's AH=8Fh function reallocates an extended memory block of any size.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6279",
+       "sha": "d13139b53aab6296b853fa93fcdcfbe2fb78aae7ecd3c36415b26b8acb0934eb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX is the handle of the unlocked block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6281",
+       "sha": "367a5944c4d9fbf20a66bd2055410492142e420f0f5f03c9c1b5ef3d5b32ef38"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in EBX",
+     "of": "doc",
+     "text": "EBX is the new size in KB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6282",
+       "sha": "d1695e54464b0990af5659f870b3d692268f97940d192dae9fae3069821e361c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0001h on success and 0000h on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6283-6285",
+       "sha": "f3abaa8844cd7338ef29b40f2a6a5178e34938801889f2eb7299511eedb5e41f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On failure, BL is the status 80h, 81h, A0h through A2h or ABh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.L",
+       "lines": "6286",
+       "sha": "83b46233e877e375a415cbe701537bbfe8cf6c96d373638be1ca2cad5fa58a71"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The XMS driver reaches it by case XMS_RESIZE_ANY_EXTENDED_MEMORY_BLOCK of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/xms.cpp",
+       "lines": "620",
+       "sha": "667216ba6427d4e605b3c2816ecd5bc34eb6d666ab0dce89964de8fbf99fe85d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6280",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6287-6288",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.L",
+     "lines": "6289",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "498",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/xms.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  }
+ ]
+}

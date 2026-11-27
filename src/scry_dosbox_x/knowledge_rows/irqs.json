@@ -1,0 +1,1352 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "irqs",
+ "title": "The PC's interrupt request lines",
+ "kind": "irq",
+ "scope": "ibm-pc",
+ "covers": "The sixteen hardware interrupt request lines of the PC/AT: what each line is wired to and the interrupt vector it reaches.",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0",
+   "name": "system timer",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "587-589"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "401-404"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "1008-1013"
+    },
+    {
+     "ref": "dosbox-x:include/timer.h",
+     "lines": "25"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ0 is the system timer's line, interrupt 08h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "587",
+       "sha": "73f98191de3d3115fd4f9182e5ff94958ec899baed028b4097d95063a18594a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "Channel 0 of the 8254 system timer generates it 18.2 times per second.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "588",
+       "sha": "def2bd1a301071853e11f405e16f9b2c3027df9c21d1e7238ea1141d0a5f93f5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "It is used to keep the time-of-day clock updated.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "589",
+       "sha": "fbc5f0e3f9ce2b622eb3597680d7b3515b63b90fdc0b4acae7035b0f43c8dd11"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X raises IRQ0 from PIT0_Event on each event of counter 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/timer.cpp",
+       "lines": "401-404",
+       "sha": "9c7bd13b5fc0e6a71e63f1fa750aa363a3430cdcff35af8446eb3275b3abf4fb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/timer.cpp",
+       "lines": "441",
+       "sha": "a3dbe6f7d5423dcda97c905f3a80e841c04346fd4d75442850daf6c722fb64cf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/timer.cpp",
+       "lines": "1096",
+       "sha": "0ce6be9deddc35b19717f7829c9f2c70761f631db7f30d97ae09ad1c6fc8370f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "401-404",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "1008-1013",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:include/timer.h",
+     "lines": "25",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "1",
+   "name": "keyboard",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "611-615"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "265-274"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "261-264"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ1 is the keyboard's line, interrupt 09h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "611",
+       "sha": "0bd84cb5d9345e5dfe59f514ab6be4e2b2196b44533c970cce3de48c6c5dcb17"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "It is generated when data arrives from the keyboard, normally the scan code of a keypress or a release.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "612-615",
+       "sha": "094c23da2bb0bc5ca06a9b7ad428f93ccfbe46bf5df100b30e75da55d28a184f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X raises IRQ1 from KEYBOARD_SetPort60 for bytes that are not from the auxiliary device.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "261-264",
+       "sha": "b0f12a64c46dded6e5d8ffc8df7dba9796960dc2afb69c8a3768c0f0a8e9bd7c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "270-273",
+       "sha": "be99a7e18e8b02d95688875bf9f277f3e9a7cef2cb698679a4ac5e19ac1f0366"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "265-274",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "261-264",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "2",
+   "name": "cascade",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "767"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "772-774"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "778-780"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pic.cpp",
+     "lines": "535-537"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pic.cpp",
+     "lines": "1006-1007"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12389-12390"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "472-481"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "On the PC, IRQ2 is LPT2's line; on EGA and VGA boards it is the vertical retrace interrupt, which many VGA boards do not implement.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "767",
+       "sha": "a0d6a6390345850a733cf5cb16671166e3029e3aeb7e127c7bda815417d9e2da"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "778-780",
+       "sha": "fff44a0fef6280863b1ab15d333908ce70a6c30716067ec704c68fc332b2ca32"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "On ATs and above the physical line for IRQ2 is labeled IRQ9 and connects to the slave 8259; the BIOS redirects the interrupt back here.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "772-774",
+       "sha": "36100810fd5cbde6d6df776d2dd596ffda69a9ec50f55570cf6bb1d7b5576cff"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X starts the slave controller's interrupt on the master's cascade line.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "535-537",
+       "sha": "3f135d1554a87da2f82acabfaf371fdd8d7823df38e413fd8614391a386d160d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "On the PC that cascade line is IRQ 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "1006-1007",
+       "sha": "8293ff335ab221872d1c05c5ccea807b17cba759760f32efb21d8cfd5f53e486"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12389-12390",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "472-481",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "3",
+   "name": "COM2",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "816-818"
+    },
+    {
+     "ref": "dosbox-x:include/serialport.h",
+     "lines": "440"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ3 is the serial port's line for COM2, interrupt 0Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "816",
+       "sha": "65b4c9d5827ded0a299f8677e2144dec157aea0c61bd3de44fd107ae496ed9e6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "The UART asserts it when COM2 needs attention, if the UART has been programmed to generate interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "817-818",
+       "sha": "0d7972e7236c806b89382f755e3e758ef4f7383d5adb5c9a39903f6debe05cb7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X's serial defaults give COM2 IRQ 3.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/serialport.h",
+       "lines": "440",
+       "sha": "0afe58ddd9eb2e211f7c2dbb4b3e6b6c06aeaf276ee22d52e944339d7a424f60"
+      },
+      {
+       "ref": "dosbox-x:include/serialport.h",
+       "lines": "441-442",
+       "sha": "dde8df6051adc3bec1c0ce5424249a4420640787da081454ed031b5464642213"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+       "lines": "1134",
+       "sha": "300dd60ac94266f3ed1f3458afa0dd0a9ac29ca86fc937cbe71ff85484980032"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:include/serialport.h",
+     "lines": "440",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "4",
+   "name": "COM1",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "843-845"
+    },
+    {
+     "ref": "dosbox-x:include/serialport.h",
+     "lines": "440"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ4 is the serial port's line for COM1, interrupt 0Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "843",
+       "sha": "9d3653181ec6bcfaece20f76ed2e89466f144141d06da49156a2ffe036470f36"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "The UART asserts it when COM1 needs attention, if the UART has been programmed to generate interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "844-845",
+       "sha": "77c3c09cfab9070159fe00453f30fdfd85e0dc17fbc5db218475fb3e478b97f1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X's serial defaults give COM1 IRQ 4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/serialport.h",
+       "lines": "440",
+       "sha": "0afe58ddd9eb2e211f7c2dbb4b3e6b6c06aeaf276ee22d52e944339d7a424f60"
+      },
+      {
+       "ref": "dosbox-x:include/serialport.h",
+       "lines": "441-442",
+       "sha": "dde8df6051adc3bec1c0ce5424249a4420640787da081454ed031b5464642213"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+       "lines": "1134",
+       "sha": "300dd60ac94266f3ed1f3458afa0dd0a9ac29ca86fc937cbe71ff85484980032"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:include/serialport.h",
+     "lines": "440",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "5",
+   "name": "LPT2",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "907"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "360-361"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ5 is the fixed disk's line on the PC and XT, LPT2's on the AT, and reserved on the PS/2.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "907",
+       "sha": "8a10c4fdb47cd4569bc36a432e9012e64b58cd4bc5e2544641f49837f13bcacd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X's parallel-port defaults give LPT1, LPT2 and LPT3 IRQs 7, 5 and 12.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "81",
+       "sha": "7b834858d3c58da974c9195805f59e1fbe7b30bf0187643508c800d66c929b62"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "82-84",
+       "sha": "4e34068a0b1382d7678db6c87dcc1d2d0b28c9099ceed053fc5ebb9b12ebc729"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "202-206",
+       "sha": "de09635212a81d87ee1aded0a9f313185597ec92a5d5f8550ff676dbff26ed66"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "255",
+       "sha": "aae52d1ef7d3e5698560fc63bdcdfc8a167bc4a26f31a0338660f20a81a5dc00"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "406",
+       "sha": "38bfe2b19a3056e8a51856f4b9a04e2f480ddc6da511779b3980d50c8ddaacdc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "360-361",
+       "sha": "d452290663e49f5b0c51b4f58c217c64b6e944cd3261d216c49b0f9385f93f0d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "6",
+   "name": "floppy controller",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "960-962"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1078"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2683"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1410-1414"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ6 is the floppy disk controller's line, interrupt 0Eh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "960",
+       "sha": "361f7cc92562008115e05c1fcc5f759db2e54d2ba218443afe7e19a604504d6a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "The floppy disk controller generates it on completion of an operation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "961-962",
+       "sha": "2ec539c7d3f48d5b57ae2bf5fa5e7614691591443fed6a434efcd62d6534f2fe"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X gives the floppy controller IRQ 6 by default.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1078",
+       "sha": "6899f151b3ce8f36400bb26fd074f616f2308ce4a1282367a0342fd122ca1eeb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2683",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1078",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1410-1414",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "7",
+   "name": "LPT1",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "985-987"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "360-361"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2663-2672"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ7 is LPT1's line, interrupt 0Fh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "985-987",
+       "sha": "8026af11fcb0f497c40bd60e7a1b552504aedb3f9f2f1bd299ca427791a41521"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "The LPT1 printer adapter generates it when the printer becomes ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "986-987",
+       "sha": "8e05031c1524380fd7eca83bb65ccf9392bbd599639b9b25e46b3a1f543b57de"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X's parallel-port defaults give LPT1 IRQ 7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "81",
+       "sha": "7b834858d3c58da974c9195805f59e1fbe7b30bf0187643508c800d66c929b62"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "82-84",
+       "sha": "4e34068a0b1382d7678db6c87dcc1d2d0b28c9099ceed053fc5ebb9b12ebc729"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "202-206",
+       "sha": "de09635212a81d87ee1aded0a9f313185597ec92a5d5f8550ff676dbff26ed66"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "255",
+       "sha": "aae52d1ef7d3e5698560fc63bdcdfc8a167bc4a26f31a0338660f20a81a5dc00"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "406",
+       "sha": "38bfe2b19a3056e8a51856f4b9a04e2f480ddc6da511779b3980d50c8ddaacdc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "360-361",
+       "sha": "d452290663e49f5b0c51b4f58c217c64b6e944cd3261d216c49b0f9385f93f0d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X prints the byte and schedules its own timeout event instead; it raises no IRQ7 for the printer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2663-2672",
+       "sha": "d0a22cfd783b87499b5e72774f348677f25feeb6b5e68b653f58c5f5629a34ca"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "8",
+   "name": "real-time clock",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "2983-2986"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cmos.cpp",
+     "lines": "190-193"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ8 is the real-time clock's line, interrupt 70h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "2983",
+       "sha": "c72990e71594d261c6119a4b56cd6cc518eb9febf0c3ba139da286f5b837645b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "It is called when the real-time clock chip generates an alarm or periodic interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "2984-2985",
+       "sha": "a9d06bb82b8be78e6d23958c26751e75ac521d931a51b1fbb7a585edcad0ad57"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "By default the periodic interrupt occurs 1024 times per second.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "2986",
+       "sha": "3177a49ffb43ae9261e2cc2872770c0b76f596b59019a638f1eb6d6eadf71e79"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cmos.cpp",
+     "lines": "190-193",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "9",
+   "name": "IRQ9 redirect",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3001-3005"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12389-12390"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "472-481"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ9's interrupt is INT 71h, redirected to INT 0Ah by the BIOS.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3001",
+       "sha": "0985a01953d3a44eaff70ac83296b2962ece3e404952ea84250bb7ed797c28a6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The default BIOS handler invokes INT 0Ah for compatibility, since the pin for IRQ2 on the PC expansion bus became the pin for IRQ9 on the AT expansion bus.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3003-3005",
+       "sha": "6d6fc6be07f8bff6fa1a1e3f1f442b6c5c732de40c40699ede126e4eaf1ed520"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "It may be masked by setting bit 1 of I/O port A1h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3002",
+       "sha": "1aaf742cdb3cc9ec66e1669d3a52024c78ae5ebac4e5f2a240113cc088d86307"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs a callback for IRQ 9 that issues INT 0Ah.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12389-12390",
+       "sha": "45d62970efe14b1b16433e804871b63273252d2f1f80a18fcd3244bed4ff016c"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "472-481",
+       "sha": "04763d1f0926ad1c4a0a1c761b6b370a6247219fbb3a4eab1771fc47378e4e9d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12389-12390",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "472-481",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "10",
+   "name": "reserved line 10",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3011"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "103-107"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10409-10412"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ10 is reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3011",
+       "sha": "583a692665a53e7701f3649332d09f725836180852f987b060ea727c0ee6979d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X gives IRQ 10 by default to its quaternary IDE interface.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "103-107",
+       "sha": "c82b33c50b056f603bdcc1b7d12f1bc2a964c746b473b310f2e6b1d324b78966"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs a default IRQ handler at vector 72h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10409-10412",
+       "sha": "56753a0449f7ae7117d4afb3d1e274cb8aeb0cf7ccf128fd39f96d3ca954cf63"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "11",
+   "name": "reserved line 11",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3018"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "103-107"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10409-10412"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ11 is reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3018",
+       "sha": "f8b436053fe5a8e03e53a8dc3c67e828ba1f1bf374683593d9cb9803cf302ee3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X gives IRQ 11 by default to its tertiary IDE interface.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "103-107",
+       "sha": "c82b33c50b056f603bdcc1b7d12f1bc2a964c746b473b310f2e6b1d324b78966"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs a default IRQ handler at vector 73h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10409-10412",
+       "sha": "56753a0449f7ae7117d4afb3d1e274cb8aeb0cf7ccf128fd39f96d3ca954cf63"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "12",
+   "name": "pointing device",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3025-3026"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "265-268"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "144"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "157"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "2411-2413"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ12 is the PS/2 pointing device's line, interrupt 74h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3025",
+       "sha": "aabd3c9504879951c3f3c26396a86f61e2e653e65ff014035491c34373c2c95b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It may be masked by setting bit 4 of I/O port A1h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3026",
+       "sha": "3dbd2631b0ce4af98fd82431380fbcbbc57fb07e886db8aaa543626560585db8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X raises IRQ12 from KEYBOARD_SetPort60 when the auxiliary device sends a byte and cb_irq12 is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "261-264",
+       "sha": "b0f12a64c46dded6e5d8ffc8df7dba9796960dc2afb69c8a3768c0f0a8e9bd7c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "265-268",
+       "sha": "410100bc6a1d3930dc74f85e7c7ec6e415181bb2f196a0908ad229af48de831f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "265-268",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "144",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "157",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "2411-2413",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "13",
+   "name": "math coprocessor",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3035-3036"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10441-10458"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ13 is the math coprocessor exception's line, interrupt 75h, on the AT and later.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3035",
+       "sha": "80bee58c022f676e659f25f8c03a87d8f8f69113d2918ddfab39dcfbef8ba32b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS redirects it to INT 02h for compatibility with the PC.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3036",
+       "sha": "8126a9c1770b2975a80859824eb5e92e5c6a45d6c4dfc3cab64e0f84e4e815e0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "The block that installs the AT's BIOS vectors installs 70h, 71h, 76h and 77h, and none at 75h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10441-10458",
+       "sha": "9ea39fe4ddb2e01251c43a5c1547613940d16c4b8bfbe67a3ba5c26f1fce5d1e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10441-10458",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "14",
+   "name": "primary IDE",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3046"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "103-107"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5869-5876"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12398-12403"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3319-3326"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ14 is the AT hard disk controller's operation-complete interrupt, interrupt 76h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3046",
+       "sha": "a945be2c407b1543d372210a2b588380c4a795aff88069eb1050cac9f920d459"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X gives its primary IDE interface IRQ 14.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "103-107",
+       "sha": "c82b33c50b056f603bdcc1b7d12f1bc2a964c746b473b310f2e6b1d324b78966"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5869-5876",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "103-107",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12398-12403",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3319-3326",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "15",
+   "name": "secondary IDE",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3056"
+    },
+    {
+     "ref": "rbil61:INTERRUP.Q",
+     "lines": "3063"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "103-107"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5869-5876"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12405-12410"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3319-3326"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IRQ15 is reserved on the AT and PS/2.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3056",
+       "sha": "4144d0bf0f377e2960efc46601421ee1bdb7b033abe9a037b1787765428fdfef"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Ralf Brown's list also gives IRQ15 as the secondary IDE controller's operation-complete interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.Q",
+       "lines": "3063",
+       "sha": "5fe99f1716c42820eea77b81db6ba5544a02afbd1e6b0735471424920bacd050"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X gives IRQ 15 by default to its secondary IDE interface.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "103-107",
+       "sha": "c82b33c50b056f603bdcc1b7d12f1bc2a964c746b473b310f2e6b1d324b78966"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5869-5876",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "103-107",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12405-12410",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3319-3326",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  }
+ ]
+}

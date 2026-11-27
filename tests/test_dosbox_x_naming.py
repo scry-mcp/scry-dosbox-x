@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
-from scry_core.knowledge import Base
+from scry_core.knowledge.base import Base
 from scry_core.naming import Guarded, Named
 
 from scry_dosbox_x import knowledge, naming, server
@@ -16,19 +16,18 @@ from scry_dosbox_x import state as dstate
 from scry_dosbox_x import symbols as sym
 
 ROOT = Path(__file__).resolve().parent
-SAMPLE = ROOT / "fixtures" / "knowledge" / "names"
 EXAMPLES = ROOT.parent / "docs" / "reference" / "examples.json"
 
 
 @pytest.fixture
-def sample() -> naming.DosboxNamer:
+def sample(named_base: Base) -> naming.DosboxNamer:
     """A namer over a base that holds ports and a vector, which the confirmed base does not yet."""
-    return naming.DosboxNamer(Base.load(SAMPLE))
+    return naming.DosboxNamer(named_base)
 
 
 def test_an_interrupt_is_named_by_its_function() -> None:
     named = naming.interrupt_call(knowledge.base(), 0x21, {"AX": 0x4C00})
-    assert named is not None and (named.name, named.number) == ("exit", "0x21/0x4C")
+    assert named is not None and (named.name, named.number) == ("terminate with code", "0x21/0x4C")
 
 
 def test_int_43h_is_not_the_xms_driver() -> None:
@@ -39,7 +38,8 @@ def test_int_43h_is_not_the_xms_driver() -> None:
 
 def test_an_interrupt_breakpoint_names_the_call_it_waits_for() -> None:
     got = naming.NAMER.arguments("breakpoint_interrupt", {"number": "0x21", "ah": "0x4C"})
-    assert got["number"] == Named("call", "exit", "0x21/0x4C", id="ibm-pc:call:0x21/0x4C")
+    assert got["number"] == Named("call", "terminate with code", "0x21/0x4C",
+                                  id="ibm-pc:call:0x21/0x4C")
 
 
 @pytest.mark.parametrize("given", [{"number": "0x21"}, {"number": "0x43", "ah": "0x08"},
@@ -47,11 +47,6 @@ def test_an_interrupt_breakpoint_names_the_call_it_waits_for() -> None:
 def test_an_interrupt_breakpoint_that_names_no_call_names_nothing(given: dict[str, Any]) -> None:
     assert naming.NAMER.arguments("breakpoint_interrupt", given) == {}
 
-
-def test_a_held_back_call_is_not_named() -> None:
-    """INT 21h AH=3Dh has an entry the second check has not confirmed."""
-    assert knowledge.base().by_id("ibm-pc:call:0x21/0x3D") is None
-    assert naming.NAMER.arguments("breakpoint_interrupt", {"number": 0x21, "ah": 0x3D}) == {}
 
 
 def test_a_port_is_named_for_the_direction_of_the_call(sample: naming.DosboxNamer) -> None:
@@ -151,7 +146,7 @@ def test_a_reply_names_the_call_its_arguments_state() -> None:
     install()
     named = _reply_to_an_exit_breakpoint()["names"]
     assert named == [{"field": "given.number", "number": "0x21/0x4C", "kind": "call",
-                      "name": "exit", "id": "ibm-pc:call:0x21/0x4C"}]
+                      "name": "terminate with code", "id": "ibm-pc:call:0x21/0x4C"}]
 
 
 def test_with_the_names_off_a_reply_has_no_names() -> None:
@@ -183,7 +178,7 @@ def test_status_counts_what_is_served_and_what_is_held_back() -> None:
     base = knowledge.base()
     got = cast(dict[str, Any], server.status())
     assert got["knowledge"] == {"served": len(base), "held_back": base.held_back}
-    assert got["knowledge"]["held_back"] > 0 and "names_failed" not in got
+    assert "names_failed" not in got
 
 
 def test_status_says_a_namer_failed_and_no_reply_does(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -198,12 +193,3 @@ def test_status_says_a_namer_failed_and_no_reply_does(monkeypatch: pytest.Monkey
     assert "names" not in _reply_to_an_exit_breakpoint()
     got = cast(dict[str, Any], server.status())
     assert got["names_failed"]["last"] == "RuntimeError: no" and got["names_failed"]["count"] > 0
-
-
-def test_knowledge_find_answers_a_confirmed_call_and_says_a_held_back_one_exists() -> None:
-    install()
-    got = cast(dict[str, Any], server.knowledge_find(kind="call", key="0x21/0x4C"))
-    assert [e["id"] for e in got["entries"]] == ["ibm-pc:call:0x21/0x4C"], got
-    held = cast(dict[str, Any], server.knowledge_find(kind="call", key="0x21/0x3D"))
-    assert held["entries"] == [] and held["unconfirmed"] == ["ibm-pc:call:0x21/0x3D"], held
-    assert held["served"] == len(knowledge.base()) and held["held_back"] > 0

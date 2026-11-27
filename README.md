@@ -357,7 +357,7 @@ names the file as written.
 ## Going further
 
 - [REFERENCE.md](REFERENCE.md) has what the groups of tools share, and links each group's page.
-- A reply names the number it shows, as `exit (0x4C)`. [Knowledge base](REFERENCE.md#knowledge-base) says what the base answers and where each name comes from.
+- A reply names the number it shows, as `terminate with code (0x4C)`. [Knowledge base](REFERENCE.md#knowledge-base) says what the base answers and where each name comes from.
 - While your client works, the emulator's window shows it: an orange edge, the pointer and a mark while it records. [The orange edge of the window](REFERENCE.md#the-orange-edge-of-the-window).
 - To watch a program run, `start` takes `shared`, `display`, `fullscreen` and `size`;
   [its page](docs/reference/session.md#start) covers each.

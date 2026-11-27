@@ -1,0 +1,6231 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vectors",
+ "title": "INT 00h to INT 3Fh, the PC interrupt vectors",
+ "kind": "vector",
+ "scope": "ibm-pc",
+ "covers": "The interrupt vectors of the IBM PC, 00h to 3Fh: what each one is, and what DOSBox-X does with it.",
+ "source": "official",
+ "defines": {
+  "dosbox-x": []
+ },
+ "engine": [
+  "DOS_25Handler_Actual",
+  "DOS_26Handler_Actual"
+ ],
+ "entries": [
+  {
+   "key": "0x00",
+   "name": "divide error",
+   "aliases": [
+    "DIVIDE ERROR",
+    "INT 00h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "7"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "137-139"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "142-143"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/instructions.h",
+     "lines": "638-642"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/instructions.h",
+     "lines": "729"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/instructions.h",
+     "lines": "751"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 00h is the CPU-generated divide error.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "7",
+       "sha": "d933c240c877a2f83e0d025f3107d34d1b4c415c6e43c2a5aa43c64f25def793"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "137",
+       "sha": "0cfc6325b7153082805bf5a15a0cb66d977f6113e27d10dc5ecc5eb2abefb565"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU generates it when the divisor of a DIV or IDIV instruction is zero or the quotient overflows the result register.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "138-139",
+       "sha": "e5d1f1f0e8ff3791af099255de311444e4177dcffd8748970d12c4d009a7da95"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "An 8086 or 8088 raises it when the result of a division is 80h (byte) or 8000h (word).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "142-143",
+       "sha": "8727eff87dab6407098695f8a35c2881522b0bfab55b6dad3fd105336b695c4e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/instructions.h",
+     "lines": "638-642",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/instructions.h",
+     "lines": "729",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/instructions.h",
+     "lines": "751",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "single step",
+   "aliases": [
+    "SINGLE STEP",
+    "INT 01h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "8"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "154"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "164"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "155-156"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal.cpp",
+     "lines": "254-262"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "1203-1206"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "1543-1547"
+    },
+    {
+     "ref": "dosbox-x:include/cpu.h",
+     "lines": "255"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "786-791"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 01h is the CPU-generated single step; on the 80386 and later it is also the debugging exception.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "8",
+       "sha": "3a36cfbd2846dd3aad5b5dec12cb24c53448cccabd24b66f79350ceb1d0e3b80"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "154",
+       "sha": "8713d8cf81ccd1e86be9d5ef4e68e911940edd0f8dab0c08325b61471ba5aeb7"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "164",
+       "sha": "8a0e0c969b7da6ebc64ed72dabcf298a95bc22ce9470931a4d7d1c1b0b87bf1d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU generates it after each instruction if TF (trap flag) is set; TF is cleared on invoking the single-step handler.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "155-156",
+       "sha": "31ada6a0461d7d1784e79536d76f5fc53484337a433a5d0cdb404b3b68e5fdf5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/core_normal.cpp",
+     "lines": "254-262",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "1203-1206",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "1543-1547",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:include/cpu.h",
+     "lines": "255",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "786-791",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "nmi",
+   "aliases": [
+    "NMI",
+    "NON-MASKABLE INTERRUPT",
+    "INT 02h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "9"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "175-176"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "625-631"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "272-273"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "633-636"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 02h is the non-maskable interrupt, generated by external hardware.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "9",
+       "sha": "22b47ac4a736447f44517c598555686777b97e53894c159714cd1cc25b7dcb94"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "175",
+       "sha": "3725cce7dcfee1aadfa1c9b12a2e4cd573b5f234b5b35888967416271b0ba2c2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU enters it when the input to the NMI pin is asserted.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "176",
+       "sha": "9cfff6fd44473e506dfc70063b8f36ef7664038bf32a88bae4482920f1b69888"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PCjr the keyboard raises an NMI instead of IRQ1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "272-273",
+       "sha": "e89ab9c3074333def43fcf871619cdb68b2d1321e3a3b607f1e701bb4df9e928"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "625-631",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "633-636",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "breakpoint",
+   "aliases": [
+    "BREAKPOINT",
+    "INT 03h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "10"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "206-207"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1054-1076"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 03h is the CPU-generated breakpoint.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "10",
+       "sha": "f7a03e62e3b95848015462d342b432507e89131c8f52fd2e24721eaa1181b48e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "206",
+       "sha": "2d7676fd56ea43937cd339238d5a883c2d0d290d2a392c66611d66b44c66d136"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU generates it for the one-byte breakpoint instruction (opcode CCh).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "207",
+       "sha": "0a560bfe14d72e230431887824aec5718baf6a638fc0517914b395981d9626fd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1074",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1054-1076",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "into overflow",
+   "aliases": [
+    "INTO",
+    "INT 04h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "11"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "503-505"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1094-1103"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 04h is INTO detecting an overflow.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "11",
+       "sha": "21f7a41e8a303af8813371011436e88015768a395ebd7a74774da119337ddb58"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "503",
+       "sha": "951d15be1c1d7763265d65f00be6b4a423fb5798a4d58c63a057cb30cb66cff4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The INTO instruction generates it when OF (the overflow flag) is set; otherwise INTO is effectively a NOP.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "504-505",
+       "sha": "3bd3e3e17c4447243356edc438d0b439e707c5135d7bdc6d85fc685288379c18"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1094-1103",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "print screen",
+   "aliases": [
+    "PRINT SCREEN",
+    "INT 05h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "12"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "510-513"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "527-529"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10483-10485"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "662-665"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "279-286"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 05h is PRINT SCREEN; on the 80186 and later it is also the BOUND range exceeded exception.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "12",
+       "sha": "1c989e3f63096b40506c0e72c22913f106630f735f01e9b8ec1ed22f7eecf5f7"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "510",
+       "sha": "6c0853b3142faaba3c1321ebaa3131e3922b02b8ab0fd15e4e5f22bb119bdfe8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "527",
+       "sha": "907957b781bcda467e9ec5edf96874a11fe07d6a004b40b3ad49925c8cb020f2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It dumps the current text screen to the first printer.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "511",
+       "sha": "1557a1a591670c0cdccb86ce15aa34070c4083aab89c7e26319571496a5fd702"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "It is normally invoked by the INT 09 handler when the PrtSc key is pressed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "512-513",
+       "sha": "df5a6430557096f203b7cb989b978f2b96c01ec2826f0b5c1869ba071b21ed9c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "BOUND calls it when the value tested is below the lower bound or above the upper bound.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "528-529",
+       "sha": "763bb7da0982a00765a3a89d3a6efff51001669fdc96c8d36841bbd215fdf771"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "527",
+       "sha": "907957b781bcda467e9ec5edf96874a11fe07d6a004b40b3ad49925c8cb020f2"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs an IRET as the INT 05 handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10483-10485",
+       "sha": "4bcfa0d0e13900a89096b8bf93777a25afbd452432310d6b344447b8b909860b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10490",
+       "sha": "6497bfd598858b23b61db0c8f4038b0a4458acb1cc05e35283d0294b3ae3e080"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "No screen dump happens: the handler the BIOS installs does nothing unless hooked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10483-10485",
+       "sha": "4bcfa0d0e13900a89096b8bf93777a25afbd452432310d6b344447b8b909860b"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "An application may invoke it directly.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "513",
+       "sha": "4e49b80e61abce8c5a3cac635a03194d39b33967b5096315d614931640f2be55"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "662-665",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "279-286",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "invalid opcode",
+   "aliases": [
+    "INVALID OPCODE",
+    "INT 06h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "13"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "557-561"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal.cpp",
+     "lines": "222"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "287-288"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "944"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "971"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_0f.h",
+     "lines": "110-112"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 06h is the CPU-generated invalid opcode exception.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "13",
+       "sha": "162916257acac8bc98fa81824668b7799f3f59c856de5a13ed74af6709b53a89"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "557",
+       "sha": "b21e3b5f4910f3a2fb92360a3d0596b03219dee61d0fb7d0d7f9901b9f21fcc2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU raises it when it attempts an invalid opcode, or a BOUND, LDS, LES or LIDT instruction that names a register rather than memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "558-561",
+       "sha": "754291169f5cdb693c8d9fa706adae1a674a8792cab3cf29168133e0c4819641"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/core_normal.cpp",
+     "lines": "222",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "287-288",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "944",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "971",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_0f.h",
+     "lines": "110-112",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "no coprocessor",
+   "aliases": [
+    "EXTENSION NOT AVAILABLE",
+    "INT 07h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "14"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "581-583"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1142"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "5304-5305"
+    },
+    {
+     "ref": "dosbox-x:include/cpu.h",
+     "lines": "257"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 07h is the CPU-generated processor extension not available exception.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "14",
+       "sha": "95ebebd6ddae172f8416b8161225139f26c190738716473ef2c2ffd63d2e4723"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "581",
+       "sha": "7f39bf299530f7ff0936d8c18a32395eb0bf10b5b2d0ebf1122d9b8b5c767f35"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU calls it automatically when a coprocessor instruction is met and no coprocessor is installed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "582-583",
+       "sha": "e4afec87b6469cb979945585b1b5f93532ed20596c5a91f81478eee033553ef8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/core_normal/prefix_none.h",
+     "lines": "1142",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "5304-5305",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:include/cpu.h",
+     "lines": "257",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "system timer",
+   "aliases": [
+    "IRQ0",
+    "SYSTEM TIMER",
+    "INT 08h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "15"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "587-592"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "499-504"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "1008-1013"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6324-6329"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10467"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "398"
+    },
+    {
+     "ref": "dosbox-x:include/timer.h",
+     "lines": "25"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 08h is IRQ0, the system timer; on the 80286 and later it is also CPU-generated.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "15",
+       "sha": "7f968c7cb9294aa37a69413257f5e4723f091e97e9dd562fd92524055345b6a4"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "587",
+       "sha": "73f98191de3d3115fd4f9182e5ff94958ec899baed028b4097d95063a18594a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Channel 0 of the 8254 system timer generates it 18.2 times per second.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "588-589",
+       "sha": "932628a2ed84f488aaf85c64cd779379805e5f0f7d0e78b430720493bca1bec2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "It is used to keep the time-of-day clock updated.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "588-589",
+       "sha": "932628a2ed84f488aaf85c64cd779379805e5f0f7d0e78b430720493bca1bec2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Programs that need to be invoked regularly should use INT 1C unless they need to reprogram the timer while keeping the time-of-day clock running at its proper rate.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "590-592",
+       "sha": "e94597e723a35113708048247fce02cad0ef98fecccda2982d37d3bdffee6426"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs an IRQ0 callback whose stub issues INT 1Ch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10467",
+       "sha": "869c5ef191ae52987b04c69e63e22c6bd604eab00ca7ab0d5ff9510e7b603756"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "398",
+       "sha": "d3184374ef124e05c4fbd7429a935c0b2860cfe057f2a0b21c63ce53924ce3ed"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "1008-1013",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/timer.cpp",
+     "lines": "499-504",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6324-6329",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:include/timer.h",
+     "lines": "25",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "keyboard",
+   "aliases": [
+    "IRQ1",
+    "KEYBOARD",
+    "INT 09h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "16"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "611-615"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1725-1726"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "261-275"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 09h is IRQ1, the keyboard data ready interrupt; on the 80286 and 80386 it is also CPU-generated.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "16",
+       "sha": "acd92077f2edae5b6134e005aad2d5cd536a1a571920a089d4b02f1653957161"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "611",
+       "sha": "0bd84cb5d9345e5dfe59f514ab6be4e2b2196b44533c970cce3de48c6c5dcb17"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CPU enters it when data is received from the keyboard: normally a scan code, or an ACK or NAK of a command on AT keyboards.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "612-615",
+       "sha": "094c23da2bb0bc5ca06a9b7ad428f93ccfbe46bf5df100b30e75da55d28a184f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its keyboard IRQ1 handler at vector 09h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1725-1726",
+       "sha": "8d13f302b614326fa209ddabb9d603c8902600531304aad12a244fe5f348e557"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "The keyboard raises IRQ1 when data is set at port 60, but on the PCjr the same data raises the NMI instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "261-264",
+       "sha": "b0f12a64c46dded6e5d8ffc8df7dba9796960dc2afb69c8a3768c0f0a8e9bd7c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "270-275",
+       "sha": "0beeba5daf31de527e1becc3617b508a6dc760070d33cfbda31ab9b10249856c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "265-269",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0A",
+   "name": "irq2",
+   "aliases": [
+    "IRQ2",
+    "INT 0Ah"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "17"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "767"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "772-774"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "472-477"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10451"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 0Ah is IRQ2: LPT2 on the PC, the vertical retrace interrupt on the EGA and VGA, and IRQ9.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "17",
+       "sha": "168697d4694c4610dfc15c56eef90b46652d29adb9bff70b30513f5e1c4a75f7"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "767",
+       "sha": "a0d6a6390345850a733cf5cb16671166e3029e3aeb7e127c7bda815417d9e2da"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "772-774",
+       "sha": "36100810fd5cbde6d6df776d2dd596ffda69a9ec50f55570cf6bb1d7b5576cff"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "On ATs and above, the physical data line for IRQ2 is labeled IRQ9 and connects to the slave 8259.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "772-773",
+       "sha": "d34464a23e5bb0931a024c014489b87835238825b2e92483cbbfaf72e58717d7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS points vector 71h at a stub that issues INT 0Ah.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10451",
+       "sha": "9dd851c1c8c085f0efd6a4ab395ea3863e52f6b9945df50812cbbc6dbe50610d"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "472-477",
+       "sha": "751fdbcb116fff46b9af3353ab35ea09cd4405b1bd2f054dc3fa83e096cafd7b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "doc",
+     "text": "The BIOS redirects the interrupt for IRQ9 back to this vector.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "773-774",
+       "sha": "43ef9f83bdf282ae4a3e412e906bfca4294d49c874af75ca6f60a952bc8fb3d6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "472-477",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x0B",
+   "name": "com2 (irq3)",
+   "aliases": [
+    "IRQ3",
+    "COM2",
+    "INT 0Bh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "18"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "816-818"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10405"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 0Bh is IRQ3, serial communications (COM2).",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "18",
+       "sha": "40eb45de690f6ced53d2039e67cbd758a5e8988fe8a93600fe88f9a4941d70e0"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "816",
+       "sha": "65b4c9d5827ded0a299f8677e2144dec157aea0c61bd3de44fd107ae496ed9e6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The UART automatically asserts it when COM2 needs attention, if the UART has been programmed to generate interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "817-818",
+       "sha": "0d7972e7236c806b89382f755e3e758ef4f7383d5adb5c9a39903f6debe05cb7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its default IRQ handler at vector 0Bh.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10405",
+       "sha": "1b5c83601b782d3b176e29f45298eb5342f66175e83b998bad4b0d738f7605d5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "com1 (irq4)",
+   "aliases": [
+    "IRQ4",
+    "COM1",
+    "INT 0Ch"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "19"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "843-845"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10406"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 0Ch is IRQ4, serial communications (COM1).",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "19",
+       "sha": "fbcab56c6cca4c0174a2455150506e400f99d31988d457a4015673b4d6acafff"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "843",
+       "sha": "9d3653181ec6bcfaece20f76ed2e89466f144141d06da49156a2ffe036470f36"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The UART automatically asserts it when COM1 needs attention, if the UART has been programmed to generate interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "844-845",
+       "sha": "77c3c09cfab9070159fe00453f30fdfd85e0dc17fbc5db218475fb3e478b97f1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its default IRQ handler at vector 0Ch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10406",
+       "sha": "4e45b2ce2e6e8871f0ff892c121000df39a220d99f54ca9375a83d8c0be17dc4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/serialport/serialport.cpp",
+     "lines": "360-368",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0D",
+   "name": "irq5",
+   "aliases": [
+    "IRQ5",
+    "INT 0Dh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "20"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "907"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10407"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7698-7709"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 0Dh is IRQ5: the fixed disk on the PC and XT, LPT2 on the AT, reserved on the PS/2.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "20",
+       "sha": "cda3c91b944cbe1904303c084241a42e2bb8c143c5e6137ab03d8c4b5d1e7864"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "907",
+       "sha": "8a10c4fdb47cd4569bc36a432e9012e64b58cd4bc5e2544641f49837f13bcacd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its default IRQ handler at vector 0Dh.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10407",
+       "sha": "996d0222f6eda87bafae7d99bbc8b390668beced28d770da0dd667e9a39fc4b2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The default handler masks the line that raised the interrupt and acknowledges the PIC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7698-7709",
+       "sha": "80d3ed124ae4755066b5dbbca1a3d133ac35cb0cc4fd5d61e92b89022767402f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "257-268",
+       "sha": "e0f51f0c226c165d457e04af4ac85c35ae1420146c6e4d8cdd61add99d9a6ea4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "270-281",
+       "sha": "1d63bae85b54b1d5ee938b946b60dffbd8fba0f538cd05672571c83cb6df8e32"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "302-304",
+       "sha": "dfb233dbe3f17811828af342a21da3cea13a1c3002ce7a5af018fa46e1364c83"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x0E",
+   "name": "floppy (irq6)",
+   "aliases": [
+    "IRQ6",
+    "DISKETTE",
+    "INT 0Eh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "21"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "960-962"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2681-2684"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10455"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1413-1414"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1376-1379"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 0Eh is IRQ6, the diskette controller.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "21",
+       "sha": "821cf08c13c4b4b10a42e45ddb3a9749e7f8a5ecba8370a26af7075f7a317197"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "960",
+       "sha": "361f7cc92562008115e05c1fcc5f759db2e54d2ba218443afe7e19a604504d6a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The floppy disk controller generates it on completion of an operation.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "961-962",
+       "sha": "2ec539c7d3f48d5b57ae2bf5fa5e7614691591443fed6a434efcd62d6534f2fe"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its floppy IRQ6 handler at vector 0Eh.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10455",
+       "sha": "18a037a204b446c6d2f88e684e4cf057ee164504fe56e201a6b5df787857e2cd"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12412-12413",
+       "sha": "ac7591be0d0a10c3bf74e840f04b4113811f3dac5e74b15566f9f58f38e0feee"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "2681-2684",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1413-1414",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/floppy.cpp",
+     "lines": "1376-1379",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0F",
+   "name": "irq7",
+   "aliases": [
+    "IRQ7",
+    "INT 0Fh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "22"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "985"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10408"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7698-7709"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 0Fh is IRQ7, the parallel printer.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "22",
+       "sha": "0153403609d44dcf29dd0678c8619001fdc7d200d01a65289212929775e0032b"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "985",
+       "sha": "1366de5cd9aa3439fbdf07239d061723d0312cc4711b267fd58eba4f233d6351"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its default IRQ handler at vector 0Fh.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10408",
+       "sha": "5b0eb9550b4410022503c001a136d4932d31021ce8b34386cc32373c1e09b314"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The default handler masks the line that raised the interrupt and acknowledges the PIC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7698-7709",
+       "sha": "80d3ed124ae4755066b5dbbca1a3d133ac35cb0cc4fd5d61e92b89022767402f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "257-268",
+       "sha": "e0f51f0c226c165d457e04af4ac85c35ae1420146c6e4d8cdd61add99d9a6ea4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "270-281",
+       "sha": "1d63bae85b54b1d5ee938b946b60dffbd8fba0f538cd05672571c83cb6df8e32"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "302-304",
+       "sha": "dfb233dbe3f17811828af342a21da3cea13a1c3002ce7a5af018fa46e1364c83"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x10",
+   "name": "video",
+   "aliases": [
+    "VIDEO",
+    "INT 10h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "23"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "997-999"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "1842-1845"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "5319-5325"
+    },
+    {
+     "ref": "dosbox-x:include/cpu.h",
+     "lines": "264"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 10h is the video interrupt; on the 80286 and later it is also the coprocessor error.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "23",
+       "sha": "61216b48522c87c585daf6a8ae80cb9d02b272a148b9048ae099a13ead3cae16"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "997",
+       "sha": "4e9f341668eb75615791aa17bf48fd6e83a569f148dcda75eb0b68bd6fe14f50"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "On the 80286 and later the CPU generates it when the -ERROR pin is asserted by the coprocessor.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "998-999",
+       "sha": "c12be74e9b2bbbaaf35a733b00b72b2c1df4b2dd678772ca4598e7dcb97bd319"
+      },
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "997",
+       "sha": "4e9f341668eb75615791aa17bf48fd6e83a569f148dcda75eb0b68bd6fe14f50"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The video BIOS installs its handler at vector 10h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "1842-1845",
+       "sha": "520c6c812c959c537b9d08116d1ab9534d99974190cf6ed4a6b46b58b8efaa11"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/cpu.cpp",
+     "lines": "5319-5325",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:include/cpu.h",
+     "lines": "264",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x11",
+   "name": "equipment list",
+   "aliases": [
+    "GET EQUIPMENT LIST",
+    "INT 11h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "24"
+    },
+    {
+     "ref": "rbil61:INTERRUP.B",
+     "lines": "1044-1045"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6180-6183"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10443"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12195-12196"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 11h is the BIOS equipment list call; on the 80486 and later it is also CPU-generated.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "24",
+       "sha": "9cbfe027098eaf2ab38e0a8b0a99e6d0d7104bf2a3fb01cc6dd9a9dd487773c2"
+      },
+      {
+       "ref": "rbil61:INTERRUP.B",
+       "lines": "1044",
+       "sha": "d243cfa721654e70506e7b4649497e4abdcc3d0a07e916d353af440a3c560c3b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It returns the BIOS equipment list word in (E)AX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.B",
+       "lines": "1045",
+       "sha": "51ceab433ecc49c6ecc502993b894dcf008a2fe597d917471f1298297ed01eef"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its equipment list handler at vector 11h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10443",
+       "sha": "5d5df5417390dd27d5b7732c39b7f91806fc2ce934ded0feb1276c2663f86223"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12195-12196",
+       "sha": "5a318c99711a6486233d55fb1168c34c876f40b3413cc077c7723d57bfa84f39"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With a Weitek coprocessor enabled, bit 24 of EAX is set as well as the equipment word.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6181",
+       "sha": "7d5958882ac6aec8b8110ac6b1fffcf7cd943485f913bd50f6ceb009401008aa"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6182",
+       "sha": "2e702690a1f72062c279e5776d852b77a37cc6ad981fc8f5ab17eb506b71650b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6180",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6182-6183",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x12",
+   "name": "memory size",
+   "aliases": [
+    "GET MEMORY SIZE",
+    "INT 12h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "25"
+    },
+    {
+     "ref": "rbil61:INTERRUP.B",
+     "lines": "1417-1418"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6445-6448"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10444"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12198-12199"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 12h is the BIOS memory size call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "25",
+       "sha": "35cb2cfa0d75d5ef488bc3c56da2d7fccde3baae960f598634aa68857939b476"
+      },
+      {
+       "ref": "rbil61:INTERRUP.B",
+       "lines": "1417",
+       "sha": "35cb2cfa0d75d5ef488bc3c56da2d7fccde3baae960f598634aa68857939b476"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It returns in AX the kilobytes of contiguous memory starting at absolute address 00000h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.B",
+       "lines": "1418",
+       "sha": "cb67ec645c573a98ed498cc122219c405ece3e0a9a640f4f732125f8cfc75fc0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its memory size handler at vector 12h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10444",
+       "sha": "4008bdfa8ef54053eee5bc664122256ff6002a703ec641667d27b59f9b2a4263"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12198-12199",
+       "sha": "4bef16369afe0ae6d296094f1a4d719a835d9781a6ee346fcdf8728c76a60d53"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6445-6448",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x13",
+   "name": "disk",
+   "aliases": [
+    "DISK",
+    "INT 13h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "26"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_int13.cpp",
+     "lines": "1050-1055"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 13h is the disk interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "26",
+       "sha": "fbdddba85bafdef7e8e72bfbc462379dde878dd9147af6545b9a4834540008bc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its disk handler at vector 13h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_int13.cpp",
+       "lines": "1050-1055",
+       "sha": "80a97dd9a6d5e79fba1ed8ea2fd8b12950e6c539a3e85ac1471b0a4ca489b5a5"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x14",
+   "name": "serial",
+   "aliases": [
+    "SERIAL",
+    "INT 14h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "27"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12355-12356"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10445"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 14h is the serial interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "27",
+       "sha": "5948940c8078da2e2ab8839db7af7fce25912aac0a058963c918e1c8f9aa62cb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its serial port handler at vector 14h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12355-12356",
+       "sha": "23be3797071cb4bba22eb95a1a6ac8aee6ceb458de59fafe22ad9cb38e13822f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10445",
+       "sha": "9100e44da587e04ce1322d35dece20beb5441f6ee40e974010073e535d59599f"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x15",
+   "name": "cassette and system",
+   "aliases": [
+    "CASSETTE",
+    "INT 15h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "28"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12358-12359"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10446"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 15h is the cassette interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "28",
+       "sha": "9af244e09dce18264ad4bf06deb6af8b6e98891d36d201db109ffe4f06a04206"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its system services handler at vector 15h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12358-12359",
+       "sha": "5e038d98033dde0734472e76301edcf140b14572a8e8a9a9783711ae61afeddb"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10446",
+       "sha": "2f99ce7353b6676132586578a741ce66948bb77b6ea1cbdc92009599c745625d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x16",
+   "name": "keyboard get keystroke",
+   "aliases": [
+    "INT 16h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "29"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "278-281"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10439"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1674-1675"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1334-1336"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_keyboard_layout.cpp",
+     "lines": "675"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 16h is the keyboard get keystroke call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "29",
+       "sha": "950a1a896bee57c812f3e5f280f7afd60e29bb83073f468ab6bc6e954047ec29"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "278",
+       "sha": "64dc568cbe896e939bf7653beee582dae362651585116c3e67f8cb468427c473"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Function 00h returns the next keystroke's BIOS scan code in AH and its ASCII character in AL.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "279-281",
+       "sha": "ad4f6a523573367389c444694f661b33e4ce18c48f30c4ec55a18459ede0c4ec"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its keyboard handler at vector 16h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10439",
+       "sha": "ae313eff9c6a7366e0b9bcbe7f5f9be394811bab60cd9eb03d64da332774b7bb"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+       "lines": "1674-1675",
+       "sha": "9aa9d4461465ae7d3d22fd66fc2730c9d70bf00878c3da11f7732140c22e66f8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "1334-1336",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_keyboard_layout.cpp",
+     "lines": "675",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "printer",
+   "aliases": [
+    "PRINTER",
+    "INT 17h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "30"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "3754-3758"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12361-12362"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10447"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6458-6462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 17h is the printer BIOS call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "30",
+       "sha": "05ca785d414166989cf05616ff73c35e58c7f6ab5d8c95829cfb2a9621ee653b"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "3754",
+       "sha": "bfd38c4b719d095884c2632865fcb058e849ba23e7b617ce626590e8e83c56ec"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Function 00h writes character AL to printer DX and returns the printer status in AH.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "3755-3758",
+       "sha": "47a91324747a5f39a3139e58eb415b8367e3b03b49ef351a9adce0b439192015"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its printer handler at vector 17h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12361-12362",
+       "sha": "3fa11cb7df3a2ce7b4d4d5acaff5ee522233f5704e89f76db5267b8dd5e38cb7"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10447",
+       "sha": "aecc94e105d84095156218b4181163fc3d096eb554539b11eb86ec978cb259ec"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6458-6462",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x18",
+   "name": "diskless boot hook",
+   "aliases": [
+    "DISKLESS BOOT",
+    "INT 18h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "31"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5287-5291"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10456"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12417"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7742-7752"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 18h is the diskless boot hook, called when no bootable disk is available.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "31",
+       "sha": "55b006a1254b31f6c679c0fd051ebe1a81248a7269c7badbd5fa7582af52b2e9"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5287-5288",
+       "sha": "44505ef4b4197f7a74a40a97dee3462c3526592ce5bc0de3cebd364d8caddd5e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Very few PCs other than IBM's contain BASIC in ROM, so on compatibles it often reboots the system.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5289-5291",
+       "sha": "dd748dd92fed4a4b6a3d49b01acadcc99fc4aed38dbabfbb63797365c3bb514e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its diskless boot handler at vector 18h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10456",
+       "sha": "36d4cca98e2de0bf4f5e216f032c1c5ccc998b47b5a8cf1921c9ec8419d95f4d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12417",
+       "sha": "5ec5328372cef787d28b7a4bdce12bb26be12442a6aedf1f92d38b61c717e0dd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7742-7752",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x19",
+   "name": "bootstrap loader",
+   "aliases": [
+    "BOOTSTRAP LOADER",
+    "INT 19h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "32"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5526-5528"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5531-5533"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12392-12393"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10452"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7756-7762"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 19h is the BIOS bootstrap loader: it reboots without clearing memory or restoring the interrupt vectors.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "32",
+       "sha": "05c7375c8dab7f1bea84d67c5f16babb389e2e771dec32c96e2d4bdef18638fb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5526-5528",
+       "sha": "33a75a5d51f2ccc0ce8e784de551de66a229de3ef94dc0ef37e37e3232f24d23"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Usually the BIOS reads sector 1, head 0, track 0 from drive A: to 0000h:7C00h, and if that fails it reads the same sector of the first hard disk.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5531-5533",
+       "sha": "5659f59ec98cb3035d4fd2eb1b039d1a6fd12f69ef6d511dc7c6417d862bbca7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its bootstrap loader at vector 19h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12392-12393",
+       "sha": "71cf5eb8235e4ebb10beab795e48bd75d2da36a713e89ad56f69e4a36b41f973"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10452",
+       "sha": "caa2c0b82f5b06cdacafbb1b93262ed8b3a1947261ca5c752d6d6b9ccf0c249b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X performs a software CPU reset and never reads a boot sector to 0000h:7C00h itself.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7756-7762",
+       "sha": "cc00db42f335d0eeb5ff8d235955511b7c4bf3630b915dd5b09a805cc1399e80"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1A",
+   "name": "time",
+   "aliases": [
+    "TIME",
+    "INT 1Ah"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "33"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "5772-5775"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12364-12365"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10448"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3105-3112"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 1Ah is the time BIOS call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "33",
+       "sha": "e5b54c53129c19c1a48e1b318e4847a9eafdfad44bb34d257387f5f443581662"
+      },
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5772",
+       "sha": "3758d6a78b2c568033bfa37e23a067f871b4929df272b90165523b09e063e076"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Function 00h returns the clock tick count since midnight in CX:DX and the midnight flag in AL.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "5773-5775",
+       "sha": "6119b8ae04ae97c9373a16ee765f7772cda9da4157934a21369bc2c17986ab7a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its time handler at vector 1Ah.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12364-12365",
+       "sha": "b97744ff16bad673331b75f28483a6b48e3d52ab55910dd87a018f51eae35ffc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10448",
+       "sha": "81ec06684c3cbfacb74e12b886c8746d17799b764c83524620593804e9c99ee8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "3105-3112",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1B",
+   "name": "control-break handler",
+   "aliases": [
+    "CTRL-BREAK",
+    "INT 1Bh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "34"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "9720-9724"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12395-12396"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10457"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4838-4841"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "745-751"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "755-758"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "463-464"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3446-3451"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 1Bh is the keyboard control-break handler.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "34",
+       "sha": "25bcdd6e0adb52fcf3d74c7195d7440182780598da4ece1a2e426b0f3309c902"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9720",
+       "sha": "1433109a6dc57d1678c527f1c381f338671dd6258361f5e222d7dbcb10c2bd6f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The keyboard handler calls it when it determines that Control-Break was pressed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9721-9722",
+       "sha": "1586975efa2845525dd9aec6227f65dd797a70be8a060cb19abb03efc26f8a48"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "The handler normally points at a short DOS routine that sets the Ctrl-C flag.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9723-9724",
+       "sha": "3c3c7c33bf733ef8f4f730c5767fff9956fcdeef6ffa6e35260f816bbb55cdea"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs a break handler at vector 1Bh and the DOS kernel replaces it with its own.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12395-12396",
+       "sha": "078a8e3fcd0917904d5fe8d47ccfbcbdd58a77ef2240881fb4c1d2879db288c0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10457",
+       "sha": "b50ca0b54ab8bf20c0c8bcf6b8ba044e1fe35f238fc45fb6fbc962432cf25029"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4838-4841",
+       "sha": "d899f5b27efc0780c83c1e7ee63a3939eb4b2f2878e304ccea21755682772863"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "745-751",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_keyboard.cpp",
+     "lines": "755-758",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "463-464",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3446-3451",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1C",
+   "name": "system timer tick",
+   "aliases": [
+    "TIMER TICK",
+    "INT 1Ch"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "35"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "9727-9729"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "12383-12384"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10449"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "392-403"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 1Ch is the system timer tick.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "35",
+       "sha": "d385542e8d14345f1638a246547f2dfa1fdcad15489d8bec9a5c5b83c5e9e41b"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9727",
+       "sha": "d385542e8d14345f1638a246547f2dfa1fdcad15489d8bec9a5c5b83c5e9e41b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The timer interrupt handler calls it automatically on each clock tick.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9728-9729",
+       "sha": "0c3781c4bc6af08febbe9ff6c6b878e30226cb1874f606ef6e695456fcea2a5c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The BIOS installs its timer tick handler at vector 1Ch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "12383-12384",
+       "sha": "b89dd4cc71d42340b39c370786757f4c422d519642f078788d81ef58d8ef26b0"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10449",
+       "sha": "3dcc1ae2c69e0cba8ca85c3d383668f259b3a5484c19f8780f7eb77f00f7c9c0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "392-403",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1D",
+   "name": "video parameter table",
+   "aliases": [
+    "VIDEO PARAMETERS",
+    "INT 1Dh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "36"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "9735-9737"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10_vptable.cpp",
+     "lines": "469-478"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 1Dh points at the video parameter tables.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "36",
+       "sha": "cec1b36205c22c8837116294eb1dc66a4f5ebb327008456ecf97424ab99eca6b"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9735",
+       "sha": "cec1b36205c22c8837116294eb1dc66a4f5ebb327008456ecf97424ab99eca6b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "In a 100% compatible BIOS the vector points at the parameter table at F000h:F0A4h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9736-9737",
+       "sha": "41ea8f81d90542af3ab490e607ef141ff878d55c8956e7d778fe238658713e9c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X allocates the video parameter table in its ROM area and points the vector at that address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10_vptable.cpp",
+       "lines": "469-478",
+       "sha": "623dafe4713bf748d8d62f25351cedee68be82a97dca7593bcc6cb1d4d01f3a3"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1E",
+   "name": "diskette parameters",
+   "aliases": [
+    "DISKETTE PARAMS",
+    "INT 1Eh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "37"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "9756-9760"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios_disk.cpp",
+     "lines": "2026-2027"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4900-4906"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 1Eh points at the diskette parameters.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "37",
+       "sha": "fa836b6ab75815d76435be0ccb4ccd5ed5a2023d54bf658259f5dbed2182d574"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9756",
+       "sha": "fa836b6ab75815d76435be0ccb4ccd5ed5a2023d54bf658259f5dbed2182d574"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "In a 100% compatible BIOS the default parameter table is located at F000h:EFC7h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9757-9758",
+       "sha": "78e5a931f998ae3a645edd13320592411fdb8a552c713eba6e095ef2b9c1de89"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "If the table is changed, INT 13/AH=00h should be called so the controller is reprogrammed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9759-9760",
+       "sha": "dc10568f7ce84106830919870e138902124f2a5000cef0534f7a5c6702a84024"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X allocates the parameter table in its ROM area and points the vector at that address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios_disk.cpp",
+       "lines": "2026-2027",
+       "sha": "b80dc4a96c4f73535b754d168c16ac85efcddf0c2d48971e0bd234299c966279"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel copies the table's first 11 bytes to 0000h:0522 and points the vector there.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4900-4906",
+       "sha": "b32ceec72797d0dc5f597db0af7b8e25700a9e0302d1176dbf96a9ae775ece90"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1F",
+   "name": "8x8 graphics font",
+   "aliases": [
+    "GRAPHICS FONT",
+    "INT 1Fh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "38"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "9809-9811"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10_memory.cpp",
+     "lines": "216-225"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 1Fh points at the 8x8 graphics font.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "38",
+       "sha": "8575343b9dbe6242c37e29f1c9ef11bca6fd3815899d7b6657e1c6b817bdcb83"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9809",
+       "sha": "8575343b9dbe6242c37e29f1c9ef11bca6fd3815899d7b6657e1c6b817bdcb83"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The vector points at 1024 bytes of graphics data, 8 bytes for each character 80h-FFh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "9810-9811",
+       "sha": "c4ed16ef099a4729500eac7b3a9dfa753d46999f92ead48b9ba3779417b306ac"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10_memory.cpp",
+     "lines": "216-225",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x20",
+   "name": "terminate program",
+   "aliases": [
+    "TERMINATE",
+    "INT 20h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "39"
+    },
+    {
+     "ref": "rbil61:INTERRUP.F",
+     "lines": "13"
+    },
+    {
+     "ref": "rbil61:INTERRUP.F",
+     "lines": "16-17"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4781-4782"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3454-3457"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 20h is the DOS terminate-program call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "39",
+       "sha": "a6c5384a388ee4dec2ce2f35e8eae159438a874da4e4f84efe3b1c9f8b2c9103"
+      },
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "13",
+       "sha": "a6c5384a388ee4dec2ce2f35e8eae159438a874da4e4f84efe3b1c9f8b2c9103"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It is equivalent to INT 21/AH=00h, which sets the program's return code to 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "16-17",
+       "sha": "85896e5d521e3331b2add6f422e5a9c56206fedbce8a568bea032401f2b6cca9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its terminate handler at vector 20h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4781-4782",
+       "sha": "813fcc86d5a2e80f52d862c798a903e91af43f4d183c29c494b55836209ea1b2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3454-3457",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x21",
+   "name": "DOS function calls",
+   "aliases": [
+    "FUNCTION CALLS",
+    "INT 21h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "40"
+    },
+    {
+     "ref": "rbil61:INTERRUP.F",
+     "lines": "2465"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4784-4785"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 21h is the DOS function call interface.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "40",
+       "sha": "c417238c952babcb0543eab5cdcaaf18e6edea9910d706923ec601a2d312226c"
+      },
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "2465",
+       "sha": "82ce537d1e95af28b4ab68a4886264d1e9bdefea5a5437b67bca4378d3199f2d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its function dispatcher at vector 21h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4784-4785",
+       "sha": "f79a4305ace9dd46aad2c776d4ed5478594d68af5c29a78befa7f223f7c42821"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x22",
+   "name": "program termination addr",
+   "aliases": [
+    "TERMINATION ADDR",
+    "INT 22h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "41"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "8862"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "8864-8867"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "428-432"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "870-872"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "150-152"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 22h is the address DOS returns to when a program terminates.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "41",
+       "sha": "dd337398c5ad0316e49adbae0d57f20cfa316fc2cb636e43cc0a4dc232e47fd0"
+      },
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8862",
+       "sha": "dd337398c5ad0316e49adbae0d57f20cfa316fc2cb636e43cc0a4dc232e47fd0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It should never be called directly, since it does not point at an interrupt handler.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8864-8865",
+       "sha": "3a4b97c00d07fa96d4da8b8b7c49e7f58c809cf95f69c28c7cf153a426c41370"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "During termination the vector is restored from the DWORD at offset 0Ah of the PSP and a FAR JMP is made to it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8866-8867",
+       "sha": "3e3e150234acef189ea9a2bccd667aa79570a615d87de82ea5d7bd489637bba7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "When a program is loaded, DOSBox-X sets vector 22h to the caller's return address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "870-872",
+       "sha": "997976fdc73e9a03eff35872a5da6b79d9f67e600314f242a905beba713b443f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "428-432",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "150-152",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x23",
+   "name": "control-c handler",
+   "aliases": [
+    "CTRL-C",
+    "INT 23h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "42"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "8877"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "8888-8889"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "738-743"
+    },
+    {
+     "ref": "dosbox-x:src/shell/shell.cpp",
+     "lines": "2416-2423"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "710-712"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 23h is the DOS Control-C and Control-Break handler.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "42",
+       "sha": "9ed06cb499930503b9c60f2f7819b470c585d9f3a59e5662ddf66f5e659bed65"
+      },
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8877",
+       "sha": "9ed06cb499930503b9c60f2f7819b470c585d9f3a59e5662ddf66f5e659bed65"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "DOS invokes it whenever it detects a Control-C or Control-Break.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8888-8889",
+       "sha": "0ee196386885024313b7912fc98d8e865cb0c88b77e32fdeb9ef98a7b4806c9d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The shell installs its own Control-C handler at vector 23h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/shell/shell.cpp",
+       "lines": "2416-2423",
+       "sha": "39d78d61d5e988c870a454dd29c02890eb7d5865940fdae0a5599e75ee2aeae6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "710-712",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "738-743",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x24",
+   "name": "critical error handler",
+   "aliases": [
+    "CRITICAL ERROR",
+    "INT 24h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "43"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "8914"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "8916-8919"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "421-432"
+    },
+    {
+     "ref": "dosbox-x:src/shell/shell.cpp",
+     "lines": "2411-2414"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "128-133"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 24h is the DOS critical error handler.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "43",
+       "sha": "c8ac931aa591c986733f4b36fe64056dfbd6d0e0ea12d8e982b7ccdca7ff49df"
+      },
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8914",
+       "sha": "771df1f92e3c4cab03167ccf543bc3120bb0b0a78016ac7d552dd52153d69117"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It should never be called directly.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8916",
+       "sha": "11c4ebebb7a5d9ca17cb0bd765540b4a1c4dae3f739d841b149e6277da536ed7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "When DOS terminates a program it copies the previous vector out of the PSP into the interrupt vector table.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "8917-8919",
+       "sha": "07057810877ad27889c87395bda3a0a430e8a4c39822e29f14db1596912b850a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X saves the vector in the PSP and restores it when the program ends.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "421-432",
+       "sha": "8874cd591fe51c234bcc510558f00de1b4bed7ce4ca5a12ec278c5bc407fffbd"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "128-133",
+       "sha": "727dd3c11a0396ac91f1258e55044466d40e56819df293af69e114adc113fe4c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The shell points vector 24h at a far jump back to the previous handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/shell/shell.cpp",
+       "lines": "2411-2414",
+       "sha": "1ae41f2f1c14b3dddf3fda38a04f0019b039f6dfa6f01ef3a1db3fd695035cf6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "428-432",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "128-133",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x25",
+   "name": "absolute disk read",
+   "aliases": [
+    "ABSOLUTE DISK READ",
+    "INT 25h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "44"
+    },
+    {
+     "ref": "rbil61:INTERRUP.J",
+     "lines": "9035-9039"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4792-4793"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_25Handler"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 25h is the DOS absolute disk read call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "44",
+       "sha": "5420948f451955eb6d11ff32cbc604ac3e7ed0d68a9a81756169f5923db271b6"
+      },
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "9035",
+       "sha": "774eb782c51e412dae4c2fdad4103ed908e499f69edc2c5b5d5acaa201944fea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It reads CX sectors starting at logical sector DX of drive AL into the buffer at DS:BX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.J",
+       "lines": "9036-9039",
+       "sha": "331c9289b1a5557e64ee6650c208ae262c80e2152e2ac16b94ff9602b6f792d1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its absolute disk read handler at vector 25h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4792-4793",
+       "sha": "56bd25291642cb12e1316a8245e03dbbe4e221109d12613eaa42ffbf96f07d8d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3651",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x26",
+   "name": "absolute disk write",
+   "aliases": [
+    "ABSOLUTE DISK WRITE",
+    "INT 26h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "45"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "4-8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4795-4796"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_26Handler"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 26h is the DOS absolute disk write call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "45",
+       "sha": "c799f34d2f515d2ebee5cb609b01e9f190f78f39335094aa3821d3f7c9b64784"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "4",
+       "sha": "5eeedf878588ef057f7123cd59d417437934270fcbb940365370826eaa52da78"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It writes CX sectors starting at logical sector DX of drive AL from the buffer at DS:BX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "5-8",
+       "sha": "40f6ffd6cd7f795eef58d8726d4b94822fd4baa829ce9cbfc5b8c63a1e9a92d0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its absolute disk write handler at vector 26h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4795-4796",
+       "sha": "067c2b9f5825f5401f2b9ddbd80d0159e32332c4d5fac9d7f152eb95d847b575"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3770",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x27",
+   "name": "terminate and stay",
+   "aliases": [
+    "TSR",
+    "INT 27h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "46"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "77-80"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "82"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4798-4799"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3477-3486"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "428-432"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "146-155"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 27h is the DOS terminate-and-stay-resident call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "46",
+       "sha": "84324c6a838ff2a44daff367128f3413f8e09014a6bb4afd5d76f6e1177a625d"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "77",
+       "sha": "84324c6a838ff2a44daff367128f3413f8e09014a6bb4afd5d76f6e1177a625d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It terminates the program, never returns, and keeps the number of bytes in DX resident.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "78-80",
+       "sha": "08e24263996319ec4cc96d9b82fef66cb9c985390c8da11da2c7ae0222985ee2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "INT 22, INT 23 and INT 24 are restored from the PSP.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "82",
+       "sha": "286e10f5473927d9528c57a72c81d1010ffb2e5c6b025df50c149504328c74ac"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its terminate-and-stay-resident handler at vector 27h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4798-4799",
+       "sha": "6ec98b0a54cd20d86920490113091dbbefbe0678a50302bc3442982866915615"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3477-3486",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "428-432",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "146-155",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x28",
+   "name": "DOS idle interrupt",
+   "aliases": [
+    "DOS IDLE",
+    "INT 28h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "47"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "96"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "99-102"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4801-4806"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dev_con.h",
+     "lines": "865-875"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 28h is the DOS idle interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "47",
+       "sha": "7d04dad7a2c978a497ea500184bae26fa32cf69556f894748a32b4394da3cd97"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "96",
+       "sha": "1654304ec2e244a7b89acd48287827c3747b0c5d6abeac80d78c70d2d65d2019"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "DOS invokes it each time one of its character input functions loops while waiting for input.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "99-102",
+       "sha": "8e797f108e502d9bf88746278c976686fac1080ca2b4e20232456b897dccd474"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its idle handler at vector 28h, or a bare IRET when the idle api is off.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4801-4806",
+       "sha": "333e486f77d5cf4458d1731296f27dab0bf8caec4aea9497499932209eb04023"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dev_con.h",
+     "lines": "865-875",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x29",
+   "name": "fast console output",
+   "aliases": [
+    "FAST CONSOLE",
+    "INT 29h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "48"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "160-162"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_devices.cpp",
+     "lines": "1128-1136"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4824-4828"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4836"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 29h is the fast console output call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "48",
+       "sha": "a68f3f6d7bcebe4650406b55362e2bba915cb39a1a9cc3da9d1b7c85e50ccccb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "160",
+       "sha": "7feba5e849ec34007babb3cf14285598caaacfd3c1165a2104fff9603f9095f9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "It writes the character in AL to the console and returns nothing.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "161-162",
+       "sha": "866944365ef4ebd4cebfa61e34529ef7a2f5f013578287ef2f16e5f33ef6d5c8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs a console output handler at vector 29h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4824-4828",
+       "sha": "4735d6731c1bce06c36b72cead9113acad18ab4b36b4574f46223a513117cc1e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4836",
+       "sha": "effb0e33dbcf8e3841a2d186d795f7aa636d87e0d086bb7a6858689db7521178"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos_devices.cpp",
+     "lines": "1128-1136",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x2A",
+   "name": "network installation",
+   "aliases": [
+    "NETWORK",
+    "INT 2Ah"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "49"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "180-183"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "968-970"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "292-294"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 2Ah is the network installation check.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "49",
+       "sha": "ddf93524c937618640639f5192b027367f7524b393c761a0e679d48286ea313d"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "180",
+       "sha": "b8dd600faf35789c8fe859d9fa97b4c9b47cd0f15f1f076576a6467619a73837"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "Function 00h returns AH nonzero if a network is installed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "181-183",
+       "sha": "7134a49ffc11f0e8f36362c4b67e325c7a271bcdb6ac705216f04c3d99dc478d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The DOS kernel installs its network handler at vector 2Ah.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "968-970",
+       "sha": "889b72f213594a95ff8b4578bc9a9d7dac4a15586c4ee043e5e367e3a54a4c9a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "DOSBox-X's handler returns at once, leaving AH unchanged, so it never reports a network.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "292-294",
+       "sha": "9350ce1c5500c9070955980883f111d2c9e3328c48f390b145839db1b0214e6f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "292-294",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x2B",
+   "name": "reserved",
+   "aliases": [
+    "INT 2Bh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "50"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "640-642"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10148-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4781-4841"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 2Bh is reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "50",
+       "sha": "56a4a6ac9973c629f964cb233e59cc85c2478b2985c1209da5453cca3249e8a7"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "640",
+       "sha": "56a4a6ac9973c629f964cb233e59cc85c2478b2985c1209da5453cca3249e8a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "In MS-DOS 6.22 and earlier the vector is not used.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "641-642",
+       "sha": "c085871d96a8c955a48e042e679dd6fcfd734a97a749870d5aa8d6c1c1971d99"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "It points at an IRET instruction.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "641-642",
+       "sha": "c085871d96a8c955a48e042e679dd6fcfd734a97a749870d5aa8d6c1c1971d99"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points every vector below 60h at a default handler that returns.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10148-10154",
+       "sha": "48e14a68fa407381e2d1769dcdf48bf23e0af7b2dd510e01aa23fd76a2f632ea"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4781-4792",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4793-4804",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4805-4816",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4817-4828",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4829-4840",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4841-4841",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10151-10154",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x2C",
+   "name": "reserved",
+   "aliases": [
+    "INT 2Ch"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "51"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "659-660"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 2Ch is reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "51",
+       "sha": "2113b5a3865c3314558f250bf50d7095029b886f9a6f6616543895908ea90c89"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "659",
+       "sha": "2113b5a3865c3314558f250bf50d7095029b886f9a6f6616543895908ea90c89"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "In DOS 6.00 and earlier this vector points at an IRET instruction.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "660",
+       "sha": "98c9f68282ba5d35de15039fbb07b8f3428d6c69101a2c145c474edc41e59b3b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points this vector, with every vector below 60h, at a default callback whose stub returns with an IRET.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "879",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x2D",
+   "name": "reserved",
+   "aliases": [
+    "INT 2Dh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "52"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "1239-1240"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "1241-1243"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "253-255"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "201-215"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 2Dh is reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "52",
+       "sha": "cf0678dc1817eb28df550d050e6686590bde98fd6ef15791e390593d7712925d"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "1239",
+       "sha": "cf0678dc1817eb28df550d050e6686590bde98fd6ef15791e390593d7712925d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "In DOS 6.00 and earlier this vector points at an IRET instruction.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "1240",
+       "sha": "98c9f68282ba5d35de15039fbb07b8f3428d6c69101a2c145c474edc41e59b3b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X points vector 2Dh at an AMIS handler that answers AH/AL calls and reports a free multiplex number, instead of leaving it at an IRET.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "253-255",
+       "sha": "6c78de75b4d66b7922826ef5be50ad5b9115076df20a1b7b14dd4cc126daa86e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "201-212",
+       "sha": "f19242aeaad8985b1e97216fdba07b6e31679ffbceb259d14df322bc9d0f7acb"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "213-215",
+       "sha": "01eacfe65847388fc924b48f8a931a7c7ca6bf1e3ca8a5aace275a9f5e00ca0a"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "1241-1243",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "0x2E",
+   "name": "shell command",
+   "aliases": [
+    "INT 2Eh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "53"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "1987-1989"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "1994-1995"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "2012-2016"
+    },
+    {
+     "ref": "dosbox-x:src/shell/shell.cpp",
+     "lines": "1874-1907"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 2Eh passes a command to the command interpreter for execution.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "53",
+       "sha": "388f86c9855a6f40c30fc945c5759af4ac3627e7cee1d500ede9bf5618b78b0c"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "1987",
+       "sha": "01828750947d41404bb2fc887bd661ce0252547317fba6df5743af300d10bec5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The caller gives DS:SI the address of the command line to execute.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "1988",
+       "sha": "92e6985f34ace8311411daf74136a60e1070d8aaa1451fcace205f4856bd8983"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "The call destroys all registers except CS:IP.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "1989",
+       "sha": "7b4d83404a5183f85575d1147f5de23e64f6c8ae2d02a5a27f6a4f0427602afe"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "doc",
+     "text": "It runs COMMAND.COM's internal commands without loading another copy of COMMAND.COM.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "1994-1995",
+       "sha": "19c5bcc4a1bc674fc91ce91294d35b72e2e5a4c28b76a97e5f328e9f61349897"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "The command line is a count byte, the command string, and a terminal carriage return.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2012-2016",
+       "sha": "0176e9490d46bbd66d7e6a86222eabcc03541cbd9c6925d8759b78f285c434ad"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns with AX=0000h, CS:IP restored and SS:SP changed, and the other registers as the executed command left them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/shell/shell.cpp",
+       "lines": "1874-1885",
+       "sha": "fe581f79160b3d271e6321db35fe25478f43b5e8ce46f55b3077d3ef301f96bb"
+      },
+      {
+       "ref": "dosbox-x:src/shell/shell.cpp",
+       "lines": "1886-1897",
+       "sha": "64a030d6baa2bdc3a86b1395dcd351234bc5e8e60fc1f60f66da365c879ae7ef"
+      },
+      {
+       "ref": "dosbox-x:src/shell/shell.cpp",
+       "lines": "1898-1907",
+       "sha": "a7f0aadf9ae7f77e8d213f6d50ca84bba6d537ab127f035d206bf7d84b4db99e"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/shell/shell.cpp",
+     "lines": "1882",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/shell/shell.cpp",
+     "lines": "1894-1899",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/shell/shell.cpp",
+     "lines": "1887-1892",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x2F",
+   "name": "multiplex",
+   "aliases": [
+    "INT 2Fh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "54"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "2243-2250"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "2251-2256"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "2261-2264"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "963-966"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_misc.cpp",
+     "lines": "99-105"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 2Fh is the multiplex interrupt: AH names the program that handles the call and AL is its function code.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "54",
+       "sha": "bbdcf623f4e82cd341c3890962a57b29d50601e5d29b41e3e39c34bab2a6338f"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2243-2244",
+       "sha": "bee251285ad22c35eaebf6652c522ced309ae6c6570728deaa3d48a8295bbccc"
+      },
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2250",
+       "sha": "b17cd2c23f1118005958b12e6ba076ab25ee597b73b48dcc273809cfc5623329"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "AH 00h-3Fh is IBM's for DOS, 40h-7Fh Microsoft's, 80h-B7h IBM's, B8h-BFh the networks' and C0h-FFh the applications'.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2245-2249",
+       "sha": "8cdc90479309220d4a306dfc1ea582f9e6760e7cb3eea6971160638c497045c4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "It is a general mechanism for verifying that a TSR is present and for communicating with it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2251-2252",
+       "sha": "31c23ee59a71da9a823c02478bd0eb1f1451b1215c10bfd0e4ca72b0a6406ba8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "When searching for a free AH the caller should set BX, CX and DX to 0000h and rely on no register but CS:IP and SS:SP.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2253-2256",
+       "sha": "c47086ebe662a8a9d2a1646b14e80dac3403e53c19f941d22ebbff695d6c1ce0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "A TSR that chains by calling the previous handler should preserve and pass back the flags.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "2261-2264",
+       "sha": "cf885f2cecc4f6834156ee0849f0cc565bbff3aa2e4447e435ba852071a0cc22"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs a multiplex handler at vector 2Fh that offers each call to the handlers registered with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "963-966",
+       "sha": "ddb57efff438a1953888c3739902a69aa361d83f8a774c7086a7dd4d801a5dc8"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_misc.cpp",
+       "lines": "99-105",
+       "sha": "d37435ef2d9a6942b22c31690588368d28cae3062a6d4a6129531739e447c286"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x30",
+   "name": "CP/M call entry",
+   "aliases": [
+    "INT 30h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "55"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "3266-3267"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "146"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "295-305"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4390-4391"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4844-4848"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 30h is not a vector: it is the far jump instruction the CALL 5 entry point jumps to.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "55",
+       "sha": "41beeed2ada4181aa1698be410ee6d3e146f587bf6af2ca8112cca0682724d8e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "3266-3267",
+       "sha": "2ee4a1f8a1ca50f4605afbe59a53cb931f7424512bbeeba3bca61607dae9ec42"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The CALL 5 entry point does a far jump to this address.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "3267",
+       "sha": "c04e3aaed92bd7b4194f1072149420e78f138063639433f2dc4a35882915d538"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "In its default CP/M mode DOSBox-X's CALL 5 entry does a far call to 0000:00C0 or to its HMA mirror F01D:FEF0, where the far jump stands.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "146",
+       "sha": "a731537a956ac76968785d5d6bd15745dcb87d14e1a40e2ce9029c3701e24b62"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "295-305",
+       "sha": "ac1037014f0f02e876eec28bd9a5d2163536598ffbabed3206a6cb289b5caa7f"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4390-4391",
+       "sha": "14f025dbfa5d8dc6e578d5614d20bb023efab23874d742cbcd373cacd5ed4ecc"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4847-4848",
+       "sha": "de0d389871c7942843aceacda3370a212a336e59d8160d28629a73a4de53d0ee"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs the far jump to its CP/M handler at DOS startup, saving vectors 30h and 31h first.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4401",
+       "sha": "81c816e297c918601775e016b100fc585db6b2aa3bafdb83c31a8e3cea2f328e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4844-4848",
+       "sha": "c772373d8d198888c53d90e32af98a575dc35efdc225e7260f2a2f68deca6b68"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x31",
+   "name": "CP/M jump overflow",
+   "aliases": [
+    "INT 31h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "56"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "3281"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4845-4848"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5131"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5176-5177"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 31h is overwritten by the CP/M jump instruction in INT 30.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "56",
+       "sha": "9aaccf52c2b6c2bf54faff08c8cdf48b477f0e22d3065ceb420d7be7a221c450"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "3281",
+       "sha": "9aaccf52c2b6c2bf54faff08c8cdf48b477f0e22d3065ceb420d7be7a221c450"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X saves vectors 30h and 31h before the jump overwrites 31h, and restores both when the DOS object is destroyed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "4845-4848",
+       "sha": "88d344c85496ab926db527802a088b28831dad5188640a671c985d5b25eecdd6"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "5131",
+       "sha": "2de3afd4dc6614b83ed43ff13f45659edfe43db82125d0398075f44c0594ef90"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "5176-5177",
+       "sha": "2b096b9e7511885ddb2e5e826eb8c2e47ddb1037da6b6646de36af25028e3eba"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "4847-4848",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "0x32",
+   "name": "original INT 21 vector",
+   "aliases": [
+    "INT 32h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "57"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5134-5135"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "879"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 32h has no special use.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "57",
+       "sha": "437cae37bc01a938edeb2903cccbfc13f586f465a11ededf14f3a7a0787a0731"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The list records viruses that keep the original INT 21h vector at 32h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "5134",
+       "sha": "df97ef54f3d4d79bf216d1412bc63c9751bc66985b374f914b0888c17474076c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "DOSBox-X leaves vector 32h at its default callback instead of a virus vector.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points vector 32h at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "879",
+       "sha": "9ad42555d8a88a53281fa2a7c770e2d2aedebc7bfa9bbef3e3938fc6d825448e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5135",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x33",
+   "name": "mouse driver",
+   "aliases": [
+    "INT 33h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "58"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5307-5316"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5317-5319"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5320-5324"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5325-5331"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "1599-1602"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "2020-2031"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "2498-2503"
+    },
+    {
+     "ref": "dosbox-x:src/ints/mouse.cpp",
+     "lines": "2511-2519"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 33h is the mouse driver interface; AX=0000h resets the driver and reads its status.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "58",
+       "sha": "6ebfe27e9e0147851346e65e024807d9ee852b8820cd9dc54cb69431eba0972c"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "5307-5308",
+       "sha": "8ffd13ac01d8d9e58d0841d8cc5ba4447270d3093203f25379cb4a47c48a51d2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The reset returns FFFFh in AX when the driver is installed and 0000h when it is not, and the button count in BX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "5309-5316",
+       "sha": "26643d7f2b1ed4a4dbb59c3ce1009dbf268c029a775519c1fa376f03302953ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "On old machines the caller should first check that the vector is neither 0000h:0000h nor an IRET stub.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "5317-5319",
+       "sha": "67bb69bae923168486b44649640e1e608f66d4cede62bfcd803579b68d8770a5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "On a Hercules-compatible card in graphics mode the caller must first set 0040h:0049h to 6 for page 0 or 5 for page 1.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "5320-5321",
+       "sha": "01aa32d1659ebc3e817103895c016cc8cd2b89421f1ffbc0f813cf04f043872b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns FFFFh in AX and the button count in BX when the driver is present, and leaves both as they were when it is not.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "1599-1602",
+       "sha": "117245f3f50bd094f180655bb05bdc4a8d46354f4aebf67e502f0a773435423b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "2020-2031",
+       "sha": "f00737b7d156cd0c0dc893454c8de9081225ba0c9a5cb2a16daa71f131176fd1"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs its INT 33h mouse callback at vector 33h when the int33 emulation is enabled, and skips it otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "2498-2503",
+       "sha": "1a002518fe21c9ce4f788af7b87703c19e5ed86c139bcd3509d4713f64bec344"
+      },
+      {
+       "ref": "dosbox-x:src/ints/mouse.cpp",
+       "lines": "2511-2519",
+       "sha": "c72651a83c0fc09d3778f67f9b0c16db968878a99cf2173d37495728c74194c5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5322-5324",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "5325-5331",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "0x34",
+   "name": "FPU emulation D8h",
+   "aliases": [
+    "INT 34h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "59"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6803-6805"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6806-6807"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6808"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 34h is the floating point emulation interrupt for instructions with opcode D8h.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "59",
+       "sha": "15c4360f08fe67d86d13d3a57992bed76169669e2f66a0a86a7a8f7d7b0f50ff"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6803-6805",
+       "sha": "f0ef5a9cff44d507f2ae5e8fadfdcc9e0c0d1226b5678924bfe5dc9ddd740080"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6806-6807",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6808",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x35",
+   "name": "FPU emulation D9h",
+   "aliases": [
+    "INT 35h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "60"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6810-6812"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6813-6814"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6815"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 35h is the floating point emulation interrupt for instructions with opcode D9h.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "60",
+       "sha": "2c14a24f3ec3097a5967714f069496f839a9f49058d5b025ba8c2cf02ec2398c"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6810-6812",
+       "sha": "daa6d234dd5246c1716a9beec3d2c34451162ffda6dd3f03a73d8c4b3c65904c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6813-6814",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6815",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x36",
+   "name": "FPU emulation DAh",
+   "aliases": [
+    "INT 36h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "61"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6817-6819"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6820-6821"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6822"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 36h is the floating point emulation interrupt for instructions with opcode DAh.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "61",
+       "sha": "7647d6e2244311e72cfaba333f396b0ff9939ed4c4e7beb74e22e2f03b2ea7a3"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6817-6819",
+       "sha": "ed0619bdfbb55fa877c5c9c216237f83ee413e5cbad56307bb8f02bdaee61ce4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6820-6821",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6822",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x37",
+   "name": "FPU emulation DBh",
+   "aliases": [
+    "INT 37h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "62"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6824-6826"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6827-6828"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6829"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 37h is the floating point emulation interrupt for instructions with opcode DBh.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "62",
+       "sha": "c944bd24b36fc99533ba076c21e0c79fbf84281e0b27c21e0ef8f7341228e7d4"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6824-6826",
+       "sha": "5db1f69383f40510e051877b3a9621165b142e4bc392378c6d55b213bb46169b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6827-6828",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6829",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x38",
+   "name": "FPU emulation DCh",
+   "aliases": [
+    "INT 38h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "63"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6831-6833"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6834-6835"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6836"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 38h is the floating point emulation interrupt for instructions with opcode DCh.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "63",
+       "sha": "fbdefaff987266e39c26bb04e8d7751f0cefb5d64ff4507dab7b7fd29e7b4d8e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6831-6833",
+       "sha": "760ccc960290a5ed21c6e3ac49f43bd36af9d14465c343f5e2483a1e50c490e3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6834-6835",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6836",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x39",
+   "name": "FPU emulation DDh",
+   "aliases": [
+    "INT 39h"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "64"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6844-6846"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6847-6848"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6849"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 39h is the floating point emulation interrupt for instructions with opcode DDh.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "64",
+       "sha": "ba819fd95fa200c19ec1084d457311e5cdd7db374697c3c6979a1d703f1c2554"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6844-6846",
+       "sha": "5d2dc6c5853a465f7eea9ce6545c95068386bc7b1f842aa22d218fba6875870f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6847-6848",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6849",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x3A",
+   "name": "FPU emulation DEh",
+   "aliases": [
+    "INT 3Ah"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "65"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6851-6853"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6854-6855"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6856"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 3Ah is the floating point emulation interrupt for instructions with opcode DEh.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "65",
+       "sha": "04b9a9e40538485bc9b2065aecb5fecc4fbee2a276d7c49fc2fa2330ad95a682"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6851-6853",
+       "sha": "1c3c5cb2619b5c0052dcab94024f57203f6c837361c8d4dd7677171db0a58b2f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6854-6855",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6856",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x3B",
+   "name": "FPU emulation DFh",
+   "aliases": [
+    "INT 3Bh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "66"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6858-6860"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6861-6862"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6863"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 3Bh is the floating point emulation interrupt for instructions with opcode DFh.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "66",
+       "sha": "f13ec329fda87123bfc7197ad28eb836d2a3d5b298fa12d348f5f887faa5848b"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6858-6860",
+       "sha": "164e9c8cb9eae77144f09aa0fa8194b92afd53769d67da9a9f75871b24fdac12"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6861-6862",
+       "sha": "3a35b718496a552db01eeea78a8d2ab5f9c4281556caa072812f90b93c5082ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X leaves this vector at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6863",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x3C",
+   "name": "FPU segment override",
+   "aliases": [
+    "INT 3Ch"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "67"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6865-6877"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 3Ch is the floating point emulation interrupt for instructions with a segment override.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "67",
+       "sha": "1b2279bbcfd8c334844063bcfc59bf7cdd6d35a557acf1a98d623797aa944cb5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6865",
+       "sha": "870e9af002a0fb1d1ce18aa49c7cadd475278667651c13df886ec8491ccabab1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6866-6867",
+       "sha": "45706ea7e663220b033496c8e1f64e5fa197e8e22e31f3a8e9b1d9031b9e0baf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "doc",
+     "text": "The generated code is CD 3C xy mm, and xy appears to encode the segment override in its ss bits as DS, SS, CS or ES.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6868-6876",
+       "sha": "9fba8246cc505ad2968d115007486cdade790c068c18c7d5bd74285b8194cfaf"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "DOSBox-X leaves vector 3Ch at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points vector 3Ch at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6877",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x3D",
+   "name": "FPU standalone FWAIT",
+   "aliases": [
+    "INT 3Dh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "68"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6879-6881"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6882-6885"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 3Dh is the floating point emulation interrupt for a standalone FWAIT.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "68",
+       "sha": "7f28714ddeef1c0f6916438f54af0989147fd2caf2ce38754d83d5de01928f62"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6879-6880",
+       "sha": "f569726cc3b0a8b3ffed5ae7fe491b5ec3169b7e68cfb4557ea3670f30485827"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The floating point emulators of Borland's and Microsoft's languages and of Lahey FORTRAN use this interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6880-6881",
+       "sha": "45706ea7e663220b033496c8e1f64e5fa197e8e22e31f3a8e9b1d9031b9e0baf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points vector 3Dh at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6882-6884",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6885",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x3E",
+   "name": "FPU Borland shortcut",
+   "aliases": [
+    "INT 3Eh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "69"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6887-6890"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6891-6894"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 3Eh is Borland's floating point emulation shortcut call.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "69",
+       "sha": "e6f8b1019dbfb932c73f523ae78f48533aec92528e88ecd12f67e03a2a920f16"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6887",
+       "sha": "1e93723be8b1b5ea86eac3589aee53e78c2a00b8f64829491e38693417992155"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "does",
+     "of": "doc",
+     "text": "The two bytes after the instruction are the subcode and a NOP, except for subcodes DCh and DEh, where the second is a register count.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6888-6890",
+       "sha": "45838623e6c55696a08c05e72625152b879e807e64909e99cff2ad4cae05bf15"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "DOSBox-X leaves vector 3Eh at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points vector 3Eh at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6891-6893",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6894",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x3F",
+   "name": "overlay manager",
+   "aliases": [
+    "INT 3Fh"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:OVERVIEW.LST",
+     "lines": "70"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6929-6930"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6931-6934"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "10152-10154"
+    },
+    {
+     "ref": "dosbox-x:src/cpu/callback.cpp",
+     "lines": "878-879"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Vector 3Fh is the overlay manager interrupt used by Microsoft's LINK.EXE and Borland's TLINK VROOMM.",
+     "quotes": [
+      {
+       "ref": "rbil61:OVERVIEW.LST",
+       "lines": "70",
+       "sha": "988d7b8cb9276d96576dd011d4ded423866b13a07508b6ccc4262d3418e724c5"
+      },
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6929",
+       "sha": "5b1221d8bfc5cb798188be62901c3e41c7808a01cc0a44981daa0d394b702657"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It is the default vector, and the linker may override it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.N",
+       "lines": "6930",
+       "sha": "78e9cb8a50f3a2b51c72629efd6f6d3d91693ab7b37ae0f7dd62011d542e5fb4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X points vector 3Fh at its default callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "10152-10154",
+       "sha": "4e4b41415920ca3af8ce64e6dc8b5e6c5171be27cf580cfe25766a4b79b0bcfd"
+      },
+      {
+       "ref": "dosbox-x:src/cpu/callback.cpp",
+       "lines": "878-879",
+       "sha": "c31ce2d3d14075098f81cd9b566babaacae3494b48d5c5ec3dd5a0d0a6227025"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6931-6933",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.N",
+     "lines": "6934",
+     "as": "see-also"
+    }
+   ]
+  }
+ ]
+}

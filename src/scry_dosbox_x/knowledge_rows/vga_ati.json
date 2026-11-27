@@ -1,0 +1,365 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vga_ati",
+ "title": "The ATI 188xx extended register interface",
+ "kind": "register",
+ "scope": "vga_ati",
+ "covers": "The ATI 188xx extended register interface as DOSBox-X models it: the index port 0x1CE, the data port 0x1CF, and the input status register reached at index 0xBB.",
+ "source": "emulator",
+ "searched": [
+  {
+   "where": "mame-header",
+   "gave": "MAME's pc_vga_ati.cpp header, for its ati_vga 28800 device, cites no document, and the DOSBox-X file's header cites none either."
+  },
+  {
+   "where": "maker",
+   "gave": "A search of amd.com found no ATI 18800 datasheet."
+  },
+  {
+   "where": "bitsavers",
+   "gave": "The pdf/ati folder holds VGA Wonder card material and Mach32 and Mach64 register guides, no 18800 datasheet; components/ati likewise."
+  },
+  {
+   "where": "archive-org",
+   "gave": "Searches for ATI 18800 and VGA Wonder found software, drivers and a VGA Wonder operation manual, no register document."
+  },
+  {
+   "where": "index",
+   "gave": "datasheetarchive.com returned only Amphenol part numbers containing 18800, no ATI document or link."
+  }
+ ],
+ "engine": [
+  "IO_RegisterWriteHandler",
+  "IO_RegisterReadHandler"
+ ],
+ "entries": [
+  {
+   "key": "0x1CE",
+   "name": "extended index",
+   "aliases": [
+    "ATI extended index",
+    "ATI index port"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "function": "ATIExtIndex_Read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "function": "ATIExtIndex_Write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "105-106"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Port 0x1CE is the extended registers' index port: a write stores the index and a read returns it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "63-65",
+       "sha": "07e910146905a42d62e386a2c6027e6fb7e3d8d26f4086b0ed8e1a4b0cf9f5fc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "59-61",
+       "sha": "6b478bd8be0faab49b92bbd9fc8d2bca5f4272b403180820de10c5e1cf71a620"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "105-106",
+       "sha": "af79ae29ec951cfbbc8600d4233401f16fff943dd55f13e87a796787b2cafd26"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of port 0x1CE returns the stored index byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "59-61",
+       "sha": "6b478bd8be0faab49b92bbd9fc8d2bca5f4272b403180820de10c5e1cf71a620"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "106",
+       "sha": "c45c85275e88a7e80ba9be6e533cba55c6016ffaf333ce4aa708f04ccc39ba90"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of port 0x1CE stores the value's low byte as the index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "63-65",
+       "sha": "07e910146905a42d62e386a2c6027e6fb7e3d8d26f4086b0ed8e1a4b0cf9f5fc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "105",
+       "sha": "db2ad3b6457a54aa69d4a4d183aa5b2986c1e30da1f9c90712dc50f0e860f213"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The ATI setup installs the read and write handlers at port 0x1CE.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "105-106",
+       "sha": "af79ae29ec951cfbbc8600d4233401f16fff943dd55f13e87a796787b2cafd26"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x1CF",
+   "name": "extended data",
+   "aliases": [
+    "ATI extended data",
+    "ATI data port"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "function": "ATIExtData_Read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "function": "ATIExtData_Write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "107-108"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Port 0x1CF is the extended registers' data port: the byte read or written there is dispatched on the stored index, index 0xBB being the only one handled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "67-77",
+       "sha": "64bccc2616102ca9ae3413c98ba5057700a32fef7136f518e094c9177b8d4e3f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "79-89",
+       "sha": "03857ba614b461ced3f8103cd99a488734bfc6ab538b713bd9e1516a78d14faa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "107-108",
+       "sha": "729546c3fef2a3f5a3b009e026fb15e174749664bf5f298fe3c56ecb1f4b4630"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of the data port dispatches on the stored index: index 0xBB returns the input status byte, and any other index logs a debug message and returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "67-77",
+       "sha": "64bccc2616102ca9ae3413c98ba5057700a32fef7136f518e094c9177b8d4e3f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "108",
+       "sha": "89b850c2e6400957b0eacd04666be698032b941c8ba6e178d3733587fbe571ab"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of the data port dispatches on the stored index: index 0xBB stores the byte, and every write then logs a debug message.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "79-89",
+       "sha": "03857ba614b461ced3f8103cd99a488734bfc6ab538b713bd9e1516a78d14faa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "107",
+       "sha": "b696b5cdf52e5013bfe5a598b8839584620321d30e892a1062ebe44f9a28bd7d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The ATI setup installs the read and write handlers at port 0x1CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "107-108",
+       "sha": "729546c3fef2a3f5a3b009e026fb15e174749664bf5f298fe3c56ecb1f4b4630"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "100",
+     "as": "parent",
+     "owner": "vga_ati:register:0xBB"
+    }
+   ]
+  },
+  {
+   "key": "0xBB",
+   "name": "input status",
+   "aliases": [
+    "ATI input status register"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "function": "ATIExtData_Read",
+     "case": [
+      "0xBB"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "function": "ATIExtData_Write",
+     "case": [
+      "0xBB"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "100"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "102-103"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0xBB of the extended registers is the input status register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "54",
+       "sha": "f240e83161a975058cb199c266de4d645237cf63b62b2e182b93963a1bcb062f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "69-70",
+       "sha": "a8f096dfc16d1bf84a282ef24948162cb7e86b4ce2dca86eee88c7fbcc8f3592"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read at index 0xBB returns the stored input status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "69-70",
+       "sha": "a8f096dfc16d1bf84a282ef24948162cb7e86b4ce2dca86eee88c7fbcc8f3592"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write at index 0xBB stores the value's low byte as the input status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "81-83",
+       "sha": "48f2bc928d086f593f3596d98e2d8f4e0c5bfeb7b11501d38f0d5ca7187b4c6e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The setup starts the input status byte at 0x05, the value its comment calls multisync monitor.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "100",
+       "sha": "f9ef1c019a621bab79cd1e09b74c5a52a3b0d015887ab2405be51fc1bc6f4a91"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 5",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With 512KB of video memory the setup sets bit 5, 0x20, its comment contrasting 512KB with 256KB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+       "lines": "102-103",
+       "sha": "f9735bb80a19afa068a8dbdd3e55e85c68254f2b48310c2dbba3f82cc2a0aac8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "68",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_ati.cpp",
+     "lines": "80",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

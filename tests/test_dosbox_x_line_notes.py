@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import cast
 
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
-from scry_core.knowledge import Base
+from scry_core.knowledge.base import Base
 from test_dosbox_x_code import COM_START, LOAD, StoppedCode, picture
 
 from scry_dosbox_x import code, disasm, knowledge, line_notes
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
-SAMPLE = Path(__file__).resolve().parent / "fixtures" / "knowledge" / "names"
 #: `mov ah, 4Ch` then `int 21h`, which DOS reads as EXIT.
 EXIT = bytes.fromhex("B44CCD21")
 REGS = {"CS": "0814", "EIP": "00000102", "EAX": "00004C00", "EDX": "000003C8"}
@@ -25,22 +23,26 @@ def _insns(raw: bytes) -> list[disasm.Insn]:
 
 
 @pytest.fixture
-def ports(monkeypatch: pytest.MonkeyPatch) -> None:
+def ports(named_base: Base, monkeypatch: pytest.MonkeyPatch) -> None:
     """A base that holds the VGA DAC's port, which the confirmed base does not yet."""
-    held = Base.load(SAMPLE)
-    monkeypatch.setattr(knowledge, "base", lambda: held)
+    monkeypatch.setattr(knowledge, "base", lambda: named_base)
 
 
 def test_an_interrupt_is_named_only_at_the_stop_that_holds_its_function() -> None:
-    assert line_notes.of_listing(_insns(EXIT), LOAD, {}) == []
+    assert line_notes.of_listing(_insns(EXIT), LOAD, {}) == [
+        {"line": 1, "note": "DOS function calls (0x21)"}]
     at_int = line_notes.of_listing(_insns(EXIT), LOAD, REGS)
-    assert at_int == [{"line": 1, "note": "exit (0x4C)", "live": True}]
+    assert at_int == [{"line": 1,
+                       "note": "DOS function calls (0x21); terminate with code (0x4C)",
+                       "live": True}]
 
 
 def test_the_registers_name_only_the_instruction_at_the_stop() -> None:
     elsewhere = {**REGS, "EIP": "00000100"}
-    assert line_notes.of_listing(_insns(EXIT), LOAD, elsewhere) == []
-    assert line_notes.of_listing(_insns(EXIT), LOAD + 1, REGS) == []
+    assert line_notes.of_listing(_insns(EXIT), LOAD, elsewhere) == [
+        {"line": 1, "note": "DOS function calls (0x21)"}]
+    assert line_notes.of_listing(_insns(EXIT), LOAD + 1, REGS) == [
+        {"line": 1, "note": "DOS function calls (0x21)"}]
 
 
 def test_with_the_names_off_no_line_has_a_note(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -82,7 +84,8 @@ def test_a_stop_at_an_interrupt_carries_its_note_and_says_a_register_named_it() 
     s = _stopped_at(bytes.fromhex("CD21"), 0x4C00)
     got = picture(s)["instruction"]
     assert got["text"] == "int 0x21"
-    assert got["note"] == "exit (0x4C)" and got["note_live"] is True, got
+    assert (got["note"] == "DOS function calls (0x21); terminate with code (0x4C)"
+            and got["note_live"] is True), got
 
 
 def test_a_stop_with_nothing_to_name_has_no_note_field() -> None:
@@ -95,13 +98,16 @@ def test_disassemble_lists_its_notes_apart_from_its_lines() -> None:
     install()
     dstate.STATE.session = cast(ds.Session, s)
     got = code.disassemble(cast(ds.Session, s), "0814:0100", 2)
-    assert got["line_notes"] == [{"line": 0, "note": "exit (0x4C)", "live": True}], got
+    assert got["line_notes"] == [{"line": 0,
+                                  "note": "DOS function calls (0x21); terminate with code (0x4C)",
+                                  "live": True}], got
     s2 = _stopped_at(bytes.fromhex("90CD21"), 0x4C00)
     dstate.STATE.session = cast(ds.Session, s2)
     plain = code.disassemble(cast(ds.Session, s2), "0814:0100", 3)
-    assert "line_notes" not in plain, plain
+    assert plain["line_notes"] == [{"line": 1, "note": "DOS function calls (0x21)"}], plain
 
 
 def test_a_register_the_debugger_did_not_print_as_hex_is_left_out() -> None:
     assert line_notes.live_registers({"EAX": "zz", "EDX": "000003C8"}) == {"DX": 0x3C8}
-    assert line_notes.of_listing(_insns(EXIT), LOAD, {"CS": "0814", "EIP": "?"}) == []
+    assert line_notes.of_listing(_insns(EXIT), LOAD, {"CS": "0814", "EIP": "?"}) == [
+        {"line": 1, "note": "DOS function calls (0x21)"}]

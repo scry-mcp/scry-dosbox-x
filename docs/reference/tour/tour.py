@@ -470,31 +470,37 @@ def written(reply: Reply, run: Run) -> str:
 
 
 def exit_armed(reply: Reply, run: Run) -> str:
-    expect(reply["armed"] is True and [n["name"] for n in reply["names"]] == ["exit"],
+    expect(reply["armed"] is True
+           and [n["name"] for n in reply["names"]] == ["terminate with code"],
            f"armed {reply['armed']}, names {reply['names']}")
-    return f"armed as {reply['ref']}, which the reply names exit"
+    return f"armed as {reply['ref']}, which the reply names"
 
 
 def base_exit(reply: Reply, run: Run) -> str:
     entry = reply["entries"][0]
     expect(reply["entries_total"] == 1 and entry["id"] == "ibm-pc:call:0x21/0x4C",
            f"entries {reply['entries']}")
-    return f"the base names INT 21h AH=4Ch {entry['name']}, read at {entry['sources'][-1]['ref']}"
+    return f"the base names INT 21h AH=4Ch {entry['name']}, read in {entry['sources'][0]['where']}"
 
 
 def leaving(reply: Reply, run: Run) -> str:
     where = reply["instruction"]
     got = (reply["verdict"], where["text"], where["symbol"], int(reply["regs"]["EAX"], 16),
            where.get("note"), where.get("note_live"))
-    expect(got == ("OTHER_STOP", "int 0x21", "main_loop", 0x4C00, "exit (0x4C)", True),
+    expect(got == ("OTHER_STOP", "int 0x21", "main_loop", 0x4C00,
+                   "DOS function calls (0x21); terminate with code (0x4C)", True),
            f"stopped as {got}")
-    return "stopped at the game's own exit call, INT 21h with AX 4C00h, which the base names exit"
+    return ("stopped at the game's own exit call, INT 21h with AX 4C00h, which the base "
+            "names terminate with code")
 
 
 def exit_listing(reply: Reply, run: Run) -> str:
     last = len(reply["lines"]) - 1
+    notes = {row["line"]: row for row in reply["line_notes"]}
     expect(reply["lines"][last].endswith("int 0x21")
-           and reply["line_notes"] == [{"line": last, "note": "exit (0x4C)", "live": True}],
+           and notes.get(last) == {"line": last,
+                                   "note": "DOS function calls (0x21); terminate with code (0x4C)",
+                                   "live": True},
            f"notes {reply.get('line_notes')}")
     return "the exit call's line carries its note, named from the registers of the stop"
 

@@ -1,0 +1,2579 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "innova",
+ "title": "The Innovation SSI-2001's SID register window",
+ "kind": "register",
+ "scope": "innova",
+ "covers": "the 32-byte window of the Innovation SSI-2001, as the MOS 6581 manual maps its registers and DOSBox-X handles each offset",
+ "source": "official",
+ "documents": [
+  {
+   "name": "MOS6581.raw.txt",
+   "variant": "6581"
+  }
+ ],
+ "official": {
+  "MOS6581.raw.txt": [
+   "106-108",
+   "209-216",
+   "283-285",
+   "288",
+   "299-302",
+   "314-322",
+   "328-401",
+   "403-414",
+   "443-445",
+   "454-460",
+   "474-498",
+   "500-503",
+   "510-533",
+   "553-559",
+   "573-576",
+   "582-605",
+   "625-636"
+  ]
+ },
+ "closed": [
+  {
+   "ref": "datasheet:MOS6581.raw.txt",
+   "lines": "106-108",
+   "as": "key"
+  }
+ ],
+ "engine": [
+  "Enable",
+  "read",
+  "set_w0",
+  "set_Q",
+  "output"
+ ],
+ "entries": [
+  {
+   "key": "0x00..0x01",
+   "name": "voice 1 frequency",
+   "aliases": [
+    "SID register 0",
+    "SID register 1",
+    "Freq Lo voice 1",
+    "Freq Hi voice 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "283-285"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "288"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x00"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x01"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeFREQ_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeFREQ_HI"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The two registers together form the 16-bit number that sets oscillator 1's frequency.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "283-285",
+       "sha": "a8a183e60083543a744c68a06d6b8d139f80912f8317278327cba129cdd7c0b2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The low register and the high register are the low and high halves of that 16-bit number.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "283-285",
+       "sha": "a8a183e60083543a744c68a06d6b8d139f80912f8317278327cba129cdd7c0b2"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "288",
+       "sha": "2aa0c5c604580eed5cf31fddb34eecd85f6de8328ca765d9ae009e02a6577012"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "174-176",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "177-179",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "71-74",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "76-79",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x02..0x03",
+   "name": "voice 1 pulse width",
+   "aliases": [
+    "SID register 2",
+    "SID register 3",
+    "PW Lo voice 1",
+    "PW Hi voice 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "299-302"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x02"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x03"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writePW_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writePW_HI"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The two registers form the 12-bit number that sets the duty cycle of oscillator 1's pulse waveform.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "299-302",
+       "sha": "97b4d8e8b4a35f024b507c1c56919584cf9daeba67f8a8801b30bec3a96314d8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 4-7 of the high register are not used, so a write carries twelve bits of the number.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "300-302",
+       "sha": "996a13d83e046162c5d4279e874583b613d4de779184f41922f01c9498734f33"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "180-182",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "183-185",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "81-84",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "86-89",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "voice 1 control",
+   "aliases": [
+    "SID register 4",
+    "control register voice 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "314-316"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "317-322"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "328-338"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "339-350"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "351-359"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "360-388"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "389-401"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x04"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/voice.cpp",
+     "function": "Voice::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeCONTROL_REG"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The register holds eight control bits that select options on oscillator 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "314-316",
+       "sha": "91a5bca8b958a38938817dbbd9cf5a20aa909ed1d5c181cdc2f30fff00375bc1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 4-7 are stored as a four-bit waveform selection, one bit each for triangle, sawtooth, pulse and noise.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "360-371",
+       "sha": "7444125fd488760916b5c0005672c90a77c8640b93504440a8f32eccccc2e411"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "372-383",
+       "sha": "dd459e202f30402fde7cbcb4c11020d686554a0265336b110e1fea3cddec6e88"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "384-388",
+       "sha": "452912fdc3397a4fae1cbc22f9eacd2bf403d86e5dee471e22e5c18a11808446"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 0",
+     "of": "doc",
+     "text": "The register stores bit 0 as GATE, which starts the envelope's attack and decay and, cleared, its release.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "317-322",
+       "sha": "7c655c1e8d32fd5e1a7bf3402a3ab7c49254247159eb2c5c6c4d2fdfad9885ce"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 1",
+     "of": "doc",
+     "text": "The register stores bit 1 as SYNC, which the document says synchronizes oscillator 1 with oscillator 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "328-338",
+       "sha": "64e8f909c7e30a9785b082389e7199795383351c89dc0f8f43f1e2f52352856c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 2",
+     "of": "doc",
+     "text": "The register stores bit 2 as RING MOD, which the document says combines oscillators 1 and 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "339-350",
+       "sha": "fba344c67afc404c925e950b9d573a3f5358d06d1439e56f5ba39aacb4786b9e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "The register stores bit 3 as TEST; a write with the bit set resets oscillator 1 at zero and resets the noise output.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "351-359",
+       "sha": "f34a6ea0cf7bd529e4f38db45f0cf4ce22ff6d0e4645678c1fa49745a1b5bb23"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer should select a waveform to hear the voice, and be careful when selecting several together.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "389-399",
+       "sha": "cd450ec074c7d17db1027180b6dc49e4fe65592f22311da4882fb277407a5c17"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "400-401",
+       "sha": "6ddfe17c6eddb5bbf89cafeffb6dad22ef73d1a43262cf60bb7e12af69001a23"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "186-188",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "93",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "182-193",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "196-201",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "95",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "94",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "97-108",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "109-118",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "121",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "voice 1 attack and decay",
+   "aliases": [
+    "SID register 5",
+    "attack/decay voice 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "403-414"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x05"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeATTACK_DECAY"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-7 select one of sixteen attack rates and bits 0-3 one of sixteen decay rates for voice 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "403-414",
+       "sha": "c85685fa7118b8db94824ad4b682071c7c7cedf1540b0f8410048283dafce7dc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write carries the attack rate in its high nibble and the decay rate in its low nibble.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "403-410",
+       "sha": "21cc70198f4c44d4f8d459722454e50c3ee327f11c8076feb0a9c5bef4429f4c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "189-191",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "204-214",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "voice 1 sustain/release",
+   "aliases": [
+    "SID register 6",
+    "sustain/release voice 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "443-445"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "454-460"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x06"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeSUSTAIN_RELEASE"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-7 select one of sixteen sustain levels and bits 0-3 one of sixteen release rates for voice 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "443-445",
+       "sha": "385d983feffba80c15022b38b499b0b0dd8b5814b5ba0ebb591b0355903fcf64"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "454-460",
+       "sha": "1a3e63be4730b70de4f5956bd23c76d7a2b4aecc7059fbfc55166dc36cf04eff"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write carries the sustain level in its high nibble and the release rate in its low nibble.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "443-445",
+       "sha": "385d983feffba80c15022b38b499b0b0dd8b5814b5ba0ebb591b0355903fcf64"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "454-456",
+       "sha": "8c792133a0cdaa0a0263b8fe3c16c32d124e3a98547bc5ec13faf23558866cd6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "192-194",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "216-223",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x07..0x0D",
+   "name": "voice 2 registers",
+   "aliases": [
+    "SID register 7",
+    "SID register 8",
+    "SID register 9",
+    "Freq voice 2",
+    "PW voice 2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "209-216"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "474-480"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x07"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x08"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x09"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x0a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x0b"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x0c"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x0d"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeFREQ_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeFREQ_HI"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writePW_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writePW_HI"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/voice.cpp",
+     "function": "Voice::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeATTACK_DECAY"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeSUSTAIN_RELEASE"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 07h-0Dh control voice 2 and are functionally identical to registers 00h-06h, except for the SYNC and RING MOD source it names.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "474-480",
+       "sha": "69909ec749a9478e68736115aac1ee57f50325e16cdb3f6fc5b6769a15275e8d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "07h and 08h are voice 2's frequency low and high bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "209-210",
+       "sha": "34680908dab53b3ad5cf439c768cf4f4708d2a30e883115f069017a86e16abca"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "474-475",
+       "sha": "4712b4c84e372ff4247a607a24564a3cc823454d32e407af35cfcc81bd300a31"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "09h and 0Ah are voice 2's pulse width low and high bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "211-212",
+       "sha": "8e08cc0f5d3289794409043a4da7ad96c3efd37d12cc9231b55e523f148f1d4f"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "474-475",
+       "sha": "4712b4c84e372ff4247a607a24564a3cc823454d32e407af35cfcc81bd300a31"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "0Bh is voice 2's control register; the document routes its SYNC to oscillator 1 and its RING MOD to oscillators 2 and 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "213-214",
+       "sha": "03025d4a2b3c5197d620332e4b92f58d65cdd1315a2f6b2c4ce0b95880b07cb0"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "476-480",
+       "sha": "17156c7180c77e0685dd973e5c73691a0640e4698c2416c547d301b7e3eae147"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "0Ch carries voice 2's attack and decay rates.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "215",
+       "sha": "ec645f995da5fa7bcfe260fa856e9e196300fb6ab3f62120a430e490d2a02979"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "0Dh carries voice 2's sustain level and release rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "216",
+       "sha": "f219f5122b7ff489458d133be3dc03e0ab017974b70499b3af0b533ef9477a80"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "195-200",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "71-74",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "76-79",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "201-206",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "81-84",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "86-89",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "207-209",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "91-97",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "107-118",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "121",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "188-199",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "201",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "210-212",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "204-214",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "213-215",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "216-223",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x0E..0x14",
+   "name": "voice 3 registers",
+   "aliases": [
+    "SID register 14",
+    "SID register 20",
+    "Freq voice 3",
+    "PW voice 3"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "481-498"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x0e"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x0f"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x10"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x11"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x12"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x13"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x14"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeFREQ_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeFREQ_HI"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writePW_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writePW_HI"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/voice.cpp",
+     "function": "Voice::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeCONTROL_REG"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeATTACK_DECAY"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::writeSUSTAIN_RELEASE"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 0Eh-14h control voice 3 and are functionally identical to registers 00h-06h, except for the SYNC and RING MOD source it names.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "481-488",
+       "sha": "746e230feb978b262dac93f0afa7b9f24dc643fd045236973b6357f3ccc50d4f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "0Eh and 0Fh are voice 3's counterparts of 00h and 01h, its frequency low and high bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "481-483",
+       "sha": "27456d026db02e6a749c21426b54dd734149bca39e4814aac62a40ea0e6f582f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "10h and 11h are voice 3's counterparts of 02h and 03h, its pulse width low and high bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "481-483",
+       "sha": "27456d026db02e6a749c21426b54dd734149bca39e4814aac62a40ea0e6f582f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "12h is voice 3's counterpart of 04h, its control register; the document routes its SYNC to oscillator 2 and its RING MOD to oscillators 3 and 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "484-488",
+       "sha": "f78c5ebbf3fe65fdd3ac10cf32a2fcc116ef10010a2b6de9318e8fda0d942272"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "13h is voice 3's counterpart of 05h, its attack and decay rates.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "481-483",
+       "sha": "27456d026db02e6a749c21426b54dd734149bca39e4814aac62a40ea0e6f582f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "14h is voice 3's counterpart of 06h, its sustain level and release rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "481-483",
+       "sha": "27456d026db02e6a749c21426b54dd734149bca39e4814aac62a40ea0e6f582f"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Typical operation selects frequency, waveform and envelope rates, then gates the voice; voices can also be used in unison.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "489-498",
+       "sha": "251b168e3f35884bef03e5c7f4a99ed998e962c2214454d293e7279ed711f9c6"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "216-221",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "71-74",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "76-79",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "222-227",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "81-84",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "86-89",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "228-230",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "91-97",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "107-118",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "121",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "188-199",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "201",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "231-233",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "204-214",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "234-236",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "216-223",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x15..0x16",
+   "name": "filter cutoff",
+   "aliases": [
+    "SID register 21",
+    "SID register 22",
+    "FC Lo",
+    "FC Hi"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "500-503"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x15"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x16"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "function": "Filter::writeFC_LO"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "function": "Filter::writeFC_HI"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The two registers form the 11-bit number that sets the filter's cutoff frequency.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "500-503",
+       "sha": "355dab2b86c3701d6f2c0ea3d0d34dc5b5a2936867d1db29ebe6c295522dbe89"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 3-7 of the low register are not used, so a write carries eleven bits of the number.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "501-503",
+       "sha": "6badba0b140cfb389f135a7c1ef7c916e66883a950d0d15bb40adb0107911587"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "237-239",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "240-242",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "lines": "221-225",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "lines": "227-231",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "filter resonance/routing",
+   "aliases": [
+    "SID register 23",
+    "RES/Filt"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "510-530"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x17"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "function": "Filter::writeRES_FILT"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-7 set the resonance, and bits 0-3 route voices 1, 2 and 3 and the external input through the filter.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "510-516",
+       "sha": "63757f4bf49fff9a4c93e8d1b625472b0f17a1f8102d415cf3902ec34145f44e"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "517-528",
+       "sha": "d23a734a57cc290af93d6f8efc89e2ff4259363c0994803bd5cfb818c058c18b"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "529-530",
+       "sha": "7ba4465eeb69405d2c5acc361bb8010b2ae752a90f65a24b53a9d1583ecb73a0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores its high nibble as the resonance and its low nibble as the filter routing.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "511-518",
+       "sha": "e84d5643a94d0afec04f563bcd9fca465e0b5f1b508a00cc26896bf40a9c0141"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "243-245",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "lines": "233-239",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x18",
+   "name": "filter mode and volume",
+   "aliases": [
+    "SID register 24",
+    "Mode/Vol"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "531-533"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "553-559"
+    },
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "573-576"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::write",
+     "case": [
+      "0x18"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "function": "Filter::writeMODE_VOL"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-7 select the filter mode and output options; bits 0-3 set the output volume.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "531-533",
+       "sha": "e5ff92ac4ab32cd35cf6b8734baf2e49629abef6bccfc3475b8f2ec349956c71"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "573-576",
+       "sha": "275805556b84c948d052271a322596c8a78c9e7d58867d0c23e3704e331c5edf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 0-3 as the volume, bits 4-6 as the filter mode and bit 7 as voice 3 off.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "531-533",
+       "sha": "e5ff92ac4ab32cd35cf6b8734baf2e49629abef6bccfc3475b8f2ec349956c71"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "553-559",
+       "sha": "eafe135902f1e775f9369a7f9f018cd3d7bca64010c1f3dcaace8129eaae6a6d"
+      },
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "573-576",
+       "sha": "275805556b84c948d052271a322596c8a78c9e7d58867d0c23e3704e331c5edf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "173",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "246-248",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/filter.cpp",
+     "lines": "241-248",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x19",
+   "name": "POTX",
+   "aliases": [
+    "SID register 25",
+    "potentiometer X"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "582-589"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::read",
+     "case": [
+      "0x19"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/pot.cpp",
+     "function": "Potentiometer::readPOT"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The register lets the processor read the potentiometer tied to POTX, from 0 at minimum resistance to 255 at maximum.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "582-586",
+       "sha": "7ae1697757cce7fb3570907b9539f3778fa47a2dae90399166ff10d81fb80780"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The value is always valid and is updated every 512 clock cycles.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "586-589",
+       "sha": "c5b9d35c02dd8401fcea48e81779035f5fd15161f62af5c16ae6db65412649c0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read returns 0xff always: the potentiometer is not modeled, so the value never changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/reSID/pot.cpp",
+       "lines": "22-26",
+       "sha": "cd7adcf3452b7f95827c9fe2cfe85b92b435eb7c2eec762be49698b9962ea2ce"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "151-152",
+       "sha": "c61a8436d1d6013b0e8ce7579fbf5f8cf1d47bd588df1945b35914aa52ee3e47"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "150",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x1A",
+   "name": "POTY",
+   "aliases": [
+    "SID register 26",
+    "potentiometer Y"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "590-591"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::read",
+     "case": [
+      "0x1a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/pot.cpp",
+     "function": "Potentiometer::readPOT"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The register lets the processor read the potentiometer tied to POTY.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "590-591",
+       "sha": "f7abbf7cb234039e5759627ec7166d4e5f652ddedb4347fc5eca1e7e2280bdc7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Same as POTX, for the potentiometer tied to POTY.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "590-591",
+       "sha": "f7abbf7cb234039e5759627ec7166d4e5f652ddedb4347fc5eca1e7e2280bdc7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read returns 0xff always: the potentiometer is not modeled, so the value never changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/reSID/pot.cpp",
+       "lines": "22-26",
+       "sha": "cd7adcf3452b7f95827c9fe2cfe85b92b435eb7c2eec762be49698b9962ea2ce"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "153-154",
+       "sha": "daee5591f5597a773983b3d3920766e21b35802ccfb9a2b9da827521fee0e21f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "150",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x1B",
+   "name": "oscillator 3 output",
+   "aliases": [
+    "SID register 27",
+    "OSC 3/Random"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "592-605"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::read",
+     "case": [
+      "0x1b"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "function": "WaveformGenerator::readOSC"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The register lets the processor read the upper eight output bits of oscillator 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "592-594",
+       "sha": "2d34c73f16a08dae00f18b6b5df0a14bf04415cb3ad8cae892e6b7ebcf06760b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register returns the upper eight bits of oscillator 3's output.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "593-601",
+       "sha": "87a4f65930f5305ed5ade521e47b05dbed91507edae64940680d654b9cb1e2af"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer can use the register as a random number generator, because the noise waveform gives random numbers.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "602-605",
+       "sha": "d1b95925bdf91e06f281e8ee4b5a0e29736776e1b2c70462a5a0dddc9903b6f8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "150",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "155-156",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/wave.cpp",
+     "lines": "126-129",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1C",
+   "name": "voice 3 envelope output",
+   "aliases": [
+    "SID register 28",
+    "ENV 3"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MOS6581.raw.txt",
+     "lines": "625-636"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::read",
+     "case": [
+      "0x1c"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "function": "EnvelopeGenerator::readENV"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.h",
+     "function": "EnvelopeGenerator::output"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Register $1C is ENV 3, which lets the processor read the voice 3 envelope generator's output.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "625-628",
+       "sha": "84dc1e70a2c2124bb35ac282c95fd7d3e5aeecefcc66597ca4153b61f265c60e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer can add this output to the filter frequency for harmonic envelopes and WAH, or to an oscillator's frequency control for phaser sounds.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "628-632",
+       "sha": "8eaf3f259556c7463f9d43d16e026dd14c4e74cd1eea2fbfb4de933469aa71e7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the voice 3 envelope generator's output.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "626-628",
+       "sha": "7cb585788c919715da3a85449800d9145139bee5114f3d2d73dc70d506201b7a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The envelope generator must be gated for this register to produce any output.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "632-634",
+       "sha": "89c28bc27d3cac327b780389714187bbc7af5ee0df4a95ca5ea1ad903e0c2dc6"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The OSC 3 register always reflects the oscillator's changing output, which the envelope generator does not affect.",
+     "quotes": [
+      {
+       "ref": "datasheet:MOS6581.raw.txt",
+       "lines": "634-636",
+       "sha": "7a5d6ca9d9be639199b0f515a0d6aab359b832ed98a62759abc54591bc1f2680"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte as the bus value; the write switch's default arm changes no register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "169-171",
+       "sha": "6b877a1c6addfa2da1c24892fbc57b54106d7780c9bfa8b281797bb3a9c35aae"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "249-251",
+       "sha": "cef0c562d960a66373dc472f33e902c12e37d2eff8cc7b107b3195892981f295"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "150",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "157-158",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.cpp",
+     "lines": "225-228",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.h",
+     "lines": "303-306",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.h",
+     "lines": "136",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/envelope.h",
+     "lines": "242",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1D..0x1F",
+   "name": "undecoded SID offsets",
+   "aliases": [
+    "SID registers 29-31"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's mos6581 device cites no document in its header, and MAME has no Innovation SSI-2001 board."
+    },
+    {
+     "where": "maker",
+     "gave": "The maker's October 1982 preliminary datasheet is the only SID document found."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No 6581 datasheet: the mos_technology listing refused an automated request (HTTP 403) and a site search found none."
+    },
+    {
+     "where": "archive-org",
+     "gave": "The October 1982 preliminary datasheet scan the dictionary uses, mos_6581_sid_preliminary_october_1982."
+    },
+    {
+     "where": "index",
+     "gave": "datasheetarchive.com lists a 6581 scan; cpcwiki and 6502.org hold copies of the same datasheet."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/innova.cpp",
+     "function": "innova_read"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "function": "SID2::read",
+     "case": [
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offsets 0x1D to 0x1F are not among the read switch's cases: the default returns the bus byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "150-161",
+       "sha": "19b83c37838cf3491d861952f3669a9ff6685414b99ab2a854dcb0e7c469f7ea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the last byte written to any SID register, or 0 once its 0x2000-cycle age runs out.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "144-146",
+       "sha": "413c248cd9dd3e1db903e2d36d4594fb980fb30906a1d0d55f0215c1a2f62763"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "608-611",
+       "sha": "9cdeccfd745f1e7bb83883cd75d9d0f2cd9cab2a298fa3417ff80516d2a10549"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "159-160",
+       "sha": "969937f9ad63a1ce1952cc2eadb650da7b77d19904562b711a119ec27ee54148"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte as the bus value; the write switch's default arm changes no register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "169-171",
+       "sha": "6b877a1c6addfa2da1c24892fbc57b54106d7780c9bfa8b281797bb3a9c35aae"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+       "lines": "249-251",
+       "sha": "cef0c562d960a66373dc472f33e902c12e37d2eff8cc7b107b3195892981f295"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler enables the mixer channel when the last use is zero and records the current tick count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "42-45",
+       "sha": "c54380c2f99056660409cf5cfc442bee1eb98d4e3aec0bab7b00554f400bdec3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler answers with the SID's read of the register's offset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/innova.cpp",
+       "lines": "51-55",
+       "sha": "e86f593ae13f5bf291c7166dce2c1b3078f27a34ea6d7c2a1449ce3900ffdd6d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "38",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "80",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "266",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "324",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "354",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/reSID/sid.cpp",
+     "lines": "650",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

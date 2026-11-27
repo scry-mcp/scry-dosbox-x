@@ -1,0 +1,6528 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vga_s3",
+ "title": "The S3 VGA, system control and extension registers",
+ "kind": "register",
+ "scope": "vga_s3",
+ "covers": "The S3 registers reached through the CRT controller index at hex 03D4 and its data port at hex 03D5, with the sequencer and attribute ports they share",
+ "source": "official",
+ "documents": [
+  {
+   "name": "DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+   "variant": "86C928"
+  },
+  {
+   "name": "S3-Trio64.raw.txt",
+   "variant": "Trio64"
+  }
+ ],
+ "official": {
+  "DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt": [
+   "2439-2461",
+   "2572-2598",
+   "3021-3031",
+   "3260-3298",
+   "3593-3634",
+   "3728-3765",
+   "3769-3836",
+   "3840-3870",
+   "3901-4085",
+   "4086-4091",
+   "4092-4098",
+   "4101-4107",
+   "4117-4149",
+   "4150-4171",
+   "4174-4180",
+   "4181-4204",
+   "4225-4257",
+   "4309-4340",
+   "4341-4360",
+   "4383-4396",
+   "4397-4412"
+  ],
+  "S3-Trio64.raw.txt": [
+   "5619-5624",
+   "5730-5742",
+   "5743-5756",
+   "5759-5774",
+   "5775-5791",
+   "5840-5895",
+   "5904-5909",
+   "6966-6996",
+   "7755-7766",
+   "7788-7802",
+   "7803-7824",
+   "7864-7877",
+   "7878-7894",
+   "7897-7903"
+  ]
+ },
+ "closed": [
+  {
+   "ref": "datasheet:S3-Trio64.raw.txt",
+   "lines": "6981-6982",
+   "as": "layout"
+  }
+ ],
+ "handlers": [],
+ "engine": [
+  "SD3_Reset",
+  "VGA_ActivateHardwareCursor",
+  "VGA_CheckScanLength",
+  "VGA_DetermineMode",
+  "VGA_RenderOnDemandUpTo",
+  "VGA_SetMode",
+  "VGA_SetupHandlers",
+  "VGA_StartResize",
+  "VGA_StartUpdateLFB",
+  "read_p3c1",
+  "read_p3c5",
+  "read_p3d5",
+  "write_p3c0",
+  "write_p3c5",
+  "write_p3d5"
+ ],
+ "entries": [
+  {
+   "key": "0x3D5",
+   "name": "CRTC data port (S3)",
+   "aliases": [
+    "S3 register data port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "2572-2598"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "690-691"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x18"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_read_p3d5x",
+     "case": [
+      "0x18"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The CRT controller registers are reached through the index at 3?4H and the data port at 3?5H; 3BX or 3DX follows bit 0 of the Miscellaneous Output register at 3C2H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2572-2576",
+       "sha": "9a5897f9faab1263c563e768857819077f54f37fedfe4ae85740b5f4bc666d49"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The index at 3?4H also selects the S3 VGA registers, the system control registers and the system extension registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2580-2583",
+       "sha": "32b05c326b993bd61f246f8d569141d809b4d5a4c7265d193e3df78816a4a279"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The index register at 3?4H is loaded with a binary value, bits 7-0, that indexes the CRT controller register to access.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2577-2579",
+       "sha": "f8f6568dfc7decb155bee30ed5fa5f6bd61bbd4cc6324cb24aa901cdce46cbfa"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2584-2587",
+       "sha": "0844333a799084af384d259a51a1106d57549bf313ba42f29791188186eeef3f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to the data register stores its byte in the CRT controller register the index names.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2590-2598",
+       "sha": "cc35e5b3c7e86da9b6bcdecb1dad8702968aa5de4de323457911c03f95e46004"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The data register is readable and returns the byte of the indexed register.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2591-2594",
+       "sha": "1c1828190ca7238ff80927ff16d2e86b06d9a2cc17962a53ebf48016976baae2"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs SVGA_S3_WriteCRTC and SVGA_S3_ReadCRTC as the hooks of this port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "690-691",
+       "sha": "9b335315dbea40b2b5baca6bac9e4529fe68f827e161338133d514425ec17ad0"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to index 18H also sets the low eight bits of the shared line-compare state to the byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "404",
+       "sha": "93b87ddf4bdf7f2ecfa70c4ae71af6e144b4ae771b9ed5f42009d62c1bd49db3"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "403",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "483",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "401-402",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "433",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "160",
+     "as": "parent",
+     "owner": "vcrtc:register:0x07"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "2588-2589",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x3C5",
+   "name": "Sequencer data port (S3)",
+   "aliases": [
+    "sequencer data register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "2439-2461"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "692-693"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c5",
+     "case": [
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The sequencer is reached by writing an index to 3C4H, then reading or writing the data register at 3C5H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2439-2442",
+       "sha": "43a4a017ce97bb2d4440dfc1198d5079a19fe00e675e7174db385e62f5751dea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The data register at 3C5H is the port for the sequencer register the index names; bits 7-0 carry its data.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2453-2460",
+       "sha": "fbbfecc1ca149aa7f405bbc76dcd9a2d602b012ece9294c15a7157e6d31e893a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The index register at 3C4H holds bits 2-0 as the sequencer address and bits 7-3 reserved zero.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2443-2452",
+       "sha": "75a6745ca68dc02cef61365cce585cb0b59ec900268adff28c201287c7505ad0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores a byte in the indexed sequencer register; the port is read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "2453-2460",
+       "sha": "fbbfecc1ca149aa7f405bbc76dcd9a2d602b012ece9294c15a7157e6d31e893a"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs SVGA_S3_WriteSEQ and SVGA_S3_ReadSEQ as the hooks of this port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "692-693",
+       "sha": "d06258c3c82711f35611315690f9806e9559a01fd7027a1dd7ed89ee5d6d852f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "233-234",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "142",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "235",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "2461",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x3C0",
+   "name": "Attribute index port",
+   "aliases": [
+    "attribute controller index"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3260-3289"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "694"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+     "lines": "212-215"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The attribute index and data registers share address 3C0H for writes, selected by an internal address flip-flop.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3260-3268",
+       "sha": "75baa5e768b968fb19d0c1c44c8583451b84528ff8a6e1f7adc7ab3025685797"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write loads bits 4-0 as the attribute index, sets bit 5 to enable palette video and leaves bits 7-6 reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3269-3278",
+       "sha": "f7f39f5a24097e6fd54b25d37bae601a73002c2c89b7e5b8146a76b086b91b0b"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3279-3287",
+       "sha": "7e67d446cfa5326bd4a7929d6a915c27f04977a5a11b5eefb63e207073318039"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs no S3-specific write hook here; the standard VGA attribute controller handles the port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "694",
+       "sha": "4c6e1fca852d2a85a339482c3f37dbe6e211be7a0a0be4e3bf243fb76fdc69f6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+       "lines": "448",
+       "sha": "f70fa9ec309a55ba69d64658e6c48e2ce0145f525ac18e791111b33be46f5fc8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+     "lines": "212-215",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3288-3289",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x3C1",
+   "name": "Attribute data port (S3)",
+   "aliases": [
+    "attribute data register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3290-3298"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "695"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+     "lines": "426"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The attribute controller data register is read at 3C1H and written through 3C0H; it carries the data of the attribute register the index names.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3290-3294",
+       "sha": "e7f0286f368a847f03843e30ef2d70fa96bb193681a0af5b4520e1010cf415eb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read at 3C1H returns the byte of the indexed attribute register; bits 7-0 are that data.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3290-3298",
+       "sha": "7c503049f24c898a4e31290c3ccf816d754b2aca529974fca1027d237e55002b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs no S3-specific read hook on 3C1H; the standard attribute controller returns the indexed register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "695",
+       "sha": "93803a97ba8c289a27c9ca311455618300b19258c5a0af4a9a04a96d8e31932d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+       "lines": "453",
+       "sha": "6d9c88d8f3ed8d76fda185538e5a90bff20b4fbe8e161471a6d9cc3e165ad093"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+       "lines": "426",
+       "sha": "afc21889a51d81a77826c6d67de22f069cec7e32150eea4a5ce460bb5168e284"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_attr.cpp",
+     "lines": "426",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x24..0x26",
+   "name": "Attribute index readback",
+   "aliases": [
+    "ATC flag/index"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3021-3031"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435-438"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The 86C928 gives one description for indices 24H and 26H: read-only registers returning the attribute index and its address flip-flop.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3021-3025",
+       "sha": "43aee922be66b04eb338783f12c0ff055f188242f354e5ebd91237c2940d60a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Bits 5-0 are the attribute index, bit 6 is reserved zero and bit 7 is the inverted address flip-flop.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3025-3031",
+       "sha": "611bdfd893e9e3c5ab0c6f188443864980e21b6e4e484be30c008203bfdf8c14"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns the low five bits of the attribute index and sets bit 5 when the palette is enabled; bit 7 reads 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "436-438",
+       "sha": "ff849eaf05634fa77c77d866b88e747635f3dcc0a183965641b77400676c8d14"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x30",
+   "name": "Chip ID and revision",
+   "aliases": [
+    "CHIP-ID/REV"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3593-3598"
+    },
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "6989-6996"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "503-511"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR30 is read-only at index 30H and reports the chip ID and revision status; the 86C928 book gives 90H as its default.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3593-3598",
+       "sha": "9537be4be5ca46b40d807a9de45b9054fdc53e09d2fa5895e598490e754429eb"
+      }
+     ],
+     "variant": "86C928"
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read at index 30H returns the chip ID and revision status byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3596-3598",
+       "sha": "7fd4ff05d13866d581e88e048054c1c0077a0e3eb778fcc5c65d5a1b7ca2d5dc"
+      }
+     ],
+     "variant": "86C928"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The Trio book gives CR30 default E1H and says an E in the upper nibble means to use CR2D-CR2F for the chip ID.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6989-6996",
+       "sha": "804c019c0c304ff40644b99d6e96fabe0c75ceff1c91dc576cb3dfdc0c996a22"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns E1H for Trio32 or later, C0H for Vision864 or later, B0H on PCI 86C928 and 90H on ISA or EISA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "503-511",
+       "sha": "d0a1033e71067105c216792dcee82399aec3fc3097c6ab51b11737949f180133"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x31",
+   "name": "Memory configuration",
+   "aliases": [
+    "MEM_CNFG"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3599-3634"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x31"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x31"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR31 is read/write at index 31H, default 00H, holding CPUA BASE, SCRN 2.PG, VGA 16B, ENH MAP, start address bits 17-16, font fetch and BIOS mapping.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3599-3604",
+       "sha": "65deb7d7b5c21ef7285d3e382bc41952f7ac945a5a89e11cf2d46fcbc7b60296"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 0-2: CPUA BASE, SCRN 2.PG and VGA 16B.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3605-3610",
+       "sha": "ec92c9d735a4fd384b5041f754306787672413cd19d51659e7617b024e055d0e"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3611-3619",
+       "sha": "6ddce2aa7c62911b6141f0dba8e1adec3ff2b6a17f54635f5c0a1870d6b5aa37"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 3, which forces enhanced memory mapping.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3620-3622",
+       "sha": "9159cba618f1fd16927e2e4e56696e6c437d520150a6c9ab243a1842594ec7bd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-4 as start address bits 17-16; CR51 bit 2 adds bit 18.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3623-3626",
+       "sha": "c5eef6e7eb598c51cddbb2a94facc52a2593c0d55ca54d3d7744b4aa0b97cedc"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 6 as page-mode font fetch and bit 7 as the external BIOS mapping of C6000H-C67FFFH, which strapping PD3 overrides.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3627-3634",
+       "sha": "2fd403831577e0d3570ccd058aaf9c746a241f8fba286312ccfd9f0aa688c5c8"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write also derives chain-4 from bit 3 and re-evaluates the mode and the handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "47-53",
+       "sha": "64debfe43302d2a7ed8ba26763c2a29923cf15eed3a406e6ff628c1968f6f2c9"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "47",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "47",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "51",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "47",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "514",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x35",
+   "name": "CRT register lock",
+   "aliases": [
+    "CRTR_LOCK",
+    "CPU base address"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3728-3765"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x35"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x35"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR35 at index 35H, default 00H, holds CPU base address bits 17-14 in bits 3-0 and two lock bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3728-3734",
+       "sha": "ff200d0b75d4d000f4cc455a990d66aba89d6e1fbf14839ffb8c354d0ce5a36b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 3-0 as the CPU address base in 64K units and bit 4 to lock the vertical timing registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3735-3746",
+       "sha": "be87524c5bc2a3be42749e507855b01ba1228232a3f70a2b0e11f546cdcecedb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 4 locks CR06, CR07, CR09 bit 5, CR10, CR11 bits 3-0, CR15 and CR16; bit 5 locks CR00-CR05 and CR17 bit 2; bits 7-6 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3742-3746",
+       "sha": "faf3cad068c165b9f4e1c07edbf9c5cc678f699244c227a67177c6dcabca77f8"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3747-3751",
+       "sha": "448828994fb15e7b94f40358d62a279ed0be3c5ccf7807c55ffcef070032082e"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3752-3756",
+       "sha": "2b83aad179223f5f2f497ad23219e763c47e4e3db913ae201ac615bfd74fc664"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3757-3762",
+       "sha": "091f74d0aaec1cd1c9b58df20493d6ef9173cc5b601fe0af34b3221d7c5d027f"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3763-3765",
+       "sha": "1a1a43d207e6f3d610b7ce25d27836f080770276499f39203fec7c0e10805645"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write is ignored unless CR38 holds 48H; it stores only bits 7-4, and bits 3-0 become the read and write bank numbers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "70-77",
+       "sha": "aa0a41b6d178d15820cc092b5bb520abc8f184f7d49241f22dfb3c10cf1fbb6f"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored high nibble or'ed with the current bank number.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "516",
+       "sha": "2d35970a9a149ec26fec6f3faf35851f691d3636b69b4b78acb176c39479a3e6"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "193-196",
+     "as": "parent",
+     "owner": "vga_s3:register:0x51"
+    }
+   ]
+  },
+  {
+   "key": "0x2D",
+   "name": "Device ID high byte",
+   "aliases": [
+    "CR2D"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "6966-6972"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "439-460"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR2D is read-only at index 2DH and should hold the upper byte of the PCI device ID; the capture prints its default as SSH.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6966-6969",
+       "sha": "440dbf63edbf2e59ab7ef74742e61e42a1a308aebd162a52e85e8d53423e217d"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the chip ID high byte in bits 7-0.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6970-6972",
+       "sha": "dce46043036ace283c2eb02b062f33c26a20ecad211fc77ae2dc2e4b8ebb208c"
+      }
+     ],
+     "variant": "Trio64"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "439-441",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "442-453",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "454-460",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x2E",
+   "name": "Device ID low byte",
+   "aliases": [
+    "CR2E"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "6973-6980"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "461-492"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR2E is read-only at index 2EH; its default is 10H for a Trio32 and 11H for a Trio64, letting software tell them apart.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6973-6976",
+       "sha": "0cd5d4e8481bcc9f58b093e6581daf030828eca569063bfc05e0ab39a9fa577f"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the chip ID low byte: 10H for a Trio32 or 11H for a Trio64.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6977-6980",
+       "sha": "208becadd458a375eb0a61240ef25e5a112b7960b0302f7ed62e2acbfe2210d6"
+      }
+     ],
+     "variant": "Trio64"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "461-467",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "468-479",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "480-491",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "492",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x2F",
+   "name": "Revision level",
+   "aliases": [
+    "CR2F"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "6983-6988"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "493-502"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR2F is read-only at index 2FH and reports the revision level; the book gives its default in the description.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6983-6985",
+       "sha": "ff14229efbed7441fa5bf412b4fc49d0f402460d048bc227e7c9e9c8bd1bce21"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the revision level in bits 7-0.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "6986-6988",
+       "sha": "226390c22a2a0ff80994ac3ca4f4555ac4635271cc6f4f5e85c89a3241394421"
+      }
+     ],
+     "variant": "Trio64"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "493-502",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x36..0x37",
+   "name": "Reset state strapping",
+   "aliases": [
+    "CONFG_REG1",
+    "CNFG_REG2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3769-3825"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "517-520"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Indices 36H and 37H are read-only and sample the reset state of the PD bus pins 15-0; their default depends on strapping.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3769-3773",
+       "sha": "5f5ebbe4804654d8bbef41bed1de48168814af18a6b7a303942d7859288ef06d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Bits 1-0 name the system bus and bit 2 gives the VGA ROM data bus width.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3774-3781",
+       "sha": "2c454d849c49a91320364c86afbc1bad536703f825f83a753a99bd89816cb327"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 3 disables or enables the C6000H-C67FFFH part of the C0000H-C7FFFH BIOS ROM area, and bit 4 selects the MEMCS16 address range.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3782-3790",
+       "sha": "481b6d72ca6b77586318eab1fbb3c2d9bd555d74b2823b970da3f111bb2ad9e3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 7-5 give the display memory size: 000 4 MB, 010 3 MB, 100 2 MB, 110 1 MB and 111 0.5 MB.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3791-3796",
+       "sha": "dee37f35c6300560e11fe7b66fefb5673f3dd706a042a77d7bbee7ea46bec908"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 8 selects the subsystem setup source or the 86C805, bit 9 is always 1 and bit 10 extends the monitor ID.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3797-3807",
+       "sha": "9c39c3959d1c9e14493b0dd7a448ac50316a261d7ba2894489ef82baf27e4290"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 11 controls NOWS or LOCA, bit 12 MEMCS16 or the DAC LOCA, and bits 15-13 identify the monitor type.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3811-3821",
+       "sha": "5231d1931083314f858f553a501d6ac4bbfded0d86dbd6c6b971e465f16c64eb"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3822-3825",
+       "sha": "7cdf31baef2f59d2e9426db62e22c1f0f0e50a562c47a25de186cf63fe613bb9"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X builds CR36 from the memory size and fast-page mode, not the strapping pins, and returns the constant 2BH for CR37.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "517-520",
+       "sha": "b6080841782d3936db367ba4f6506c2b8189527c3ba9c23b5c6d339dee011448"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "712-723",
+       "sha": "72a09e87ae9676ce126d4986bdc15dd35a815fe2f5e45460401590bbc85bac2e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "724-735",
+       "sha": "64a4d75fc0c91ee3053e878dd383ff37a2f2d3fb16de51406851d460cc510c11"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "736-747",
+       "sha": "a99458e44b2987e416c9281c7659c3425b3438ffd52c8b728c02f1b116da271f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "748",
+       "sha": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3808-3810",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x38",
+   "name": "Register lock 1",
+   "aliases": [
+    "REG_LOCK1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3826-3830"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x38"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x38"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR38 is read/write at index 38H, default 00H; loading 01xx10xx unlocks the S3 register set.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3826-3830",
+       "sha": "47296428604fa65c61397a96166d1afc4b3d8f4e0d325ebe6ea87be52da6583f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the lock byte; a pattern 01xx10xx unlocks the S3 registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3826-3829",
+       "sha": "d3cf33eff2edcb90bd3de602c22cf165be550358c6326013cbf8c62e2780387b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X stores the whole byte, and CR35's write proceeds only when the lock equals 48H, not any 01xx10xx.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "70-71",
+       "sha": "138a488c0e13ae17f2f6b5688fc59b7143721b3867f79caff7c0b6b4046ef498"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "89-91",
+       "sha": "7a88868a80492473327e55cd3bdd45fcd0c7b7fbe9909cb1f9ffed380f7573bc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "521-522",
+       "sha": "8f8516d9915f88e5289ec955a501160b267e19f6deee9ed3a2b7d56e6283da7e"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x39",
+   "name": "Register lock 2",
+   "aliases": [
+    "REG_LOCK2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3831-3836"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x39"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x39"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR39 is read/write at index 39H, default 00H; loading 101xxxxx unlocks the system control and extension registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3831-3836",
+       "sha": "90442b6c76b241d3f78d38d81aa24e70b971e10c9ec2824c3a1a01d9b45f9749"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the lock byte; 101xxxxx unlocks the system control and system extension registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3832-3836",
+       "sha": "af7de968e16d0ab8b49afc7c0de72ccda2e121f1cecaad06695618060456ee07"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X stores the byte in reg_lock2 and its read returns it; the write case does nothing else, so the 101xxxxx pattern unlocks nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "92-94",
+       "sha": "cc44e2cea5efccc35811e48a8042260b8f3f2b6e71ce89818d23e6277f3af029"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "523-524",
+       "sha": "79ff085656c9f3a4c452d3de8f6d92c18eaca838182cc769616d4dbf9069c3ba"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3A",
+   "name": "Miscellaneous 1",
+   "aliases": [
+    "MISC_1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3840-3870"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x3a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x3a"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR3A is read/write at 3B?H index 3AH, default printed as DOH, holding refresh control, top-of-memory, the 256-colour mode, fast font writing and MEMCS16.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3840-3845",
+       "sha": "cb73298f2127572b991d4fa1c1f0129dc7e47d3040a0930aa12da6bd35c64b22"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 1-0 as the refresh count and bit 2 as the enable of that alternate count.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3846-3853",
+       "sha": "caac50b4c139c9c19705534c51f5ad5ba7b3c5731a2eecec6e96da653d30a170"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 3 for top-of-memory access, bit 4 for the 256-colour mode and bit 5 for high-speed font writing.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3854-3863",
+       "sha": "fe6811f3638893859c86d36524244e91ddf8b717ccb52f293300bfff7006f87c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 6 as reserved zero and bit 7 as the MEMCS16 enable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3864-3867",
+       "sha": "3e5f900fa47fd82cd0facbcd18aadffde23d53bad4af4086b49f98f065727582"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "96",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "96",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "96",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "521-526",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3868-3870",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x40",
+   "name": "System configuration",
+   "aliases": [
+    "SYS_CNFG"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3901-3937"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x40"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x40"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR40 is read/write at index 40H, default A4H, holding EN-A 8514, SIG SEL, WST CTL, EWRT POST, DEC-WAIT and RD-WAIT.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3901-3906",
+       "sha": "2b88da1b7227b9286f41a56cd119d527c572aa000926bd68a44ee7d381b0ab3f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 0 for enhanced register access and bit 1 for the MIDO/MID1 or STRD/BGNT/BREQ signals.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3907-3913",
+       "sha": "a179cded4e5c1ad19b1d6baddcba953be3a0211f484033fe723a63ec5782ca0e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 2 for one wait state and bit 3 for the fast write buffer.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3914-3919",
+       "sha": "e80af7303f8badc1ca335ecefd126ff9a5f380c50f583350d81890f56385dca2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-4 as the decode wait states and bits 7-6 as the read wait states.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3922-3932",
+       "sha": "22a58a066abbf6ae450abb13680e735f220d285c5d75a855a3923c478ec4684c"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3933-3937",
+       "sha": "1289b567053fc479cc8bf6564c8835a9545e33217d46dad81c9fab1069220316"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "99",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "99",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "99",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "527-528",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3920-3921",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x41",
+   "name": "BIOS flags",
+   "aliases": [
+    "BIOS_FLAG"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3938-3948"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x41"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x41"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR41 is read/write at index 41H, default 00H; it is a BIOS flag register and users should not write to it.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3938-3945",
+       "sha": "5f4d81a4b83ceecd42c4ecbea95fe4386063bf2877cd03355b7bd955a6280214"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte of BIOS-FLAG-REGISTER-1.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3941-3945",
+       "sha": "3ef43c4e28e7d0eccb9925204dcbaa3b44c447cbfcdd7d151e0ff89c47c3ef5a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "102",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "529-530",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3946-3948",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x42",
+   "name": "Mode control",
+   "aliases": [
+    "MODE_CTL"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3949-3986"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x42"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x42"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR42 is read/write at index 42H, default 00H, holding the dot clock select, an interlaced mode bit and reserved bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3949-3956",
+       "sha": "ed172299f3253f123597aaf58f6cf1caa073190b6dc6b74affdce84232675100"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 3-0 as the dot clock select, effective when the VGA clock select is 11; the table gives example frequencies.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3957-3961",
+       "sha": "22b91d13af10eedf2b5fa763b2808bda32e2b8d7296eb933aa6f28c73999e10e"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3962-3972",
+       "sha": "b5fc0d504145fb03b5e1bbc1ee0f348310a2bd8e8aee913a75aa60aaa4d75fce"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3973-3980",
+       "sha": "f393e0acaeedbf109105f5bea00a2e83b04633c0a2939d209a5a9bef3b6f83f4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 5 as interlaced mode; bits 4 and 7-6 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3981-3985",
+       "sha": "070fe468a250f660c2a3819067c9804af8e3593dcd868f956307910c8ad301af"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The mode control register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3950",
+       "sha": "51944c88e65b011fa9bc05e0e84eeb43441e97d959f6d28a025f438e2920ec99"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the constant 0DH, not the stored byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "531-532",
+       "sha": "2b8a029f2ef315b91e89306183dca6413a95febfa3fd8832d3086dc5287db755"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write triggers a resize when bit 5 changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "104-108",
+       "sha": "cbdc83566206a84f2e2c91ebf2c76071d2105f03427e8fc3d837604a0c748172"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "106-108",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "108",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3986",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x43",
+   "name": "Extended mode",
+   "aliases": [
+    "EXT_MODE"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "3987-4015"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x43"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x43"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR43 is read/write at index 43H, default 00H, holding the clock edge, DAC RS2, screen width bit 8, 16-bit colour, XEN and counter double bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3987-3992",
+       "sha": "7c9b42c057cb72aec120ae0b7adc833ffaa6a7b5c2de110ee4c0c9c52aff5f78"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 0 for both clock edges and bit 1 as DAC register select bit 2, disabled unless CR55 bits 3-2 are 0,0.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "3993-3999",
+       "sha": "da09862581daa74279a7fa21afa58417fe5bbaaccca30b24f1af83c1fa7a1ff8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 2 as screen width bit 8, disabled unless CR51 bits 5-4 are 0,0, and bit 3 as 16-bit colour mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4000-4005",
+       "sha": "e3228554ae0b9cc9537d4784b3aad0cf31652c09d4fe862b88d783e3a8bafc3a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 4 to move the X2E8H port to X148H, bits 6-5 reserved and bit 7 for horizontal counter doubling.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4006-4012",
+       "sha": "a7307222314cfba1c02614e569383d65217dffd3894ff7fefe78e9f096285bd7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Bit 2 is not kept in reg_43: it is stored as bit 8 of the scan length and read back from there.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "117-121",
+       "sha": "96e59a0e7661c411ae988083383897985ca4a2dc11d6eec2917ad9f7ee6520f2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "534",
+       "sha": "3d6253d6ea6c745bdcdce1f11626adb5b0fcef937d481a6cf6b70077d7376505"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "117",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "117",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "534",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "198-201",
+     "as": "parent",
+     "owner": "vga_s3:register:0x51"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4013-4015",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x45",
+   "name": "Hardware cursor mode",
+   "aliases": [
+    "HGC_MODE"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4016-4050"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x45"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x45"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR45 is read/write at index 45H, default 00H, holding the hardware cursor enable, two stretch bits, right storage, the Bt485 enable and reserved bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4016-4023",
+       "sha": "1919eab39e873a27ff7a822c1a8a2d92b118b805b8a031dd4bb27153dc06016a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 0 to enable the hardware graphics cursor in enhanced mode; bit 1 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4024-4027",
+       "sha": "30204a82ccececb1b1795629bedbd4a5a7544455607bb48a220d5a47f8a354b3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 2 for twice width with stack pointers 0-1 and bit 3 for triple width with pointers 0-2.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4028-4035",
+       "sha": "81a93c65361ef3a5089f50764fe2e19d3e22ef65d076877edbd52ceb1c5f48df"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 4 for cursor storage in the last bytes of each line, at 4 or 8 bits per pixel.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4036-4042",
+       "sha": "3399a89952e917dda5e8a5ddeddf76e849ee3f7503188df3f60834d3c6e82517"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 5 for the Bt485 ODF/CDE signals, effective only with CR55 bit 5; bits 7-6 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4043-4048",
+       "sha": "87925a835a9a7e780c51924ce8f060aa07f10fccb810b558421de019746bda16"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "text": "The cursor mode register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4017",
+       "sha": "91f49412fe53582ea93078610467b08dab22e0f624be5db263f0e6e9aa15745c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored mode or'ed with A0H and resets both cursor stack pointers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "535-538",
+       "sha": "4bdd5795a28f4c73bbe509735b5f8fe6566cc6134b13850534315817e4b15b68"
+      }
+     ],
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "130",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "130",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "130",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "130",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4049-4050",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x46..0x47",
+   "name": "Cursor origin X",
+   "aliases": [
+    "HWGC_ORGX"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4051-4056"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x46"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x47"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Indices 46H and 47H hold the cursor origin X; the high three bits go to CR46 and the low byte to CR47.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4051-4056",
+       "sha": "c3f19e6b1298f26ba3936b76a1b2e2ec2e209e1aed3a21b5438fe97c7ac4f497"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the X coordinate of the cursor left side, bits 10-0; bits 15-11 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4054-4056",
+       "sha": "c2a157bcc11e4201b7038e1ad21aaf640c7387329c2b04dec42000fcd6502ba0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X takes all eight bits of CR46 as originx bits 15-8, where the document keeps three.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "134-139",
+       "sha": "a3cd6a2e9c1a5fb2235235f79f0aea843d9d6f3d387d4db351400452dfb2b8f7"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x48..0x49",
+   "name": "Cursor origin Y",
+   "aliases": [
+    "HWGC_ORGY"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4057-4063"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x48"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x49"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Indices 48H and 49H hold the cursor origin Y; the high three bits go to CR48 and the low byte to CR49.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4057-4060",
+       "sha": "cba97eb2e380641c2eeeb5219b29c5274b6e3ab8a65d4ccb37c7fff16cef4aa6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the Y coordinate, bits 10-0, and registers the cursor X and Y position when the high byte is written.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4061-4063",
+       "sha": "000afff1276abad10476d03a12d9e646f740ac6a6af1c6cd7ac1bd10506d3f3c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X takes all eight bits of CR48 as originy bits 15-8 and registers nothing on the high-byte write.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "140-145",
+       "sha": "310c40c745e5012453b50528f11549f5fa8354367b52383a7e65eab757b18dc7"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x4A",
+   "name": "Cursor foreground stack",
+   "aliases": [
+    "HWGC_FGSTK"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4064-4076"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x4A"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x4A"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR4A stacks three true-colour foreground registers; reading CR45 resets the pointer and each write increments it, giving 24 bits in three writes.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4064-4073",
+       "sha": "58005a1c1f9946d2b29e1c05b3581811e547391ac1fdcc9dbfa86ab30baeb731"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores one byte at the current stack pointer and increments it.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4067-4073",
+       "sha": "226630513f8685f6a89998c8740c4037c90a9d6e72134be69f7a147bc6bdc8c0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4065",
+       "sha": "2165422dd3da2fd60f58c3b66a7f76a019b6c42a79651123771962acb34e29a2"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write past the third stack entry wraps the pointer to 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "146-150",
+       "sha": "cfd951591771d3d08a5a2e74caa2cd3d6252072ad04c1db849b0065d3d7818ad"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "146-150",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "148-149",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "535-538",
+     "as": "parent",
+     "owner": "vga_s3:register:0x45"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4074-4076",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "547-548",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x4B",
+   "name": "Cursor background stack",
+   "aliases": [
+    "HWGC_BGSTK"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4077-4085"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x4B"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x4B"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR4B stacks three true-colour background registers; reading CR45 resets the pointer and each write increments it, giving 24 bits in three writes.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4077-4085",
+       "sha": "b0300da55b46923d35872f6bd0407ababc4d6c26e74d83c0da9fbf7bcbdee9aa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores one byte at the current stack pointer and increments it.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4080-4085",
+       "sha": "a47b21c37c21f1d1da62293662f9fe9eea87c6339829fca23ec04a11881b8ecb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4078",
+       "sha": "9876a2a1b340988377a302611aa981a090b1132c90198c608dba0cc692af6642"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write past the third stack entry wraps the pointer to 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "151-155",
+       "sha": "777ca1652eae1284b97eb80ac848f6b29e425bc456e01f34f5d6988af3004ad1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "151-155",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "153-154",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "535-538",
+     "as": "parent",
+     "owner": "vga_s3:register:0x45"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "549-550",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x4C..0x4D",
+   "name": "HWGC start address",
+   "aliases": [
+    "HWGC_STA"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4086-4091"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x4c"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x4d"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR4C and CR4D are read/write at indexes 4CH and 4DH, default undefined; they hold bits 11-0 of the cursor storage start address and bits 15-12 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4086-4091",
+       "sha": "ead86166c12264fde734c9f8828bd9dc7a3b48b55e19176b351d6602664ecafd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the value's high four bits in CR4C and its low byte in CR4D.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4089-4090",
+       "sha": "668b0f780e25882244f158a12f338215ce1f30e5c904632f80a4dc5b6de0b2e4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Both registers are readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4087",
+       "sha": "3698d2668c0f3607b2584a8bf8e3fb917a8da4495fec5c2b1c17fb240aeb134d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A start address that would run past the end of video memory is reduced to its low byte and a warning is logged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "159-163",
+       "sha": "387f5fa1a303469aad302f00b0b9c084912c8eb997028017b4931dc5b18a0a49"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read of index 4CH or 4DH returns 00H from the switch's default arm, not the stored address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "592-593",
+       "sha": "bd4053fe2f051c9a5611c9099221fbce0900fa7902609ef3ea97ed3749e2999b"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "157-158",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "166-167",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x4E",
+   "name": "HWGC start X position",
+   "aliases": [
+    "HWGC_DX"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4092-4098"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x4e"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR4E is read/write at index 4EH, default undefined; bits 5-0 are the pattern display start X pixel position and bits 7-6 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4092-4098",
+       "sha": "17e391a29c1bceb640b2161df7b071dea45b68bc8f5aed2b18b842220f60c78f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-0 as the display start X position.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4097",
+       "sha": "d9844c8a4b420cfa186845c072c95c799315e821a30ce40a797cd0a13fdceff1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4093",
+       "sha": "d7d4819d6c6b66f1ab4b36d3492838a4a4b2a5b855089b66f417732b092f0f4d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read of index 4EH returns 00H from the switch's default arm, not the stored position.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "592-593",
+       "sha": "bd4053fe2f051c9a5611c9099221fbce0900fa7902609ef3ea97ed3749e2999b"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "170",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x4F",
+   "name": "HWGC start Y position",
+   "aliases": [
+    "HGC_DY"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4101-4107"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x4f"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR4F is read/write at index 4FH, default undefined; bits 5-0 are the pattern display start Y pixel position and bits 7-6 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4101-4107",
+       "sha": "2c92896abcb8feddc7b67f47ec0a60a2ed1f862544985aee87e2c9258bb9d7cc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-0 as the display start Y position.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4106",
+       "sha": "5d3f19af983eaeb8860543aa20f8855e52131bc8859696d30b02c54e02e3a776"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4102",
+       "sha": "10f98bda2cefe5486abef6a56c376befc9cf9c7b287d0cd8db4d6f0b79fc1eca"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read of index 4FH returns 00H from the switch's default arm, not the stored position.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "592-593",
+       "sha": "bd4053fe2f051c9a5611c9099221fbce0900fa7902609ef3ea97ed3749e2999b"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "173",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x50",
+   "name": "Extended system ctrl 1",
+   "aliases": [
+    "EX_SCTL_1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4117-4149"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x50"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x50"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "S3_UpdateXGAColorMode"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR50 is read/write at index 50H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4117-4122",
+       "sha": "a676bcf94afe06b5e739204181de07845ab9227ad1d343e542b8129005886a26"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 2, which enables the BREQ and BGNT functions.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4124-4126",
+       "sha": "f7d3b8bba6eb9ffe98810bfcad6cfa8e6066b082c47cafeb658f0891df43e364"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 3, which disables the LOCA/SRDY signals.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4127-4133",
+       "sha": "8b1ca89cb3b1d19e44a2cae3fc5559f4c602cbb38e96e1be560dfe938b3462bd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-4, which select the pixel length for graphics engine commands: 1, 2 or 4 bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4137-4144",
+       "sha": "bf4ef90b53d86fceadd1a5791d62e38793c80b1cf98f835aecc949d67dd29cb0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 7-6, which select the engine command screen pixel width: 1024/2048, 640, 800 or 1280.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4145-4149",
+       "sha": "830dadf0b2ea4be38163d5d82f607e8e5091c375c77b0fb9e7a27714aa5b8237"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 1-0 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4123",
+       "sha": "310c4945e05113763ea988fc2f096f7ebbc8405a8f00bf875cdbf625c90a55da"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4118",
+       "sha": "a2bb16076e21435986b3a1e62a26625fafc55e400b8fe2c2c47c90b423244a7f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write stores the byte, then sets the XGA colour mode from bits 5-4: 8, 16 or 32 bpp, and 4 bpp when CR67's high nibble is FH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "176-177",
+       "sha": "709bb4b58be8fd442935e9d23a52ad4ee64938c346032bb23b488cf22fbb7f21"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "31-38",
+       "sha": "b28e9258e1bf29c56230f179e0dd29f604bac2d61a2ee269b9c1598e50c6481b"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write sets 1024, 640, 800 or 1280 from bits 7-6 and also reads bit 0: 01H gives 1152, 81H gives 1600, 41H and C1H give 1024.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "178-186",
+       "sha": "fd87deda00cfe97409b942eb607db44bac10a785cd18bbccc428ef673be65b92"
+      },
+      {
+       "ref": "dosbox-x:include/vga.h",
+       "lines": "95-101",
+       "sha": "1edd0d40876a8a5b307f5525d5c7f827618f17194efff97695c5320ce79eeb68"
+      }
+     ],
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "176",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "176",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "551-552",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4134-4136",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x51",
+   "name": "Extended system ctrl 2",
+   "aliases": [
+    "EX_SCTL_2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4150-4171"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x51"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x51"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR51 is read/write at index 51H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4150-4155",
+       "sha": "532ff8fd44af2634da4af46564f2c807ec135ff55697c3134bd7942c3af01c30"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 1-0 as display start address bits 19-18, extension bits of CR31 bits 5-4.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4156-4158",
+       "sha": "4842c1859c23966870355972e454ab3fae9015c18583614be9486f57a2230016"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 3-2 as CPU base address bits 19-18, extension bits of CR35 bits 3-0.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4159-4162",
+       "sha": "511c4c09a5f26bcffc45164d4279454792153c9a776775074be51a245f2d2f45"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-4 as logical screen width bits 9-8, extension bits of CR13.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4163-4164",
+       "sha": "28bfbb579b4de88c4f6cf3655bd6c27d0741282c2d8102310f6414c1ca69ac33"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A non-zero value in bits 5-4 disables CR43 bit 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4163-4165",
+       "sha": "ebc5320ae753bc2e174d716f1a58fd189d9e28dda5684d0f871823e794ceb6c0"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 6, which disables split transfers.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4166-4168",
+       "sha": "4214782a103dd6a2ab6462f993b4884757964efe6a5eb23d4bb82dc01a88a4b4"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 7, which enables EPROM write control to the BIOS ROM address.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4169-4171",
+       "sha": "2a880fabc6b6977763e9b7eb9c4e838c7ff5134171f0098c4208635dbf58401f"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4151",
+       "sha": "4d3a81bf9cd161fef37bd67925b03042b85b38725b458e53cc67e68e2a7a12b7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write that changes bits 2-3 rebuilds the memory handlers and one that changes bits 4-5 rechecks the scan length.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "192-202",
+       "sha": "251605f1ef40fe5a33307251d2430ed1de40aaa1f70f808351d3c9d6bd21ef46"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write to CR43 still sets or clears scan length bit 8, so the disable is not applied.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "118-121",
+       "sha": "62903ef8677d74a27457e58018b335d300005ebbb459f571db1f465fe14c6e57"
+      }
+     ],
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "190-191",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "192-195",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "199-200",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "189",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "189",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "553-557",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "51",
+     "as": "parent",
+     "owner": "vga_s3:register:0x31"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "73",
+     "as": "parent",
+     "owner": "vga_s3:register:0x35"
+    }
+   ]
+  },
+  {
+   "key": "0x52",
+   "name": "Extended BIOS flags 1",
+   "aliases": [
+    "EXT_BBFLG1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4174-4180"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x52"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x52"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR52 is read/write at index 52H, default 00H; it is a BIOS flag register and users should not write to it.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4174-4180",
+       "sha": "450c817df22bc3fdca1977d5c14d7cbdc7c950224c22d4fb3bfb63b5eb50a889"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the BIOS flag byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4178-4179",
+       "sha": "93881f0a3dd4356c65d73e66353fc65c4098a11e3a622a161227d6e8186c9ca6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4175",
+       "sha": "c79eee09321dd4452822321f8f183b22e5577301fe8be08ca4a6468a30636f43"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "225",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "558-559",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x53",
+   "name": "Extended memory ctrl 1",
+   "aliases": [
+    "EX_MCTL_1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4181-4204"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x53"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x53"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR53 is read/write at index 53H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4181-4186",
+       "sha": "9e9bb9ca1582a943db0800810c02b616edb4ce88bc601651dd86d19ce67f1067"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 3-0 enable write-per-bit flags for each 1MB memory bank.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4187-4188",
+       "sha": "87d11fea05dc983d170d1d67db678db5bb5d1d529b94d14ee545063d065c332a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 enables MMIO access.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4189-4194",
+       "sha": "829c469a780ce8072a4c17f5bd4fb8fc49adc569dc4ef376e1f895ea7586b6a0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 5 selects parallel VRAM addressing.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4195-4197",
+       "sha": "a48281dc0d6d9d0fa37492033f93977e49fc8b8c322df8c89f121dbb8dc40635"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 6 swaps nibbles in each byte of a linear memory address read or write.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4198-4200",
+       "sha": "2f45ee28b03ac15ac398479ca331bf79860891c594979463e4033b73e3c4fbc9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 7 enables nibble write control for the graphics engine.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4201-4204",
+       "sha": "b16440c06618c5bd871ccf559ba03c3dc33757206a0391671a98d2fb11618f99"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4182",
+       "sha": "6753f07312176f9389997aef2fc074a1e0f3448a03e91cffa0796c26f9c6624f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write that changes the stored byte rebuilds the memory handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "231-234",
+       "sha": "17473482ea5cb1e13d6337669b083dba29ef3be3f426495e378ec4d676ceb390"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "232",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "232",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "232",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "232",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "232",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "560-561",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x55",
+   "name": "Extended DAC control",
+   "aliases": [
+    "EX_DAC_CT"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4225-4257"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x55"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x55"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR55 is read/write at index 55H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4225-4230",
+       "sha": "91017894e3b977e2a0279d06b2ac20f9238c4ba02f4adbe0c1066e038cc51807"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 1-0 are DAC register select bits 3-2, and a non-zero value disables CR43 bit 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4231-4233",
+       "sha": "d32a3363fc2bcb3d4a25627f7714370a7ae70b5b96d4cabe2cb206398efa7a54"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 2 enables the general input port read and disables video DAC reads.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4234-4237",
+       "sha": "2d2e4e401379dfa40f31567dab777564d944d8949af68fbd4057c162bc9e88c4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 3 enables external SID operation.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4238-4240",
+       "sha": "880a4a287e1a591e330a766930b36910707c4893f734f4de7228b91f3f0770c7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 selects the hardware cursor MS/X11 mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4244-4247",
+       "sha": "11261a467a32e269615266d89ce9295f68094782cd5acaf05a677d116b44fa83"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 5 enables hardware cursor external operation mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4248-4253",
+       "sha": "ee174cb65612afca8a3b547ac170522f3438e0ce674b933e5133f6a77698f79c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4254",
+       "sha": "b7c85692ffae820362ddf5c716594ba7242f17fe6b577fe09aec875a9073ed9d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 7 disables the PA output, tri-stating PA[7:0] and VCLK.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4255-4257",
+       "sha": "c11a12b883ce80d5ef13fde06e616d4ec20da9ba62239388056a39a4f61a84b0"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4226",
+       "sha": "617ccdfb05bcb0e7396466cde7ea2df9eca6206f11ef0ab886239ad5a5dca241"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "562-563",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4241-4243",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x58",
+   "name": "Linear addr window ctl",
+   "aliases": [
+    "LAW_CTL"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4309-4340"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x58"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x58"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR58 is read/write at index 58H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4309-4314",
+       "sha": "0af6c68cb99430ba3e142c45c9eaf42f0ebcf327cb2b1d8c570e88af8095fb9a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 1-0 select the linear address window size: 64KB, 1MB, 2MB or 4MB.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4315-4320",
+       "sha": "8c111ddf0cc56f9bf5532543b1a9a7a6bf448f02185ef368c912ceb82125a6f4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 2 enables the read-ahead cache.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4323-4325",
+       "sha": "16b26b6c01741355b4c87b344ae51af353fde15a60a916fcc72b98c284caeac8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 3 latches the address during every ISA cycle.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4326-4328",
+       "sha": "73902263ff0a2dc9b0bfd42d7e2df62af3333b8267f827a2c3c17fb646c938fb"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 enables linear addressing.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4329-4331",
+       "sha": "70f177c5af994b06f0e5a4340ca63f7234e6758357bfc21d1349a94100ec247a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 5 limits the write-post entry depth.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4332-4334",
+       "sha": "7f054d0fd5a5b44e71c12a69e333c43171f366bb7e3c99c93402fb2719e52ee7"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 6 selects 256-word SAM control.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4335-4337",
+       "sha": "b64696cc0b32db6e4f8bc50c74ea6171676fcb05fdff9e783eb8128f9a2135a5"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 7 selects a 6-MCLK random read/write cycle time.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4338-4340",
+       "sha": "5c5305a9952c8f49a5aa4f871a7cbe2915c89c34812bfedf9b1ec7bab022485d"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4310",
+       "sha": "77b9183d964f027b625f46cdc7a01873bd3099ad2c3ef3f6ec936fc0df975f34"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write starts an update of the linear frame buffer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "260-261",
+       "sha": "c9409c52474e358479f25fc8e63128dc275bc538cff221cb7a523a27abb44aa5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "260",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "564-565",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4321-4322",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x59..0x5A",
+   "name": "Linear addr window pos",
+   "aliases": [
+    "LAW_POS"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4341-4360"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x59"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x5a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x59"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x5a"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR59 and CR5A are read/write at indexes 59H-5AH with power-on default 000AH.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4341-4344",
+       "sha": "2b6d057c8a486fc0a8f43c9328dd569a61f1a48d84e5c72b57afc21cb3c12e67"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the 16-bit window position in 26-bit CPU address space, on a size-aligned boundary that ignores some low bits; bits 15-10 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4344-4349",
+       "sha": "cc7cc2497a4f9de708ff96473d8145ea3eaf89082651b610d2c6fe2f7cc16f26"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4350-4357",
+       "sha": "51ec75dcd85b7aa09648bcaa0f2687bb39e3f6b92aa12fd642a3978c97a8dd3b"
+      },
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4360",
+       "sha": "3895ad9483592a8fe9f263e8e1d4570569b424d58be89897ee7403eea20d0381"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Both registers are readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4342",
+       "sha": "03b10886c8225a1e20f1f3fa47ac93c1ffeef4ebc8969fd707792a40df340df0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write stores every bit of the position, applies no boundary alignment and masks no reserved bit; the bytes are read back whole.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "281-284",
+       "sha": "64bb810c9efeeed0d7425a1385cdf70abdffe24b4e3cad3244323c286045e2a0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "287-290",
+       "sha": "56212760086b8e6b8b8b2d4afeb0523349486ec1dd20f9cd811dd44202ed0fe9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "566-569",
+       "sha": "3327dedfe146c4f2cac12f5e1565397a1a6f95651732f59d39390632eb797ddc"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "566-569",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4358-4359",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x5D",
+   "name": "Extended horiz overflow",
+   "aliases": [
+    "EXT_H_OVF"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4383-4396"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x5d"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x5D"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR5D is read/write at index 5DH with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4383-4388",
+       "sha": "b0dfe18a46208948eb5221c28be4f50582318a6b01c8432ee203e359afae026d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 2-0 are bits 8 of the horizontal total, display end and start horizontal blank values.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4389-4391",
+       "sha": "2a2c768d88dc23dc00d56040ff189b54680b22bec5e159eb25a210ffad674001"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 3 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4392",
+       "sha": "f4700f6a65bbe6843094b1db5f088a63936d0b08722860d37f8ba54ff293381c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 is bit 8 of the start horizontal sync position.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4393",
+       "sha": "f82adb5c4ed9881dbdac090bdd316aaeb717a879d4184d1de704c43aa8d4fffe"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4394",
+       "sha": "c42430c8a6479f72c3b62bda639ce68ad12475a7707a486ca0ff0d8532d0a6f6"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 6 is bit 8 of the data transfer position and bit 7 bit 8 of the bus-grant terminate position.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4395-4396",
+       "sha": "485a6e637a17a7a25c1042e5cffa6490e55f7f9c7a56a6e30008355f12033aa5"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4384",
+       "sha": "d9fcc6419898f4dddf5576137ad214238371a7472c20b112bbaffe074e1e59a9"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write that changes bits 0-1 resizes the screen.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "293-296",
+       "sha": "10cb51c33fe25d2b0106c617dcab6767ec3665cfa880c4f7b0954387d6637fda"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "294",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "294",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "294",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "570-571",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x5E",
+   "name": "Extended vert overflow",
+   "aliases": [
+    "EXT_V_OVF"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4397-4412"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x5e"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x5e"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR5E is read/write at index 5EH with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4397-4402",
+       "sha": "e5a1bcad8eeea0a70ded004b3a1f2565f4f9100b3f9a8ae11e36ab89322626cf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 2-0 are bits 10 of the vertical total, vertical display end and start vertical blank values.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4403-4405",
+       "sha": "ce2c65e550f8e309dcde0a10b61dff27dd3b0cdf31efd2a06beab5d7c255dca0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 3 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4406",
+       "sha": "f4700f6a65bbe6843094b1db5f088a63936d0b08722860d37f8ba54ff293381c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 is bit 10 of the vertical retrace start.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4407",
+       "sha": "0d6b8ad783a0e371ba7d0457f0048e88d0725541e65bbf59504c10f2ddaf2c2b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4408",
+       "sha": "c42430c8a6479f72c3b62bda639ce68ad12475a7707a486ca0ff0d8532d0a6f6"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 6 is bit 10 of the line compare position.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4409",
+       "sha": "844734a0b0463a410563129e642f888b764bd7df8225dc45c30822345058d3a1"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4412",
+       "sha": "d31f282a1279d22059f5f743e9e911026fd4da5083fc820e76bd42dee50582f2"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+       "lines": "4398",
+       "sha": "a709732cb8d606483babbc82be75ddba0001e98ac7f7c2bd2ff7e8b5c91a2ea0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write that changes bits 0-1 resizes the screen.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "320-323",
+       "sha": "5b93f872b289aa016318681a59e1b74e47c11f20b322f7c310bad4941b8d852b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "321",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "321",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "319",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "572-573",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "datasheet:DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt",
+     "lines": "4410-4411",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x63",
+   "name": "External sync ctrl 3",
+   "aliases": [
+    "EX-SYNC-3"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7755-7766"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x63"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x63"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR63 is read/write at index 63H, default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7755-7757",
+       "sha": "8aaeb820b263e4be6289056cea94d166afa56d5c33828cbea55cd5e95d3fa4ec"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 3-0 as the number of character clocks the HSYNC reset is delayed from the master VSYNC falling edge.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7758-7761",
+       "sha": "10e4e03d7abd8bc8f629bbc792fca9252fadf699a6a63cd1b5b44f6fed276af2"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 7-4 as the number of DCLKs to delay the character clock reset at the end of the scan line.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7762-7766",
+       "sha": "025e6cb63838e859e6a377bb256ff3532fa09ff4118f3f0fd592f6dfd9160b61"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Both fields take effect only in remote mode, CR56 bit 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7761",
+       "sha": "3ef0b2aaad27e86e3220cee0a46a41098a6a597aa178ec191f99d31eaafb926b"
+      },
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7765-7766",
+       "sha": "8fc2719d26db04b24487a9cc636de00718cb081d8f0e1718c999657354f4b48e"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7756",
+       "sha": "af09d01edba2fff4faa7b13588097bb2dc2a32aaad0718f92f2cffa435acfaed"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the 86C928 and Vision boards a write is ignored and a read returns 00H; on a ViRGE a write of bit 1 resets the 3D engine.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "342-349",
+       "sha": "5e9b78af3f79230c20d82b5d7dcccb3de369c33023d191fdecdcd352007a48d8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "574-580",
+       "sha": "ceff2466baede27fa218fb1c5f39e7969b504fc431e1efb88e7b0f439347d679"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "349",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "349",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "581",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x66",
+   "name": "Extended misc ctrl 1",
+   "aliases": [
+    "EXT-MISC-1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7788-7802"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x66"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x66"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR66 is read/write at index 66H, default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7788-7790",
+       "sha": "d953fb10fee2fd4ee2fa74f44696bd20d092e495dc921b5f2f98638efde3f59c"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 5-0 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7791-7793",
+       "sha": "69c908773e0841bc31c54786cd3f7b3efaac4c46226dab3895a3d0776fdc5e24"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 6, which tri-states the pixel address bus PA[15:0].",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7794-7796",
+       "sha": "437c15bb8413aaae11a88b23d223e59793b1e2befdf850a8fb1ed4be9306fe00"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 7, which enables PCI bus disconnection.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7797-7802",
+       "sha": "2d3a2c3a2b263241a34133dc5aaacb23b9e6bbf5f1fdfa610ebe6f606de9ec86"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7789",
+       "sha": "ec1e2eefa4add5be7b753ef1f4f9db6b805c18b7e41f65cdb5539472cd5ee540"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a ViRGE a write of bit 1 resets the 3D engine.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "388",
+       "sha": "51237eba1677ce59590218e3135aed89f5fd5b65b5f91416c2eb216fbf324d22"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "389",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "389",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "583",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x67",
+   "name": "Extended misc ctrl 2",
+   "aliases": [
+    "EXT-MISC-2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7803-7824"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x67"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x67"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR67 is read/write at index 67H, default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7803-7810",
+       "sha": "f68a521f06aa3937289e78722045786f5da98c0b2350e50a2bd1190fb8d7d2ab"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 0 as the VCLK phase: clear inverts VCLK with respect to DCLK and set keeps them in phase.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7811-7813",
+       "sha": "c8f612d4fc63d3f8e4cea416875678e0f52cdc3d60f5c11fe35bf167b6085cc6"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-1 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7814",
+       "sha": "596f36cdeeb69a1f649e8ba2280cc74bb1fbd8939dde92bf2c06fc66865598b8"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 7-4 as the RAMDAC colour mode: 8, 15, 16 or 24 bits per pixel.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7817-7824",
+       "sha": "8fd10b29d1d171f4445009061a01cfda18663ea2a791aff39f64d0ae3cf5726b"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7804",
+       "sha": "fe868f124e40016c8048c5a5d52d7279e9b60b74f1114d0927c70488530e4499"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write also calls the colour-mode update and re-derives the video mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "408-410",
+       "sha": "ab74105105b3fc1fcce406a70e0afe8c7c7c78e57946e26b0863d10b83f23131"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "408",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "408",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "584-585",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7815-7816",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x69",
+   "name": "Extended system ctrl 3",
+   "aliases": [
+    "EXT-SCTL-3"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7864-7877"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x69"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x69"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR69 is read/write at index 69H, default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7864-7870",
+       "sha": "43502e0fbd00081b57928c4a70ca523b83f82b898898cd4a68d8d8b7559b17c6"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 3-0 as display start address bits 19-16.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7871-7873",
+       "sha": "111baada0092ee9bab057739030db95ac8b508f842aa970bfee61fd24316ebb5"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A non-zero value makes CR31 bits 5-4 and CR51 bits 1-0 ignored.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7873-7876",
+       "sha": "6873f90a16fdb78c4b2b5c836b0e88fc758c524772bdba8a3a9fcca0d48a0c15"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 7-4 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7877",
+       "sha": "b84ce5e28217b1ab6dd51be8f118bb4206144cc7128fadc5062013c520bbf638"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7865",
+       "sha": "8e1fd2cc5909835281a609e1d9a5736723cdb1f07b6075944b3f2b2403f2a3ba"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write also takes bit 4 of the value as bit 20 of the display start address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "413-416",
+       "sha": "2fad56c240bc64334001b2160059f3b6cb1f70154e7ed8620276a4ab22ad658f"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A CR31 write still changes display start bits 16-17 and a CR51 write bits 18-19, so the old bits are not ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "51",
+       "sha": "fa99a9383728dddacce462e59d9dc2ae25d4aba6fdd0dca6386decb803263010"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "190-191",
+       "sha": "14088e9c2e15d66cf8a9cfbe9b149195b59d77bc04641b81ca13da503406c068"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "413-416",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "586-587",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x6A",
+   "name": "Extended system ctrl 4",
+   "aliases": [
+    "EXT-SCTL-4"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7878-7894"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x6a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x6a"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR6A is read/write at index 6AH, default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7878-7884",
+       "sha": "2d320b14cdf44046fc3b7f271b8d4b090995362fdf4be8ebfa681ff6ce8acf03"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bits 5-0 as CPU base address bits 19-14.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7885-7887",
+       "sha": "0aa13744efbd8c7ae251345e1033567c7d8170670434b5934b4b2fd2294adf41"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A non-zero value makes CR35 bits 3-0 and CR51 bits 3-2 ignored.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7887-7893",
+       "sha": "3bb5921012b04a94de26e62c5b28f4f82aa96604ce422cf18ab35f57b806d052"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 7-6 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7894",
+       "sha": "02c48177eaaef7cbe6618ab8b2795cc9f484137f7be030901cab6f14680af5e4"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7879",
+       "sha": "0e4ff7a7d0544600a1590660af1fa88330020731b5a6bcf63462a358245b2f13"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write also takes bit 6 of the value as the bank's bit 6.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "418-422",
+       "sha": "fd5a4853a399d3b54c5ddc495f803c3b503a789f44e5b7d32fa40754f028d267"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A CR35 write still changes the low four bank bits and a CR51 write bits 4-5, so the old bits are not ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "72-77",
+       "sha": "26cd018aacd35f8028ec3847fe5d65064cf9d3b497d0ab1ef911b5e14c11dca5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "192-195",
+       "sha": "7fd353a49eab4233fbcd73f2b84be4c01340b66628519d82b0b12259b7d3475b"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "420-422",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "588-589",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x6B",
+   "name": "Extended BIOS flag 3",
+   "aliases": [
+    "EBIOS-FLG3"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "7897-7903"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteCRTC",
+     "case": [
+      "0x6b"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadCRTC",
+     "case": [
+      "0x6b"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CR6B is read/write at index 6BH, default 00H, a flag register reserved for the S3 BIOS.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7897-7903",
+       "sha": "dacc6f2792a68f9f152dbf1b2c652a6b41f651685156d8dc11f735534cd80b7d"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the BIOS flag byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7901-7903",
+       "sha": "e695012f9747e917e7843da1d9748918012d1174fdf35ef593fb5a400d75660a"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "7898",
+       "sha": "903c9b166ae65901762e8dca697cc72095697990e87c0798e48a1b9368d34cb2"
+      }
+     ],
+     "variant": "Trio64"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "44",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "435",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "425",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "590-591",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "Unlock ext sequencer",
+   "aliases": [
+    "UNLK_EXSR",
+    "SR8"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5619-5624"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteSEQ",
+     "case": [
+      "0x08"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x08"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR8 is read/write at index 08H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5619-5621",
+       "sha": "d1b068c11fb05bf4b490d0965b5cc5e57694cdf8b7e04d410c1ab67413a5e3db"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Loading xxxx0110b, for example 06H, unlocks access to the S3 extended sequencer registers SR9-SR18.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5622-5624",
+       "sha": "1fa0b0f502d26cdbf4b9f287f7bd48e202e9ee49fc5849ca99f955e864a05714"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5620",
+       "sha": "657f423eb994ecaaaec3056b5472169f24e16b1454035d08a673bd63a3a0072d"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Writes of any sequencer index above 08H are ignored, and reads of 09H-1AH return 00H, until the value stored here is 06H.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "599",
+       "sha": "b68854ce46de5d547786665dab12afcfdd40f6f1e5183c8f832dfb570e397027"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "637-639",
+       "sha": "66b46df5868a4a1eeec41defed9f0648044e0d7fa4e09c0fbe9b7b4ec86a6c35"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Only 06H unlocks: other xxxx0110b values such as 16H are stored but leave SR9-SR18 locked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "599",
+       "sha": "b68854ce46de5d547786665dab12afcfdd40f6f1e5183c8f832dfb570e397027"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "602",
+       "sha": "6c46107546c9a85fc2acc0d84110763b3a19ff4a6079a57eb0fce2fa52490357"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "600",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "642-643",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x10",
+   "name": "Memory PLL N and R",
+   "aliases": [
+    "SR10"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5730-5742"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteSEQ",
+     "case": [
+      "0x10"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR10 is read/write at index 10H; with SR11 it gives an MCLK of 45 MHz by default.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5730-5735",
+       "sha": "09272762c9854992b6060b73d7b8138c951ac548bf4f8803cbe011ed80343b3c"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 4-0 are the PLL N divider (1-31) and bits 6-5 the PLL R value (1, 2, 4 or 8) scaling the MCLK PLL output.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5736-5741",
+       "sha": "4ef4823225cbe7e60fd987bdef670197e6d2548d4de3dfd78452591df0656c1e"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5742",
+       "sha": "d31f282a1279d22059f5f743e9e911026fd4da5083fc820e76bd42dee50582f2"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5731",
+       "sha": "9cbeb4e43c4576b0f35b4657aaecccb96b3f0def3751bd897293809fcc668def"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write stores bits 4-0 as N and bits 7-5 as R, so the reserved bit 7 also scales the clock.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "606-607",
+       "sha": "c9636e179275b30bf2ed5eead045b4950b4f8531428d7d245e6b9ac8028cf2c4"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "600",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "644-645",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "599",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "637-639",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    }
+   ]
+  },
+  {
+   "key": "0x11",
+   "name": "Memory PLL M divider",
+   "aliases": [
+    "SR11"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5743-5756"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteSEQ",
+     "case": [
+      "0x11"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x11"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR11 is read/write at index 11H; with SR10 it gives an MCLK of 45 MHz by default.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5743-5752",
+       "sha": "074cdb2125ef249cc7b46c24bb7c50738422397b5154a49df0d22e85411f600b"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 6-0 are the PLL M divider (1-127) in the MCLK feedback loop.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5753-5755",
+       "sha": "deefb8fc38888caf4e18217b1025c49721b2f5352b4eb85989578d76887fb0b0"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5756",
+       "sha": "d31f282a1279d22059f5f743e9e911026fd4da5083fc820e76bd42dee50582f2"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5744",
+       "sha": "af403ec20ac5ff077c31703e33c5c187dd795440a1b32a94a771b5cf7a6a52f3"
+      }
+     ],
+     "variant": "Trio64"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "600",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "610",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "646-647",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "599",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "637-639",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    }
+   ]
+  },
+  {
+   "key": "0x12",
+   "name": "Video PLL N and R",
+   "aliases": [
+    "SR12"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5759-5774"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteSEQ",
+     "case": [
+      "0x12"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x12"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR12 is read/write at index 12H; with SR13 it gives a DCLK of 25.175 MHz by default.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5759-5765",
+       "sha": "86757ff4c958dd40320667b6244a8a4a798a27f276a7e988ac422e6b11ea47f2"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "A new value loads when bit 1 or bit 5 of SR15 is set and bits 3-2 of 3C2H are 11b.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5766-5767",
+       "sha": "54f9c900330b7f6fea04b5ea46b6cfd9c08c19e95d718701f8d837bda6779f9b"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 4-0 are the N divider and bits 6-5 the R value for the DCLK PLL.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5768-5773",
+       "sha": "7ee2ab155d90ac71a98a017eebc0b4fbaa0fa226f78a049d1d71bfc785960c09"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5774",
+       "sha": "d31f282a1279d22059f5f743e9e911026fd4da5083fc820e76bd42dee50582f2"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5760",
+       "sha": "f7a837cac228497eb6b3b265b1af5752571db944c221609bf6f75d9e8e2b3fbf"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write stores bits 4-0 as N and bits 7-5 as R, so the reserved bit 7 also scales the clock.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "614-615",
+       "sha": "f16476c25d029b652ec4b31a133379a0b3aeb4c6519c5c00258b141f2775adc8"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The emulator's own clock setter also writes the N and R values when a VGA mode asks for a frequency.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "820-826",
+       "sha": "ac4473610ccf399a572f7290c5594c3070987418b181bfb1533899b642890785"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "795",
+       "sha": "2359d5cb5416fd62ce0302040796c161e25496e8b3ea61d5c69c6eaec4266d77"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "702",
+       "sha": "51ecc37af56ca74074a2ca2c2363931283d211bdbef7a2adb381f79792739587"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga.cpp",
+       "lines": "392-395",
+       "sha": "698abedfdc4b879d0afc0310d409990817a0e09b2b588c9253a6a1222b55696a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10_modes.cpp",
+       "lines": "2043-2053",
+       "sha": "ab8f76e0a228870fe252e8ffd6317f35c804548aa0276daf81c7182dd8d831a4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "600",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "648-649",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "599",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "637-639",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    }
+   ]
+  },
+  {
+   "key": "0x13",
+   "name": "Video PLL M divider",
+   "aliases": [
+    "SR13"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5775-5791"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteSEQ",
+     "case": [
+      "0x13"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x13"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR13 is read/write at index 13H; with SR12 it gives a DCLK of 25.175 MHz by default.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5775-5783",
+       "sha": "61ede17d63fc5b571dc799fc7744ec2ca5bb45f3e4486c6d02fe2442f53d9490"
+      },
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5784-5787",
+       "sha": "16606c569819a7c3210c4e311c26c2a071543e67a9da06e690e15278adc1095e"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 6-0 are the PLL M divider (1-127) in the DCLK feedback loop.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5788-5790",
+       "sha": "721ea8d257e4ba8f1093b8d842d4a85d9fbf3b809c1c95495c6a88763a3e9bbb"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5791",
+       "sha": "d31f282a1279d22059f5f743e9e911026fd4da5083fc820e76bd42dee50582f2"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5776",
+       "sha": "db757e5571a2f50e604259e018ae0733ea98fc41aa1cbe7d7391fdbdf46ce4b1"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The emulator's own clock setter also writes the M value when a VGA mode asks for a frequency.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "822-826",
+       "sha": "65d484e901c970bdf0eda0f850db566a77cb6372902a460feb505f75c769e133"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "795",
+       "sha": "2359d5cb5416fd62ce0302040796c161e25496e8b3ea61d5c69c6eaec4266d77"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "702",
+       "sha": "51ecc37af56ca74074a2ca2c2363931283d211bdbef7a2adb381f79792739587"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga.cpp",
+       "lines": "392-395",
+       "sha": "698abedfdc4b879d0afc0310d409990817a0e09b2b588c9253a6a1222b55696a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10_modes.cpp",
+       "lines": "2043-2053",
+       "sha": "ab8f76e0a228870fe252e8ffd6317f35c804548aa0276daf81c7182dd8d831a4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "600",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "618",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "650-651",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "599",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "637-639",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    }
+   ]
+  },
+  {
+   "key": "0x15",
+   "name": "CLKSYN control 2",
+   "aliases": [
+    "SR15"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5840-5895"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_WriteSEQ",
+     "case": [
+      "0x15"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x15"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR15 is read/write at index 15H with power-on default 00H.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5840-5848",
+       "sha": "85c4bb0f4224086ec71ab1c05aa50ee8f542fd5911ecc148d8cf37c43a69d11b"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 0, which loads the new MCLK frequency and should then be cleared, or bit 5 for an immediate load.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5849-5855",
+       "sha": "b927dd344e390aee2a13eaa197d10d4cb4e3b6d28e0a5e8276a2ae0aeaab0f30"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 1, which loads the new DCLK frequency, with bits 3-2 of 3C2H also at 11b.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5856-5863",
+       "sha": "a7f743c23a47d61a68ecab2ee3effd06dbd66339bdab0af0d00b19944171af98"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 2, which outputs the internally generated MCLK on pin 147 for testing.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5864-5867",
+       "sha": "d77f226bb077a6504f5a5511869ce517714696815c80e5566b2ea9abc289a124"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 3, which makes the VCLK direction follow the EVCLK signal.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5868-5870",
+       "sha": "225d00055eff1032e5224250db4187c91b820d317ac4733536477f4fb21b7ba9"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 4, which divides DCLK by 2; either it or bit 6 must be set for clock-doubled RAMDAC operation.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5873-5877",
+       "sha": "05a06f106430555cbbbab7c847ecdda09676e8d0458b431b7b12365005ff2e13"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 5, which loads the MCLK and DCLK PLL values immediately; the register must never be left set to 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5878-5884",
+       "sha": "ce17efe2cd04b93682986330bed69cf7a56a91e46ade69407546077661e1af62"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 6, which inverts DCLK; either it or bit 4 must be set for clock-doubled RAMDAC operation.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5885-5889",
+       "sha": "d7f34fd635376021e6aa9cfe6180571346f2e469ce75ef6bbedd07ad42f3fe99"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores bit 7, which enables two-cycle memory writes.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5890-5895",
+       "sha": "bee1a9af02f1b951c971910bee1d966e5c5611e4ced527a65791c09c6af53a69"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "10",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is readable.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5841",
+       "sha": "6f1522ee0bffc7d5babc41f33e1a0770737a1e4fd0ce02b2d884acb396c1133d"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write also restarts the screen resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "620-623",
+       "sha": "7394b3fbc4d22a057d62e069abff3664985c228ccac0ba45c334a3261d47ad23"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "600",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "621",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "652-653",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5871-5872",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "599",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "637-639",
+     "as": "preamble",
+     "owner": "vga_s3:register:0x08"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "CLKSYN test low",
+   "aliases": [
+    "SR17"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:S3-Trio64.raw.txt",
+     "lines": "5904-5909"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "624-626"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "function": "SVGA_S3_ReadSEQ",
+     "case": [
+      "0x17"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "SR17 is read-only at index 17H, default 00H, and reserved for S3 testing of the clock synthesizer.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5904-5909",
+       "sha": "3202e703eaabf2fed3568dcacea4125ab0a9874f0df61dbc1657faf1cfe8856e"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write has no effect.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-Trio64.raw.txt",
+       "lines": "5905",
+       "sha": "b87618db4da7697dbca6ea8ced9aa97b734fdb3759d45540b97d7630b6f72236"
+      }
+     ],
+     "variant": "Trio64"
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Once SR8 holds 06H, a read returns 7BH, C0H, 00H and DAH in turn.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "631-632",
+       "sha": "64a5930d16a300d413858a69e0d94dff65c730a6c938a30fea833d6646ecef2c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "637-639",
+       "sha": "66b46df5868a4a1eeec41defed9f0648044e0d7fa4e09c0fbe9b7b4ec86a6c35"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+       "lines": "654-659",
+       "sha": "5e0d5997a834c92212fca65e5bfa07be37cea9ccd92e6e7181bb457f7a004e50"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "641",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_s3.cpp",
+     "lines": "624-626",
+     "as": "agrees",
+     "row": "2",
+     "nothing": true
+    }
+   ]
+  }
+ ]
+}

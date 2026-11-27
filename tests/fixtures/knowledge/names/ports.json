@@ -1,51 +1,130 @@
 {
-  "format": "scry-knowledge/1",
-  "dictionary": "ports",
-  "kind": "port",
-  "scope": "ibm-pc",
-  "covers": "FIXTURE of the namer's tests: three ports, one told apart by direction",
-  "complete_against": "dosbox-x:src/hardware/vga_dac.cpp IO_Register*",
-  "entries": [
+ "format": "scry-knowledge/2",
+ "dictionary": "names-ports",
+ "title": "The ports a namer test builds on",
+ "kind": "port",
+ "scope": "ibm-pc",
+ "covers": "FIXTURE of a test: the VGA DAC's index by direction and the keyboard's data port",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0x3C8",
+   "access": "write",
+   "name": "dac write index",
+   "regions": [
     {
-      "key": "0x3C8",
-      "name": "dac write index",
-      "description": "Selects the palette entry the next data writes reach.",
-      "behaviour": "A write selects an entry.",
-      "access": "write",
-      "sources": [
-        {
-          "role": "emulator",
-          "ref": "dosbox-x:src/hardware/vga_dac.cpp VGA_SetupDAC 0x3c8",
-          "cites": "\t\tIO_RegisterWriteHandler(0x3c8,write_p3c8,IO_MB);"
-        }
-      ]
-    },
-    {
-      "key": "0x3C8",
-      "name": "dac read index",
-      "description": "Gives the palette entry the next data reads reach.",
-      "behaviour": "A read gives the entry.",
-      "access": "read",
-      "sources": [
-        {
-          "role": "emulator",
-          "ref": "dosbox-x:src/hardware/vga_dac.cpp VGA_SetupDAC 0x3c8",
-          "cites": "\t\tIO_RegisterReadHandler(0x3c8,read_p3c8,IO_MB);"
-        }
-      ]
-    },
-    {
-      "key": "0x60",
-      "name": "keyboard data",
-      "description": "The keyboard controller's data port.",
-      "behaviour": "A read gives the last scancode.",
-      "sources": [
-        {
-          "role": "emulator",
-          "ref": "dosbox-x:src/hardware/keyboard.cpp KEYBOARD_Init 0x60",
-          "cites": "\t\tIO_RegisterReadHandler(0x60,read_p60,IO_MB);"
-        }
-      ]
+     "ref": "dosbox-x:src/hardware/vga-dac.cpp",
+     "function": "write_p3c8"
     }
-  ]
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The DAC index at hex 03C8 selects the palette entry the next data write reaches.",
+     "quotes": [
+      {
+       "ref": "datasheet:names-raw.txt",
+       "lines": "1-2",
+       "sha": "56f9873ac0bb331771d948087268b8f10dbf9dafac4897111b29ec8d82b7d2b6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "VGA_SetupDAC registers write_p3c8 on port 0x3c8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga-dac.cpp",
+       "lines": "4",
+       "sha": "1fe2b1ba1b18b078548895b6116163150db437970e90dcf7a09933838cbf652c"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3C8",
+   "access": "read",
+   "name": "dac read index",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga-dac.cpp",
+     "function": "read_p3c8"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The DAC index at hex 03C8 gives the palette entry the next data read reaches.",
+     "quotes": [
+      {
+       "ref": "datasheet:names-raw.txt",
+       "lines": "3",
+       "sha": "157a466ed554650583051ec8685bd222aa70c6d6e2a4f3dd2654ccb1a417fc91"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "VGA_SetupDAC registers read_p3c8 on port 0x3c8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga-dac.cpp",
+       "lines": "5",
+       "sha": "6e5de324d12a779c123b0e60603669f523af988d900ae73a78b4859bcb4df0ea"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x60",
+   "name": "keyboard data",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_Init"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The keyboard controller's data port is at hex 60.",
+     "quotes": [
+      {
+       "ref": "datasheet:names-raw.txt",
+       "lines": "4",
+       "sha": "640536fc956c64ee13b2de2e7722f61307bcbe2e653ac0d26ed2565314c28f37"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "KEYBOARD_Init registers read_p60 on port 0x60.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "4",
+       "sha": "db4bbe5d7c4298f0c02cbf15d615af243791f84ae3469227c663176353764c8c"
+      }
+     ]
+    }
+   ]
+  }
+ ]
 }

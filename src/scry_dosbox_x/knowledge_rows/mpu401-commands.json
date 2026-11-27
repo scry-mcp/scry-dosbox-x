@@ -1,0 +1,1924 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "mpu401-commands",
+ "title": "The MPU-401 command port's command set",
+ "kind": "command",
+ "scope": "mpu401",
+ "covers": "the commands a host writes to the command port of a Roland MPU-401 on the IBM PC, and what DOSBox-X does with each",
+ "source": "official",
+ "documents": [
+  {
+   "name": "MPU401-TRM.raw.txt",
+   "variant": "mpu401"
+  }
+ ],
+ "official": {
+  "MPU401-TRM.raw.txt": [
+   "1070-1073",
+   "552-563",
+   "695-735",
+   "737-749",
+   "812-824",
+   "990",
+   "991-1002",
+   "1035",
+   "1036-1038",
+   "1074-1075",
+   "1076",
+   "1077-1079",
+   "1080-1083",
+   "1084-1089",
+   "1091-1093",
+   "1094-1103",
+   "1107-1122",
+   "1127-1136",
+   "1137-1146",
+   "1159-1163",
+   "1174-1185",
+   "1191-1196",
+   "1197-1201",
+   "1208",
+   "1230-1246",
+   "1247-1254",
+   "1261-1264",
+   "1282-1285",
+   "1290-1295",
+   "1320-1333",
+   "963",
+   "964",
+   "1020",
+   "1021"
+  ]
+ },
+ "closed": [
+  {
+   "ref": "datasheet:MPU401-TRM.raw.txt",
+   "lines": "1070-1073",
+   "as": "see-also"
+  }
+ ],
+ "engine": [
+  "MIDI_RawOutByte",
+  "QueueByte",
+  "ClrQueue",
+  "MPU401_Reset",
+  "MPU401_Event",
+  "MPU401_ResetDone",
+  "PIC_AddEvent",
+  "PIC_RemoveEvents",
+  "PIC_ActivateIRQ",
+  "PIC_DeActivateIRQ"
+ ],
+ "entries": [
+  {
+   "key": "0x00..0x2F",
+   "name": "Mode commands",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "552-563"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "695-735"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "737-749"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "146-149"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "151"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "152-170"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "A mode command $00-$2B is 00aabbcc: bits 4-5, 2-3 and 0-1 select recording, playback and a MIDI real time message, which may combine.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "552-563",
+       "sha": "7115625641aa5e250f66aed04f6133812a48ec2a408844d70306e1839ed034a2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The table gives each mode command its MIDI, play and record action, and marks $00, $0C-$0F, $1C-$1F and $2C-$2F Do Not Use.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "695-706",
+       "sha": "887125e24cafd559869ee03c04c12afa5d23e212f9390823ff5fc217ac808d97"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "707-718",
+       "sha": "6340e823bc73afd412d9741f875a855fc1f8b5f79fb13ddbf6a7063c0e3151c0"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "719-730",
+       "sha": "599f6124ec2ae03b0cce5fa66b73f719d448063a96ed28cee288d2183fd0392b"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "731-735",
+       "sha": "ccda2a1092c1e0c7b39deb863e9cb0306e5f3003b50ff46a9e64700b4ca727fb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Codes marked with a star are the most commonly used; others are usually not used alone.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "737-742",
+       "sha": "5bf9f0da67d9a64f0f352da20ca774cd2aa93132ca35cf74d04814f79dac7fec"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing a mode command performs the MIDI, play and record action the table gives for its value.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "695-706",
+       "sha": "887125e24cafd559869ee03c04c12afa5d23e212f9390823ff5fc217ac808d97"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "707-718",
+       "sha": "6340e823bc73afd412d9741f875a855fc1f8b5f79fb13ddbf6a7063c0e3151c0"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "A command that leaves RECORD in stand-by turns RECORD on once a MIDI start or continue sets the timing condition.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "743-749",
+       "sha": "6fa6069d6629fcaf4171c4e464cf9da31fb951eb89d0607b3c64b58522f9017a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The MIDI and play halves are carried out, and a command with bit 5 set adds an error log line.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "146-149",
+       "sha": "a6348b8c699238506d865ae2c5ea867f8c71f77c878af77e7ec94ea9e3631528"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "151",
+       "sha": "bde8b1af68e6479a3a685a0ece372bb73c7ea093b7813ddb4dad6791f215b104"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "152-161",
+       "sha": "e5bdecbdbf066ab14f91e4cecd4f06d5dbc20a1f55e62188bbe379783b4ce649"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "162-170",
+       "sha": "bd53a17d000657d72fd722bed48c56093e9bd3c0047a74ddec5d449258de7df5"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "146-149",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "151",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "152-161",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "162-170",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3F",
+   "name": "UART mode",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "812-824"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "135"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "279-282"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "329"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $3F command sets a simple UART mode in which the MPU-401 no longer recognizes any command except SYSTEM RESET ($FF), and all functions, timers and tables are disabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "813-816",
+       "sha": "c643ed78d3b6f540bb7e5c1b2393278a9797ff8a0869fc43c543c7e183e41d89"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "UART mode makes the MPU-401 act as a simple UART, so that the MIDI bus can be accessed directly by the HOST.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "816-821",
+       "sha": "26e7efd8dcff4512cbdab68d83b16d41df12ae6dce222d51e6faf2a493ecec53"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "To return to normal MPU-401 operation use SYSTEM RESET ($FF); the MPU-401 does not return an ACK in this one case.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "822-824",
+       "sha": "8059a6db6355fa3f8bdc9e66a046c2117c354c21c15d58e3a52cee8c0d3972ce"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $3F switches the MPU-401 into UART mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "816-821",
+       "sha": "26e7efd8dcff4512cbdab68d83b16d41df12ae6dce222d51e6faf2a493ecec53"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "812",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "279-282",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "135",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "329",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x8E",
+   "name": "Conductor off",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "990"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "189-191"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "963"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $8E command is CONDUCTOR OFF.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "990",
+       "sha": "3fec5db5ef61ec6b901e63fc93478d5208fc26dc4984d8b2238885caf8287498"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "963",
+       "sha": "8c0a9df2d7751dbf84a412604a5e0c19051965c9f32ea99a16717545878f15e5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $8E switches CONDUCTOR OFF.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "990",
+       "sha": "3fec5db5ef61ec6b901e63fc93478d5208fc26dc4984d8b2238885caf8287498"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "963",
+       "sha": "8c0a9df2d7751dbf84a412604a5e0c19051965c9f32ea99a16717545878f15e5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "189-191",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x8F",
+   "name": "Conductor on",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "991-1002"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "192-194"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "263-264"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "540-554"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "604-611"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "964"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "560-570"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Writing $8F switches CONDUCTOR ON.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "991",
+       "sha": "eb64c440e49b22a521943a00c8afb82802a90b92540c4dd5cc4094c1bf6ded8c"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "964",
+       "sha": "41175fc09ee2693689549c583b7ab5ab856a844c033c200602658823ce9e483c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "With CONDUCTOR ON, while in PLAY mode, the MPU-401 asks the HOST for conductor data by sending MPU MESSAGE $F9.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "992-1000",
+       "sha": "2b8b529c5e5fc17464fd1da936ead147ecaebf92f13a8ebb55d24bde1d154bfd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "CONDUCTOR ON should only be sent before the CLEAR PLAY COUNTERS command.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1001-1002",
+       "sha": "08adaeea3a0c2e529a096b0b0272b4ecf24a04f60133366fe665990ea77be8f6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "192-194",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "263-264",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "540-548",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "549-554",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "604-611",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "560-570",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x94",
+   "name": "Clock-to-host off",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1035"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "195-199"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1020"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $94 command is CLOCK TO HOST OFF.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1035",
+       "sha": "c21164bc26306d8ed73818d6e837ede0ddde0dee5c2a8a3abbf98a2040529a14"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1020",
+       "sha": "3a31beb192439716b8538db378acc7cc023d4ec3b79093fc12e57f8e9139fd52"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $94 switches CLOCK TO HOST OFF.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1035",
+       "sha": "c21164bc26306d8ed73818d6e837ede0ddde0dee5c2a8a3abbf98a2040529a14"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1020",
+       "sha": "3a31beb192439716b8538db378acc7cc023d4ec3b79093fc12e57f8e9139fd52"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "195-199",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x95",
+   "name": "Clock-to-host on",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1036-1038"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "200-204"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "572-577"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "604-611"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1021"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Writing $95 switches CLOCK TO HOST ON.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1036",
+       "sha": "83c7941d5b5e54061227a3e6c7089ba4d00db574028e40401a883a3ec06b04fc"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1021",
+       "sha": "33dd83b6c8ca688562809e773365a0311abac7701780397fe692a3260f306e33"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "With CLOCK TO HOST ON the MPU-401 sends CLOCK TO HOST ($FD) to the HOST at the rate the $E7 command determines.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1037-1038",
+       "sha": "dd207f5f751b19b1b138004b03f1e67f2207f0af383a700ffe0b43af35c9a2a0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "200-204",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "572-577",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "604-611",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xA0..0xA7",
+   "name": "Request play counter",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1074-1075"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "172-174"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $A0 to $A7 commands request the PLAY COUNTER value of tracks 1 to 8.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1074-1075",
+       "sha": "ea591626211e32e9cea9326a10c5a7606ad8f439762cc6b9c0800924476f758a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $A0 to $A7 requests the PLAY COUNTER value of tracks 1 to 8.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1074-1075",
+       "sha": "ea591626211e32e9cea9326a10c5a7606ad8f439762cc6b9c0800924476f758a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The counter is queued only when the play counter mask $ED selects the track.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "172-174",
+       "sha": "54c35685e1758b57430afc4ff0f9c1d5f8662f647a97b951e633949785bffd5b"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "172-174",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xAB",
+   "name": "Recording counter",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1076"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "232-235"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $AB command requests the RECORD COUNTER and then clears it.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1076",
+       "sha": "e0935576031e0747595e26d81d2649486ae0c59eb1addb0ff975251ea5a546e8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $AB requests the RECORD COUNTER and then clears it.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1076",
+       "sha": "e0935576031e0747595e26d81d2649486ae0c59eb1addb0ff975251ea5a546e8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command answers the ACK and a zero instead of the counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "232-235",
+       "sha": "e878eacb8bd3b79a61c1e06ffa7b052e664d9f18ca07780446f8acc14a77ab1a"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "232-235",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xAC",
+   "name": "Request version",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1077-1079"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "236-239"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $AC command returns one byte, the VERSION number in BCD; $15 is version 1.5.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1077-1079",
+       "sha": "80fe7c243d393e664ebdc4cdffaaab0520194518866d6f138a853897bbc72148"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $AC makes the MPU-401 send the version byte back to the HOST.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1077-1079",
+       "sha": "80fe7c243d393e664ebdc4cdffaaab0520194518866d6f138a853897bbc72148"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command also queues an ACK (0xFE) before the version byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "236-239",
+       "sha": "fc1852b5839facb0d4c1278f8942c48f4e273382082ec1fe621a96f95f3c0940"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "236-239",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xAD",
+   "name": "Request revision",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1080-1083"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "240-243"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $AD command requests the REVISION: the byte is 1 for 'A', 2 for 'B', and 0 when there is no revision number.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1080-1083",
+       "sha": "d0db9579742b0b82eb8311afb04117dd3dea95bdb1681e3b845a97a4587474fd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $AD makes the MPU-401 send the revision byte back to the HOST.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1080-1083",
+       "sha": "d0db9579742b0b82eb8311afb04117dd3dea95bdb1681e3b845a97a4587474fd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command also queues an ACK (0xFE) before the revision byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "240-243",
+       "sha": "0a968d4b54d459eacd6d5d202dbc7f2e5f1662d9b92fea522b2c14f7880c269e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "240-243",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xAF",
+   "name": "Request tempo",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1084-1089"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "244-247"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $AF command requests the TEMPO in beats per minute; in MIDI or tape sync modes it gives the tempo set from the external source.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1084-1089",
+       "sha": "6609b0452b5bbad1a10d951e8bc0c471d6a825824afead0bf037157dce8a41fd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $AF makes the MPU-401 send the current tempo back to the HOST.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1084-1085",
+       "sha": "529ccf9243461390b78d82cb8a3d8a1074c094ee0fdfbabd4806129d5926d06f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command also queues an ACK (0xFE) before the tempo byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "244-247",
+       "sha": "8e6ce0af3c7b11cd1bdf26ae086b3effb3675832e8b8f1bfbd198c8659fdaf8d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "244-247",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xB1",
+   "name": "Reset relative tempo",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1091-1093"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "248-250"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $B1 command resets the RELATIVE TEMPO to the ratio 1/1, the same as the $E1 $40 command.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1091-1093",
+       "sha": "e295b0f99b41c94b7d2e1c63362f231212921d75d142d172d3c9a06da7ac9ead"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $B1 sets the relative tempo back to the ratio 1/1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1091-1093",
+       "sha": "e295b0f99b41c94b7d2e1c63362f231212921d75d142d172d3c9a06da7ac9ead"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "248-250",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xB8",
+   "name": "Clear play counters",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1094-1103"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "251-268"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $B8 command clears the PLAY counters of all tracks and the CONDUCTOR and clears the PLAY MAP, so no message goes out before the first START PLAY.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1094-1100",
+       "sha": "9ce2fa5e1d6da9616be4acb0f2cc3b8dce3d745cb0ef6003130b660dfceb473e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The command is not used to continue from the last stop, which remembers the old PLAY counter values.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1101-1103",
+       "sha": "838d81343304956c637cbac1b5831a1c6ba8c0d7e421fd69592d6ccfbfa9527b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $B8 clears the play counters of all tracks and the CONDUCTOR, and the PLAY MAP.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1094-1100",
+       "sha": "9ce2fa5e1d6da9616be4acb0f2cc3b8dce3d745cb0ef6003130b660dfceb473e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "It also sends an all-notes-off on channels 0xB0 to 0xBE.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "253-257",
+       "sha": "7289209ef717e0a3653aa64235a74324ff86339104ade8a215c4fb4f43cbb5be"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "251-260",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "261-268",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0xB9",
+   "name": "Clear play map",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1107-1122"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "251-268"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $B9 command sends NOTE OFF messages to MIDI OUT from the CHANNEL REFERENCE TABLES, clears their NOTE ONs, the PLAY TABLES and the PROGRAM CHANGE TABLE.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1107-1112",
+       "sha": "b637fbd2d0cf1afbd18f042cac71fb1289961b58aea2d630768460e750f0df56"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1121-1122",
+       "sha": "2a76cc124fb498ffd8d22fcbca1f53c8a0ca5fe40e8f6ea820ae36a54dfbf799"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The command is needed when the HOST sends data with the WANT TO SEND DATA commands while PLAY is stopped or on inactive tracks.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1113-1120",
+       "sha": "cc0c6d0553fe23483f08f7fd0d06d23c93197348d75aa8b89367e3cf1ced8881"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $B9 sends the NOTE OFF messages of the CHANNEL REFERENCE TABLES and clears the PLAY TABLES and the PROGRAM CHANGE TABLE.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1107-1112",
+       "sha": "b637fbd2d0cf1afbd18f042cac71fb1289961b58aea2d630768460e750f0df56"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1121-1122",
+       "sha": "2a76cc124fb498ffd8d22fcbca1f53c8a0ca5fe40e8f6ea820ae36a54dfbf799"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "An all-notes-off goes to channels 0xB0 to 0xBE, the play counters are zeroed and the play buffers cleared; this case names no program change table.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "251-260",
+       "sha": "96fdb33067e3b8845cccf3fbc66c0fcefde330c2c1d66cf45bf19e715ddf5f99"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "261-268",
+       "sha": "ee2d25c6632cd2718d71c460b40cb3f140e3d1c324dff6d1df46c9cafe0729d4"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "251-260",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "261-268",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC2..0xC8",
+   "name": "Set timebase",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1127-1136"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "205-225"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $C2 to $C8 commands select the internal TIMEBASE, the number of clock pulses the counters use per beat, one at a time.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1127-1130",
+       "sha": "1c1c76c9c1a59726d1442e4231a35d3b3419f978dacf33b432b906a9b479dfd3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The TIMEBASE is 48 for $C2, 72 for $C3, 96 for $C4, 120 for $C5, 144 for $C6, 168 for $C7 and 192 for $C8.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1131-1133",
+       "sha": "25d4e23b46af7ead7ec979884e33af56a922d6351e7be3b267e1e2e83f2cc2e8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "A TIMEBASE of at least 96 is usually recommended for real time sequencer applications.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1134-1136",
+       "sha": "01f2b6475a205a4caa4bfa882fe927da59fbf82ea00615cacab31a1a542c3a4b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing one of these commands sets the internal TIMEBASE to the value the table gives for it.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1131-1133",
+       "sha": "25d4e23b46af7ead7ec979884e33af56a922d6351e7be3b267e1e2e83f2cc2e8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "205-211",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "212-217",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "218-225",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0xD0..0xD7",
+   "name": "Want to send data",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1137-1146"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1159-1163"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "175-181"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "374-403"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $D0 to $D7 commands take the least significant three bits as the track number, 1 to 8.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1142-1146",
+       "sha": "dddaa8da924c841dd9eadbceb6cc38b5601da9798cac035a9babde094d9ef992"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "When sent these commands the MPU-401 expects a MIDI VOICE MESSAGE without a leading timing byte, of the number of bytes MIDI defines.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1138-1141",
+       "sha": "a4a4bc698eaa5b3d49e3024c93f93f386b0320ca198cb64f211a9bc7be05415d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The MIDI VOICE MESSAGE which follows must be in standard MIDI format, and MIDI RUNNING STATUS can be used for each track.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1159-1161",
+       "sha": "79aeffa173ad1143f69a176f9bcb41f5f6131a869c4cbebed141bd0055e338ba"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The command must not be used on ACTIVE TRACKS while the MPU-401 is playing.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1162-1163",
+       "sha": "549fcb49ecf98b67641f36be888bae4808be29ae18b0a183b718e375191ac21a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1137",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "175-181",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "374-381",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "382-386",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "387-391",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "392-397",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "398-403",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xDF",
+   "name": "Send system message",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1174-1185"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "184-188"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "404-421"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $DF command lets the HOST transmit a SYSTEM EXCLUSIVE or COMMON message to the MIDI OUT port of the MPU-401; the capture interleaves the columns.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1174-1183",
+       "sha": "6a321415d819fa18d5ba5b7668e897dfefeab8bdc7aa29200914c52a0e5cc3b5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $DF sends the following SYSTEM EXCLUSIVE message, terminated by EOX ($F7) or another MIDI status byte, to MIDI OUT.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1174-1185",
+       "sha": "5a86f58c5c4461eccb1c08561d0ad9ecad35230a6a93d8c45c3e2f30d6b4d7ff"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "184-188",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "404-405",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "406-417",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "418-421",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xE0..0xEF",
+   "name": "Commands with data byte",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1191-1196"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1197-1201"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1208"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1230-1246"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1247-1254"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1261-1264"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1282-1285"
+    },
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1290-1295"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "227-230"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "333-338"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "339-343"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "344-347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "348-365"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "366-371"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The $E0 to $EF commands expect one byte of DATA from the HOST, which the HOST must always send.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1191-1196",
+       "sha": "1377b32249629276ef741c51ff3cf028e6b282d853aa114848548bd90eb8f630"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1290-1291",
+       "sha": "35bece6d8f0aed8afea51620c086e187f82cff1780250c395d4813d75cf9bc7b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "$E0 sets the TEMPO of the internal clock in beats per minute.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1194-1196",
+       "sha": "6c60c181dd0e19dbffe51d4db58b1c5e339ab7ead22e56276a838afa6c56d9e4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "$E1 changes the tempo temporarily; $40 gives the ratio 1/1, and $E2 sets the rate of the change.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1197-1201",
+       "sha": "67ad73915e766d99014a7274543230ccbe6b2b0f5135b9112fee3f3c81b8a8de"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1208",
+       "sha": "8fda1a263357a7de32b36f0a9b30e68ba4ba52b93e03c9b6a730906e6dc9d4e4"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1230-1231",
+       "sha": "ac5c4cc9054757f9520b973867956b0006d171111d3e033ea2679b287a0036c1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "$E4 sets the number of MIDI clocks per metronome beep; 24 makes the beep once every 1/4 note.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1232-1238",
+       "sha": "12e3629a0f35c42661d0dd873e5b0c9862911d2683fe574e7d36ae796a4de509"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "$E6 sets the number of beats per measure from the MIDI clocks per metronome beep; a beep at 1/4 notes and a value of 4 make a four beat measure.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1238-1246",
+       "sha": "274b656c9fb5263987c9dec49696e9b0ed84034e5d63ca0faf84265529483b7f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "$E7 sets the number of internal clocks per CLOCK TO HOST: $FD goes out every N internal clocks, N being the byte divided by four.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1247-1252",
+       "sha": "e3945ee66e3aa35957b6e0d8be6d5b2aa21b172df910c458672cde30860a8db8"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The default of $E7 is 240, which is 60 internal clocks per $FD, or twice per beat.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1247-1254",
+       "sha": "5674bc28349aa3296e78db668d8e89cf61746d0db5613ee74869fcc6694ef721"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "$EC sets the active tracks: bits 0 to 7 of the byte set tracks 1 to 8 to PLAY.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1261-1264",
+       "sha": "19f759982da3a988c413d0beba6ed78cc81a80d6d4d428259de25c5e08c9e908"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "$ED sets the tracks whose play counter values are sent when RECORD ON is sent while playing.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1282-1285",
+       "sha": "e310718a0eb6c9c120285e2155ce62108f31766f08269c1f4833d4e4692eaac9"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "$EE and $EF are bit-mapped bytes that turn the MIDI channels' voice messages on or off, 1 to 8 and 9 to 16.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1290-1295",
+       "sha": "1f569096ca156c50fe334a74ef63a997ade64febf0a318bdc411d0c3c767b10f"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing one of these commands takes the byte that follows as the value of the setting the command names.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1192-1193",
+       "sha": "5b61c0ff05af708c37c3bba09f4712faa178836a5818a6118d31242e1b966405"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1195-1196",
+       "sha": "8e7c845c45ec0d19153c95fb77d408ff1a418b46a6062327588b48094c84f0ea"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "$E0 stores the byte clamped to 4-250, and $E7 stores it shifted right by two.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "333-338",
+       "sha": "c1a65037642655e65764b7e8e1b430157532fdfb3ccc3b1d04124ba92f34c387"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "344-347",
+       "sha": "94da53fcdb8f42677f4e8ec1ff3c24dbb83bdca0be3e3932caf3c6ad38edef48"
+      }
+     ],
+     "vs": "differs",
+     "row": "11"
+    },
+    {
+     "n": "13",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "$E1, $EC, $ED, $EE and $EF store the byte as it comes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "339-343",
+       "sha": "3bae46ffb7966e7f2da7cb6749259fccbadbcc08232affc328ac27058dc8f914"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "348-359",
+       "sha": "a877897794e0ca06b1e110f38a817dcc8cf180612fae75f4c9c3285e2f2109b4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "360-365",
+       "sha": "98026c93c61756a2089be46b6409bf55984af29edb5956b06e052e451ac8ba32"
+      }
+     ],
+     "vs": "differs",
+     "row": "11"
+    },
+    {
+     "n": "14",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "$E2, $E4 and $E6 clear the pending command byte and set nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "366-371",
+       "sha": "c7ebd7c2388d1b20e47e673b5422a5ec25b69bb02af2e1f2f2bf7e410d2cc38c"
+      }
+     ],
+     "vs": "differs",
+     "row": "11"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "227-230",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "333-338",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "344-347",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "339-343",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "348-365",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "366-371",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xFF",
+   "name": "Reset",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:MPU401-TRM.raw.txt",
+     "lines": "1320-1333"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "269-278"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "288"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "RESET returns the MPU-401 to its POWER-UP condition, clearing all switches and values and resetting all buffers; the capture splits the sentence across two columns.",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1320-1326",
+       "sha": "2d19fbcae375c6a20f0c1365b449d0e49ad36687fe1c9292f750b768a8fb3422"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1327-1333",
+       "sha": "da0a9eb9760e4604bbb3ef19b905c70dd76f8aac3ebf8dc408722e116cbb6aa3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing $FF resets the MPU-401 and it returns an ACK ($FE).",
+     "quotes": [
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1321-1324",
+       "sha": "767f519016a6fac27f3ab8e4f71ef39f964be5cbaac14fe5b474084456d85f99"
+      },
+      {
+       "ref": "datasheet:MPU401-TRM.raw.txt",
+       "lines": "1329-1333",
+       "sha": "92e39fe52e3c758d689bc239fa5d5e2642571c71a43ef8e99636149e1aaaee56"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The reset is carried out, and in UART mode no ACK is queued: that path returns before it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "269-278",
+       "sha": "6f08409be94e4d654ce9185ad05e38b259b67c6e3db682ecff8122fff5f1e3d2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/mpu401.cpp",
+       "lines": "288",
+       "sha": "233325b7eaa703784d269f25239a9582180795bb6605b40ad65513e69832c7cc"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "269-278",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mpu401.cpp",
+     "lines": "288",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}
