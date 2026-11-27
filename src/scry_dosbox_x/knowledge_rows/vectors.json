@@ -1525,7 +1525,6 @@
    "name": "irq7",
    "aliases": [
     "IRQ7",
-    "PRINTER",
     "INT 0Fh"
    ],
    "regions": [
@@ -2076,9 +2075,8 @@
   },
   {
    "key": "0x16",
-   "name": "keyboard",
+   "name": "keyboard get keystroke",
    "aliases": [
-    "KEYBOARD",
     "INT 16h"
    ],
    "regions": [
@@ -2112,7 +2110,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "Vector 16h is the BIOS keyboard call.",
+     "text": "Vector 16h is the keyboard get keystroke call.",
      "quotes": [
       {
        "ref": "rbil61:OVERVIEW.LST",
@@ -4040,7 +4038,6 @@
    "key": "0x2B",
    "name": "reserved",
    "aliases": [
-    "RESERVED",
     "INT 2Bh"
    ],
    "regions": [

@@ -61628,9 +61628,9 @@
   },
   "ibm-pc:vector:0x0F": {
    "doc": {
-    "seal": "98af90327bed400594848e5e9e55b49ed316409854c779169fbcebf33abfa9dd",
-    "by": "slice dx-d2-01 reader",
-    "writer": "slice dx-d2-01 writer",
+    "seal": "89b4071a64a9bab8c1ecc45a226ebc406c2c7cc8fe4ff5322dd8ed68a15edaf9",
+    "by": "reader a2acc69d7a771a5dd",
+    "writer": "p0.4b writer",
     "rows": {
      "1": {
       "digest": "a3e327daee5ceb928bfeb17ac8efe2fb90af81d45cd017b80c3d5f7b8eede4fc",
@@ -61816,13 +61816,13 @@
   },
   "ibm-pc:vector:0x16": {
    "doc": {
-    "seal": "9c1525752c2f3c7b288f184e46b82b6d6a14abb173e823d36f36d8804d905208",
-    "by": "slice dx-d2-02 reader",
-    "writer": "slice dx-d2-02 writer",
+    "seal": "b7315ca067e42075f65cd3dace127ff6d1a9a58361353d38d66ee89863e9cf14",
+    "by": "reader a2acc69d7a771a5dd",
+    "writer": "p0.4b writer",
     "rows": {
      "1": {
-      "digest": "22b89da1f3898a5c029be95872f9d6890565e33d0754bcb4db7a3f27ec538d7e",
-      "by": "slice dx-d2-02 reader"
+      "digest": "03b8d0f7f901d1b03405c17b624a7f92473d527f3991ad38bf439623dae55649",
+      "by": "reader a2acc69d7a771a5dd"
      },
      "2": {
       "digest": "a6e24e6dd5e12bcdcb0cfcbfce626d99c63589cf27465e36dfed900854fdb188",
@@ -62431,9 +62431,9 @@
   },
   "ibm-pc:vector:0x2B": {
    "doc": {
-    "seal": "481c6efe754e479d5fa3d6c41ffe89ec62b5446d15c201679896e4748e5916aa",
-    "by": "slice dx-d2-02 reader",
-    "writer": "slice dx-d2-02 writer",
+    "seal": "cbbc9fe43a1240dee0a0d4f72b03553979ed6a825a44a4e45696e8e1a77892a0",
+    "by": "reader a2acc69d7a771a5dd",
+    "writer": "p0.4b writer",
     "rows": {
      "1": {
       "digest": "e6ab440bfbefd56b1d5202129fabb45f8d63988b9ae335b208bb1c2aff3ea943",
@@ -94962,6 +94962,72 @@
      "9": {
       "digest": "a6ec5400b2c6164e614ae4c9b84454146643b8e647b332791d08af3eb2c487e4",
       "by": "reader of KE2b"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:vector:0x16",
+   "part": "doc",
+   "rows": [],
+   "by": "p0.4b writer",
+   "why": "alias/name collide with a neighbour: 0x16 named keyboard is 0x09's name (rename to BIOS keyboard call per OVERVIEW.LST:29 and INTERRUP.D:278); PRINTER alias of 0x0F is 0x17's name (drop it, OVERVIEW.LST:22 says IRQ7 parallel printer); RESERVED alias of 0x2B is 0x2D's name (drop it, OVERVIEW.LST:50 and INTERRUP.K:640 say RESERVED)",
+   "was": {
+    "seal": "9c1525752c2f3c7b288f184e46b82b6d6a14abb173e823d36f36d8804d905208",
+    "by": "slice dx-d2-02 reader",
+    "writer": "slice dx-d2-02 writer",
+    "rows": {
+     "1": {
+      "digest": "22b89da1f3898a5c029be95872f9d6890565e33d0754bcb4db7a3f27ec538d7e",
+      "by": "slice dx-d2-02 reader"
+     },
+     "2": {
+      "digest": "a6e24e6dd5e12bcdcb0cfcbfce626d99c63589cf27465e36dfed900854fdb188",
+      "by": "slice dx-d2-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:vector:0x0F",
+   "part": "doc",
+   "rows": [],
+   "by": "p0.4b writer",
+   "why": "alias/name collide with a neighbour: 0x16 named keyboard is 0x09's name (rename to BIOS keyboard call per OVERVIEW.LST:29 and INTERRUP.D:278); PRINTER alias of 0x0F is 0x17's name (drop it, OVERVIEW.LST:22 says IRQ7 parallel printer); RESERVED alias of 0x2B is 0x2D's name (drop it, OVERVIEW.LST:50 and INTERRUP.K:640 say RESERVED)",
+   "was": {
+    "seal": "98af90327bed400594848e5e9e55b49ed316409854c779169fbcebf33abfa9dd",
+    "by": "slice dx-d2-01 reader",
+    "writer": "slice dx-d2-01 writer",
+    "rows": {
+     "1": {
+      "digest": "a3e327daee5ceb928bfeb17ac8efe2fb90af81d45cd017b80c3d5f7b8eede4fc",
+      "by": "slice dx-d2-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:vector:0x2B",
+   "part": "doc",
+   "rows": [],
+   "by": "p0.4b writer",
+   "why": "alias/name collide with a neighbour: 0x16 named keyboard is 0x09's name (rename to BIOS keyboard call per OVERVIEW.LST:29 and INTERRUP.D:278); PRINTER alias of 0x0F is 0x17's name (drop it, OVERVIEW.LST:22 says IRQ7 parallel printer); RESERVED alias of 0x2B is 0x2D's name (drop it, OVERVIEW.LST:50 and INTERRUP.K:640 say RESERVED)",
+   "was": {
+    "seal": "481c6efe754e479d5fa3d6c41ffe89ec62b5446d15c201679896e4748e5916aa",
+    "by": "slice dx-d2-02 reader",
+    "writer": "slice dx-d2-02 writer",
+    "rows": {
+     "1": {
+      "digest": "e6ab440bfbefd56b1d5202129fabb45f8d63988b9ae335b208bb1c2aff3ea943",
+      "by": "slice dx-d2-02 reader"
+     },
+     "2": {
+      "digest": "a22607ccaed5d8e2e27917e4e5dd814782ed0070b8b3f095443b4c883af9bd56",
+      "by": "slice dx-d2-02 reader"
+     },
+     "3": {
+      "digest": "82f63a9a843a5725bd26cbc3b3f5e96a1789d8cfea40e8ae3074d9017fa58010",
+      "by": "slice dx-d2-02 reader"
      }
     }
    }
