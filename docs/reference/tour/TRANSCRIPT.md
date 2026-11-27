@@ -108,7 +108,7 @@ Every call of the run with its reply, in order: 78 calls. `<volatile>` stands fo
     "wall_at": "<volatile>"
   },
   "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
-  "knowledge": {"served": 1606, "held_back": 0},
+  "knowledge": {"served": 2244, "held_back": 0},
   "cpu_mode": "real",
   "pc": "F000:0000FFF0",
   "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
@@ -486,6 +486,15 @@ Every call of the run with its reply, in order: 78 calls. `<volatile>` stands fo
     "control": ["CPU"]
   },
   "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
+  "names": [
+    {
+      "field": "vectors[].number",
+      "number": "0x33",
+      "kind": "vector",
+      "name": "mouse driver",
+      "id": "ibm-pc:vector:0x33"
+    }
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -921,7 +930,7 @@ Also attached: image/png.
   ],
   "truncated": false,
   "examined": 668,
-  "served": 1606,
+  "served": 2244,
   "held_back": 0,
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -2968,7 +2977,7 @@ Also attached: image/png.
           "bytes": 2,
           "frames": 2,
           "frame_before": 264,
-          "frame_after": 272,
+          "frame_after": 273,
           "verify": {
             "checked": false,
             "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
@@ -2976,7 +2985,7 @@ Also attached: image/png.
           "session": {"alive": true, "running": true, "altered": true}
         },
         "frame_before": 264,
-        "frame_after": 272
+        "frame_after": 273
       }
     ],
     "steps_completed": 1,
@@ -3041,8 +3050,8 @@ Also attached: image/png.
   },
   "driver_arrived": true,
   "motion": true,
-  "frame_before": 277,
-  "frame_after": 288,
+  "frame_before": 278,
+  "frame_after": 289,
   "verify": {
     "checked": true,
     "seen": true,
@@ -3116,8 +3125,8 @@ Also attached: image/png.
         "posted": 1,
         "bytes": 2,
         "frames": 2,
-        "frame_before": 309,
-        "frame_after": 316,
+        "frame_before": 332,
+        "frame_after": 339,
         "verify": {
           "checked": true,
           "seen": true,
@@ -3131,8 +3140,8 @@ Also attached: image/png.
         },
         "session": {"alive": true, "running": true, "altered": true}
       },
-      "frame_before": 309,
-      "frame_after": 316
+      "frame_before": 332,
+      "frame_after": 339
     },
     {
       "op": "send_keys",
@@ -3145,8 +3154,8 @@ Also attached: image/png.
         "posted": 1,
         "bytes": 2,
         "frames": 2,
-        "frame_before": 316,
-        "frame_after": 326,
+        "frame_before": 339,
+        "frame_after": 350,
         "verify": {
           "checked": true,
           "seen": true,
@@ -3160,8 +3169,8 @@ Also attached: image/png.
         },
         "session": {"alive": true, "running": true, "altered": true}
       },
-      "frame_before": 316,
-      "frame_after": 326
+      "frame_before": 339,
+      "frame_after": 350
     }
   ],
   "steps_completed": 2,
@@ -3404,7 +3413,7 @@ Also attached: image/png.
 
 </details>
 
-**72. `breakpoint_interrupt`**: OK exit: armed as BPINT 21 AH=4C, which the reply names exit
+**72. `breakpoint_interrupt`**: OK exit: armed as BPINT 21 AH=4C, which the reply names
 
 <details><summary>call and reply</summary>
 
@@ -3430,7 +3439,7 @@ Also attached: image/png.
       "field": "given.number",
       "number": "0x21/0x4C",
       "kind": "call",
-      "name": "exit",
+      "name": "terminate with code",
       "id": "ibm-pc:call:0x21/0x4C"
     }
   ],
@@ -3440,7 +3449,7 @@ Also attached: image/png.
 
 </details>
 
-**73. `resume`**: OK leaving: stopped at the game's own exit call, INT 21h with AX 4C00h, which the base names exit
+**73. `resume`**: OK leaving: stopped at the game's own exit call, INT 21h with AX 4C00h, which the base names terminate with code
 
 <details><summary>call and reply</summary>
 
@@ -3502,7 +3511,7 @@ Also attached: image/png.
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "note": "terminate with code (0x4C)",
+    "note": "DOS function calls (0x21); terminate with code (0x4C)",
     "note_live": true,
     "symbol": "main_loop",
     "delta": 30
@@ -3603,7 +3612,8 @@ Also attached: image/png.
     }
   ],
   "line_notes": [
-    {"line": 10, "note": "terminate with code (0x4C)", "live": true}
+    {"line": 8, "note": "video (0x10)"},
+    {"line": 10, "note": "DOS function calls (0x21); terminate with code (0x4C)", "live": true}
   ],
   "names": [
     {"field": "given.ref", "number": "0x00008f0b", "kind": "symbol", "name": "main_loop"}

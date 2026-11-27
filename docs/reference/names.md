@@ -612,7 +612,7 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
   ],
   "truncated": false,
   "examined": 668,
-  "served": 1959,
+  "served": 2244,
   "held_back": 0
 }
 ```
@@ -698,7 +698,7 @@ Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `s
 `held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
 `unconfirmed` lists ids held back.
 
-Scopes: am9517a, chip, disney, fdc, gameblaster, gameport, ibm-pc, ide, imfc, innova, ins8250, kbc8042, lpt, mc146818, mc6845, mpu401, pas, pci, pic8259, pit8253, ps1, saa1099, sblaster, sn76496, tandy, vattr, vcrtc, vga_ati, vga_paradise, vga_s3, vga_tseng, vga_xga, vgfx, vmisc, vother, vseq, wss, ym3812, ymf262, z80.
+Scopes: am9517a, chip, disney, fdc, gameblaster, gameport, ibm-pc, ide, imfc, innova, ins8250, kbc8042, keys, lpt, mc146818, mc6845, mpu401, pas, pci, pic8259, pit8253, ps1, saa1099, sblaster, sn76496, tandy, vattr, vcrtc, vga_ati, vga_paradise, vga_s3, vga_tseng, vga_xga, vgfx, vmisc, vother, vseq, wss, ym3812, ymf262, z80.
 
 Reference: REFERENCE.md, Knowledge base.
 ```
