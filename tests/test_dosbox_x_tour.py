@@ -92,7 +92,8 @@ def test_the_exit_listing_is_the_last_line_and_the_one_the_note_names(
         tour: ModuleType) -> None:
     """The step reads the exit from the listing's end; a note on an earlier `int 0x21`, or an
     `int 0x21` that is not the end, is not the exit this step is about."""
-    note = {"line": 2, "note": "terminate with code (0x4C)", "live": True}
+    note = {"line": 2, "note": "DOS function calls (0x21); terminate with code (0x4C)",
+            "live": True}
     lines = ["mov ax, 0x4c00", "int 0x21", "int 0x21"]
     assert "exit call's line" in tour.exit_listing({"lines": lines, "line_notes": [note]}, None)
     with pytest.raises(StepFailed):

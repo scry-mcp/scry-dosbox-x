@@ -488,7 +488,7 @@ def leaving(reply: Reply, run: Run) -> str:
     got = (reply["verdict"], where["text"], where["symbol"], int(reply["regs"]["EAX"], 16),
            where.get("note"), where.get("note_live"))
     expect(got == ("OTHER_STOP", "int 0x21", "main_loop", 0x4C00,
-                   "terminate with code (0x4C)", True),
+                   "DOS function calls (0x21); terminate with code (0x4C)", True),
            f"stopped as {got}")
     return ("stopped at the game's own exit call, INT 21h with AX 4C00h, which the base "
             "names terminate with code")
@@ -496,9 +496,11 @@ def leaving(reply: Reply, run: Run) -> str:
 
 def exit_listing(reply: Reply, run: Run) -> str:
     last = len(reply["lines"]) - 1
+    notes = {row["line"]: row for row in reply["line_notes"]}
     expect(reply["lines"][last].endswith("int 0x21")
-           and reply["line_notes"] == [{"line": last, "note": "terminate with code (0x4C)",
-                                        "live": True}],
+           and notes.get(last) == {"line": last,
+                                   "note": "DOS function calls (0x21); terminate with code (0x4C)",
+                                   "live": True},
            f"notes {reply.get('line_notes')}")
     return "the exit call's line carries its note, named from the registers of the stop"
 
