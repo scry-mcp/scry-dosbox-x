@@ -9,7 +9,7 @@ from typing import Any
 
 import fold_calls
 import pytest
-from scry_core import media_tools
+from scry_core import media_tools, png, reply_schema, series
 from scry_core import reply_contract as contract
 from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
@@ -84,6 +84,8 @@ def test_every_tool_answers_the_contract_with_no_machine(
     # set here rather than inherited from the previous case
     monkeypatch.setattr(dstate.STATE, "session", None)
     reply = fold_calls.of(server, name)(**_ARGS.get(name, {}))
+    # The reply a tool answers is the shape its own model publishes, context fields included.
+    reply_schema.check(name, reply)
     if name in ("status", "close"):
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply
         return
@@ -97,6 +99,36 @@ def test_every_tool_answers_the_contract_with_no_machine(
                 **dict.fromkeys(media_tools.IMAGE_TOOLS + media_tools.AUDIO_TOOLS,
                                 "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
+
+
+def _frame(lit: set[tuple[int, int]]) -> png.Raster:
+    """A black 3x2 picture with the pixels in `lit` white."""
+    width, height = 3, 2
+    px = bytearray(bytes((0, 0, 0)) * (width * height))
+    for x, y in lit:
+        at = (y * width + x) * 3
+        px[at:at + 3] = bytes((255, 255, 255))
+    return png.Raster(width, height, bytes(px))
+
+
+def _manifest(folder: Path, frames: dict[int, png.Raster]) -> str:
+    """The `scry-series/1` manifest of `frames` in `folder`, as `image_compare` takes it."""
+    folder.mkdir()
+    for n, picture in frames.items():
+        (folder / series.frame_name(n)).write_bytes(png.encode(picture))
+    return str(series.write_manifest(folder, "test", "frame_number", None,
+                                     sorted(frames))["manifest"])
+
+
+def test_a_series_that_cannot_differ_answers_the_reply_model(tmp_path: Path) -> None:
+    """The `control_silent` refusal names the series that never changed, as its model says."""
+    dstate.STATE.session = None
+    a = _manifest(tmp_path / "a", {1: _frame(set()), 2: _frame(set())})
+    b = _manifest(tmp_path / "b", {1: _frame(set()), 2: _frame({(0, 0)})})
+    reply = fold_calls.of(server, "image_compare")(method="series", a=a, b=b)
+    contract.check_refusal("image_compare", reply, "control_silent")
+    assert reply["series"] == "a", reply
+    reply_schema.check("image_compare", reply)
 
 
 class _Running:
@@ -138,6 +170,7 @@ def test_every_reader_refuses_a_running_machine_with_the_contract(name: str) -> 
     """Second gate: `not_stopped`, with its two context fields."""
     dstate.STATE.session = _Running()  # type: ignore[assignment]
     reply = fold_calls.of(server, name)(**_ARGS.get(name, {}))
+    reply_schema.check(name, reply)
     contract.check_refusal(name, reply, "not_stopped")
     assert "last_stop" in reply and "answers_while_running" in reply, reply
 
