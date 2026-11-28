@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
@@ -105,6 +105,64 @@ def test_disassemble_lists_its_notes_apart_from_its_lines() -> None:
     dstate.STATE.session = cast(ds.Session, s2)
     plain = code.disassemble(cast(ds.Session, s2), "0814:0100", 3)
     assert plain["line_notes"] == [{"line": 1, "note": "DOS function calls (0x21)"}], plain
+
+
+def test_the_three_calls_answer_the_shape_a_line_note_carries() -> None:
+    """`disassemble`, a stop and a trace answer the note shape both servers share: `line` and
+    `note`, `live`/`note_live` only when a register named it, and no entry id."""
+    live = _stopped_at(bytes.fromhex("CD21"), 0x4C00)
+    install()
+    dstate.STATE.session = cast(ds.Session, live)
+    listed = code.disassemble(cast(ds.Session, live), "0814:0100", 2)["line_notes"]
+    assert [set(entry) for entry in listed] == [{"line", "note", "live"}]
+    assert listed[0]["live"] is True and isinstance(listed[0]["line"], int)
+    plain = _stopped_at(bytes.fromhex("90CD21"), 0x4C00)
+    dstate.STATE.session = cast(ds.Session, plain)
+    stated = code.disassemble(cast(ds.Session, plain), "0814:0100", 3)["line_notes"]
+    assert [set(entry) for entry in stated] == [{"line", "note"}]
+    stopped = picture(live)["instruction"]
+    assert set(stopped) & {"note", "note_live", "live", "id"} == {"note", "note_live"}
+    assert picture(_stopped_at(bytes.fromhex("90"), 0))["instruction"].keys() & {
+        "note", "note_live", "live", "id"} == set()
+    from typing import get_type_hints
+
+    from scry_dosbox_x import replies
+    assert (get_type_hints(replies.TraceReply)["instruction"]
+            is get_type_hints(replies.StopReply)["instruction"])
+
+
+def _strings(value: Any) -> list[str]:
+    """Every string `value` holds, its keys included."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [text for key, item in value.items() for text in [key, *_strings(item)]]
+    if isinstance(value, list | tuple):
+        return [text for item in value for text in _strings(item)]
+    return []
+
+
+def test_no_reply_cuts_the_bases_text() -> None:
+    """No `…` on a row, a note or a description, and a cut list says how many it holds."""
+    from scry_dosbox_x import server
+
+    base = knowledge.base()
+    held = next((whole for whole in map(base.whole, base.entries()) if "rows_total" in whole),
+                None)
+    assert held is not None, "no entry answered with rows cut: this case examines nothing"
+    shown = server.knowledge_find(id=held["id"])
+    assert shown["status"] == "ok", shown
+    rows = shown["entries"][0]
+    assert (len(rows["rows"]) < rows["rows_total"] == held["rows_total"]), rows
+    cut = server.knowledge_find(text="the", limit=1)
+    assert cut["truncated"] is True and cut["entries_total"] > len(cut["entries"]), cut
+    live = _stopped_at(bytes.fromhex("CD21"), 0x4C00)
+    install()
+    dstate.STATE.session = cast(ds.Session, live)
+    listing = code.disassemble(cast(ds.Session, live), "0814:0100", 2)
+    texts = [*_strings(shown), *_strings(cut), *_strings(listing), *_strings(picture(live))]
+    assert len(texts) > 20, "the replies carried almost no text, so this case examined nothing"
+    assert [text for text in texts if "…" in text] == []
 
 
 def test_a_register_the_debugger_did_not_print_as_hex_is_left_out() -> None:
