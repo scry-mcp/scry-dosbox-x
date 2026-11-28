@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- Pins scry-core 0.124.0: `stop`'s instruction declares `note_live` and the fields DOSBox-X
+  answers when it decodes the instruction itself (`bytes_from`, `code_bits`, `flow`), and a
+  `knowledge_find` refusal declares `kinds` the client can read instead of inferring.
 - Pins scry-core 0.123.2: a `knowledge_find` refusal that suggests nearby references answers
   `nearest` as the entries it declares, never as text a client has to parse.
 - Pins scry-core 0.122.0: `start` and `status` answer `overlay` with the edge, the pointer and
