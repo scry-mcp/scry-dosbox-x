@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import clean_session, install  # noqa: F401
+from dosbox_x_server_support import _names, clean_session, install  # noqa: F401
 from scry_core.knowledge.base import Base
 from test_dosbox_x_code import COM_START, LOAD, StoppedCode, picture
 
-from scry_dosbox_x import code, disasm, knowledge, line_notes
+from scry_dosbox_x import code, disasm, knowledge, line_notes, server
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
@@ -91,6 +92,22 @@ def test_a_stop_at_an_interrupt_carries_its_note_and_says_a_register_named_it() 
 def test_a_stop_with_nothing_to_name_has_no_note_field() -> None:
     got = picture(_stopped_at(bytes.fromhex("90"), 0))["instruction"]
     assert "note" not in got and "note_live" not in got, got
+
+
+def test_a_live_note_reaches_the_stop_model_through_the_reply_guard(tmp_path: Path) -> None:
+    """`stop` builds this reply through the boundary, so `reply_shapes_guard` judges it against
+    the published `stop` model: dropping `note_live` from the shared instruction leaves an extra
+    key the model refuses, where a hand-built picture would stay green."""
+    fake: Any = _names(tmp_path)
+    fake.cs, fake.eip = "0814", "00000102"
+    fake.mem[(0x0814, 0x102)] = bytes.fromhex("CD21")
+    fake.registers = lambda: {"CS": fake.cs, "DS": fake.ds, "EIP": fake.eip,
+                              "EAX": "00004C00"}
+    fake.running = True
+    got = server.stop()
+    assert got["instruction"]["note"] == ("DOS function calls (0x21); terminate with code "
+                                          "(0x4C)"), got["instruction"]
+    assert got["instruction"]["note_live"] is True, got["instruction"]
 
 
 def test_disassemble_lists_its_notes_apart_from_its_lines() -> None:
