@@ -5,8 +5,15 @@ What a client of the server notices.
 ## Unreleased
 
 - Pins scry-core 0.124.0: `stop`'s instruction declares `note_live` and the fields DOSBox-X
-  answers when it decodes the instruction itself (`bytes_from`, `code_bits`, `flow`), and a
-  `knowledge_find` refusal declares `kinds` the client can read instead of inferring.
+  answers when it decodes the instruction itself (`bytes_from`, `code_bits`, `flow`), a
+  `knowledge_find` refusal declares `kinds` the client can read instead of inferring, and an
+  `image_compare` refusal declares `series`.
+- The family `Names` is now `Symbols`, and the knowledge base has a family of its own,
+  `Knowledge`: `symbols_find` and `knowledge_find` file there in the roster, the `instructions`
+  and the reference's pages.
+- The `instructions` say what the knowledge base is and when to call `knowledge_find`: the
+  machine's documents row by row, the entry whole with its rows and the lines each was read at,
+  and that no text is cut. Call it before asserting what a number is or what the hardware does.
 - Pins scry-core 0.123.2: a `knowledge_find` refusal that suggests nearby references answers
   `nearest` as the entries it declares, never as text a client has to parse.
 - Pins scry-core 0.122.0: `start` and `status` answer `overlay` with the edge, the pointer and

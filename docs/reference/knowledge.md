@@ -27,7 +27,7 @@ Call:
 knowledge_find(kind="call", key="0x21/0x4C")
 ```
 
-Reply, 3 of 10 fields:
+Reply, 3 of 8 fields:
 
 ```json
 {
@@ -221,9 +221,7 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
     }
   ],
   "truncated": false,
-  "examined": 668,
-  "served": 2244,
-  "held_back": 0
+  "examined": 668
 }
 ```
 
@@ -234,14 +232,14 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
 - `id` (string, default `""`): An entry's id, as another reply cites it, such as `ibm-pc:call:0x21/0x4C`. Answers that entry whole.
 - `kind` (one of `""`, `"vector"`, `"call"`, `"error"`, `"port"`, `"irq"`, `"memory"`, `"input"`, `"device"`, `"register"`, `"command"`, default `""`): What the number is: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`, `device`, `register` or `command`. Left empty, every kind.
 - `key` (string, default `""`): The number as a reply prints it: a call is `INT/AH` or `INT/AH/AL`, such as `0x21/0x4C`.
-- `text` (string, default `""`): Words looked for in names, aliases, descriptions and behaviour. A word ending in `*` matches by prefix.
+- `text` (string, default `""`): Words looked for in an entry's name, its aliases and the text of its rows. A word ending in `*` matches by prefix.
 - `device` (string, default `""`): A device's key: everything that belongs to it.
 - `scope` (string, default `""`): `ibm-pc`, the only system this server names. Left empty, all.
 - `limit` (integer, default `10`): How many entries are listed: 1 to 50. Left out, 10.
 
 ### What comes back
 
-- `entries`: Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.
+- `entries`: Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole, with its `rows` (each row's `text` and `cites`) and its `sources`.
 - `entries_total`: How many entries matched.
 - `examined`: How many entries were searched, so a zero says what it is a zero of.
 - `held_back`: How many entries the base holds without serving.

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 import pytest
-from scry_core import conformance, knowledge_tool
+from scry_core import conformance, knowledge_tool, reference
 from scry_core.knowledge import Support, quote, sealed, shared
 from scry_core.knowledge import base as rows
 
@@ -111,12 +111,13 @@ def test_the_dictionaries_of_rows_load_whole() -> None:
 
 def example() -> dict[str, object]:
     """`knowledge_find`'s example on its reference page: the reply the tool gives over this
-    server's dictionaries of rows read whole, so the page shows an entry before any is sealed."""
+    server's dictionaries of rows read whole, so the page shows an entry before any is sealed.
+    The base's own counts stay off it, as off every example (`reference.LEFT_OUT`)."""
     fields = knowledge_tool.find(pc.base().unfiltered(), kind=EXAMPLE_CALL["kind"],
                                  key=EXAMPLE_CALL["key"])
+    reply = {k: v for k, v in st.reply(**fields).items() if k not in reference.LEFT_OUT}
     return {"from": EXAMPLE_FROM, "call": EXAMPLE_CALL,
-            "reply": {"summary": knowledge_tool.summary(EXAMPLE_CALL, fields),
-                      **st.reply(**fields)}}
+            "reply": {"summary": knowledge_tool.summary(EXAMPLE_CALL, fields), **reply}}
 
 
 def test_the_reference_example_is_the_reply_over_the_dictionaries_of_rows() -> None:

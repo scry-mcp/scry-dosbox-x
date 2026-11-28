@@ -3629,13 +3629,13 @@
     "id": "An entry's id, as another reply cites it, such as `ibm-pc:call:0x21/0x4C`. Answers that entry whole.",
     "kind": "What the number is: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`, `device`, `register` or `command`. Left empty, every kind.",
     "key": "The number as a reply prints it: a call is `INT/AH` or `INT/AH/AL`, such as `0x21/0x4C`.",
-    "text": "Words looked for in names, aliases, descriptions and behaviour. A word ending in `*` matches by prefix.",
+    "text": "Words looked for in an entry's name, its aliases and the text of its rows. A word ending in `*` matches by prefix.",
     "device": "A device's key: everything that belongs to it.",
     "scope": "`ibm-pc`, the only system this server names. Left empty, all.",
     "limit": "How many entries are listed: 1 to 50. Left out, 10."
    },
    "returns": {
-    "entries": "Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.",
+    "entries": "Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole, with its `rows` (each row's `text` and `cites`) and its `sources`.",
     "entries_total": "How many entries matched.",
     "examined": "How many entries were searched, so a zero says what it is a zero of.",
     "held_back": "How many entries the base holds without serving.",

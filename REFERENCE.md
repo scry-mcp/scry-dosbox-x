@@ -6,6 +6,8 @@ Each tool has its own entry, with arguments, reply and example, on its family's 
 
 Each example is a call of the example session: one session on Bricks, a game this repository builds, kept whole in [`docs/reference/tour/TRANSCRIPT.md`](docs/reference/tour/TRANSCRIPT.md).
 
+`audio_compare` and `audio_record` come from the Minesweeper demo's run, and `state_write` from the Bricks demo's own run. `knowledge_find` answers from the base's dictionaries without a session, and `guest_file`, which needs a program that writes a file, shows a test program's reply.
+
 A path in an example that starts with `./` stands for the folder of your clone, and `$TMPDIR` for your temporary folder. Write the whole path in your own call: a relative one is refused.
 
 ## Index
