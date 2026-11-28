@@ -79,8 +79,13 @@ mcp = envelope.Envelope(
         'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
         'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'
-        'NAMES: a reply names the numbers it shows, in `names` and in its `summary`;\n'
-        '`knowledge_find` says what a number is.\n\n'
+        'NAMES: a reply names the numbers it shows, in `names` and in its `summary`. The\n'
+        "knowledge base is the machine's documents row by row, each with what the emulator\n"
+        'does about it; `knowledge_find` answers an entry whole: its rows, the lines each was\n'
+        "read at (its `cites`), and the emulator's verdict beside a row it does not follow.\n"
+        'Call it before asserting what a number is or what the hardware does. A reply carries\n'
+        'its sources, and no text of the base is cut; a list too long is cut and says how many\n'
+        'it holds (`entries_total`, `rows_total`).\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
         "and `session` (`altered` after a write); a diagnostic left out is empty, and\n"
         "`omitted` names what was not sent.\n"
