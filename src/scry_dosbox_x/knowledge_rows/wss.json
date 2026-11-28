@@ -189,7 +189,7 @@
     {
      "on": "write",
      "of": "dosbox-x",
-     "text": "The emulator accepts IRQ 5, 7, 9, 10, 11, 12, 14 and 15, and DMA channel 0, 1 or 3, more than the auto-select register allows.",
+     "text": "The WSS accepts IRQ 5, 7, 9, 10, 11, 12, 14 and 15, and DMA channel 0, 1 or 3, more than the auto-select register allows.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/wss.cpp",
@@ -857,7 +857,7 @@
     {
      "on": "read",
      "of": "dosbox-x",
-     "text": "The emulator answers 0x80 on the PIO port: programmed I/O is not implemented and no sample byte moves.",
+     "text": "The CS4231 answers 0x80 on the PIO port: programmed I/O is not implemented and no sample byte moves.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",
@@ -1391,7 +1391,7 @@
     {
      "on": "bit 3",
      "of": "dosbox-x",
-     "text": "The emulator stores DEN in the byte and its only branch tests IEN.",
+     "text": "The CS4231 stores DEN in the byte and its only branch tests IEN.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",
@@ -2470,7 +2470,7 @@
     {
      "on": "bit 3",
      "of": "dosbox-x",
-     "text": "The emulator tests bit 3, not the document's bit 2: setting it clears both ADPCM predictors once, and they adapt again while it stays set.",
+     "text": "The CS4231 tests bit 3, not the document's bit 2: setting it clears both ADPCM predictors once, and they adapt again while it stays set.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",
@@ -3372,7 +3372,7 @@
     {
      "on": "read",
      "of": "dosbox-x",
-     "text": "The emulator sets PI on a playback interrupt and TI on the timer.",
+     "text": "The CS4231 sets PI on a playback interrupt and TI on the timer.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",

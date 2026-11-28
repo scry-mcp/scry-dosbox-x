@@ -1003,7 +1003,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "2",
-     "text": "The emulator starts PR1 at zero and sets its memory size field from the configured video memory; no data bus pin is latched.",
+     "text": "The PVGA1A starts PR1 at zero and sets its memory size field from the configured video memory; no data bus pin is latched.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_paradise.cpp",

@@ -1606,12 +1606,17 @@
      "on": "write",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The emulator renders the audio first, so a change lands at the right sample.",
+     "text": "The PAS renders the audio first, so a change lands at the right sample.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/pas.cpp",
        "lines": "569-571",
        "sha": "ec38d4f4af009337d6b7d37d5011ed2be08ef2cffd845179396f4bcb1c807a56"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "198-201",
+       "sha": "c2485a5c5a2649b756e366f12bf63b5c86aca1a6d82bb8b6c56a369fd7466ed1"
       }
      ]
     },

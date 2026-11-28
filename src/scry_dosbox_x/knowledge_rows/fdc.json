@@ -331,7 +331,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "4",
-     "text": "The emulator returns the negated drive selects in bits 6, 5, 1 and 0 and 0 in bits 4, 3 and 2, so no edge is latched.",
+     "text": "The FDC returns the negated drive selects in bits 6, 5, 1 and 0 and 0 in bits 4, 3 and 2, so no edge is latched.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -494,7 +494,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "3",
-     "text": "The emulator does not tristate INT or DRQ: a change of bit 3 activates or deactivates the IRQ line, which the Model 30 DIR returns as its DMA gate.",
+     "text": "The FDC does not tristate INT or DRQ: a change of bit 3 activates or deactivates the IRQ line, which the Model 30 DIR returns as its DMA gate.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -505,6 +505,16 @@
        "ref": "dosbox-x:src/hardware/floppy.cpp",
        "lines": "2422-2424",
        "sha": "3dc46c95d4bcd80c59571b5a612fd582bb8725da2ee3e1b8756beabc5598cc8b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1687-1694",
+       "sha": "ca0c6b594422e4e52316afd66c34884e6a6e1d0de129a512c9e7398de440cfda"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/floppy.cpp",
+       "lines": "1860-1864",
+       "sha": "29e6b88fe3e8ba6b6c6511137483300f7af4eb326564b313fe6c2a6425765080"
       }
      ]
     },
@@ -514,7 +524,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "4",
-     "text": "The emulator treats bit 2 as active low: clearing it resets the controller and it stays in reset while clear, not while the bit is set.",
+     "text": "The FDC treats bit 2 as active low: clearing it resets the controller and it stays in reset while clear, not while the bit is set.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",

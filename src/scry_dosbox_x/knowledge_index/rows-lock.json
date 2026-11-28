@@ -222,9 +222,9 @@
     }
    },
    "dosbox-x": {
-    "seal": "4eb6d4368433f2507e403466118aba280e66ca4724892a9d5f0a5cc265e04e0a",
-    "by": "slice dx-g9-fdc-01 reader",
-    "writer": "slice dx-g9-fdc-01 writer",
+    "seal": "c0dd3a6f9a93dd97cb1de491dc4b5a26f165abaa6ae76873c4151d628da94f97",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "101": {
       "digest": "70f53af0ebdfc3c8fd23a22a0677db2948ec95644d5e91072ea9266ab0b922b5",
@@ -235,8 +235,8 @@
       "by": "slice dx-g9-fdc-01 reader"
      },
      "103": {
-      "digest": "4b7274192f7e827a3be8bbda78afe263835bf1c4de07c5d259dc1dca20f1061c",
-      "by": "slice dx-g9-fdc-01 reader"
+      "digest": "8af811c7a2c9e4257ff2ada5caed4b9761f2152085e906f59120831454c0ace8",
+      "by": "x2-reader"
      }
     }
    }
@@ -266,9 +266,9 @@
     }
    },
    "dosbox-x": {
-    "seal": "2f673aec844437682a446c624f79bd64db8d7c90336cb1153cbd82c2b3ca1e1a",
-    "by": "slice dx-g9-fdc-01 reader",
-    "writer": "slice dx-g9-fdc-01 writer",
+    "seal": "45e38dcecf306b231bb7c9e1b00f4d7f8a530427dd55e1e92caf18a3ee9252ef",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "101": {
       "digest": "0258c4d36945215e739183fd37fbad4f2b7581cf71577e62bba3a0be6a05c612",
@@ -279,12 +279,12 @@
       "by": "slice dx-g9-fdc-01 reader"
      },
      "103": {
-      "digest": "9700a22080ea917aace8aa2acb29e27b7470b2375393252397eed86ca2bcb9ef",
-      "by": "slice dx-g9-fdc-01 reader"
+      "digest": "d572450c4dbbd18aa24c5353bf54d09d2cdb1656d431f040b9a34ccd25a261db",
+      "by": "x2-reader"
      },
      "104": {
-      "digest": "958888a68708dfb4f5447722a3914101038df47d5308c6ad83e5355772cd548d",
-      "by": "slice dx-g9-fdc-01 reader"
+      "digest": "5137075b4d813b52693c7485e59145029cf6f43d63ac416d6005a8d0679a3fba",
+      "by": "x2-reader"
      }
     }
    }
@@ -40185,13 +40185,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "1f55c21e3dc9d85eb18d6fddf323bb91b7307676210be279c98d135b2844e629",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "ee49fb8311b016da67aa4b55b7d38ec7521873c82abc703d11c1aa717c5e8754",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "0e60fee76015f7feb4dccad82f73b478ac5e8f16ad1cf53ff10f64e691f1fd26",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "b5918a5c56231fa6b2bc3588b67b914bd946547ffcfb721bc41d03c92d6da499",
+      "by": "x2-reader"
      }
     }
    }
@@ -40209,13 +40209,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "48ffb084c345e52d04de476a76f678a0aa87b6ce0e262d582a35698e7c008df0",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "f665f71dbd145517ee95a20bdc3e190a351d95309b6678adbe1d7341c856b7db",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "3ecc438b38efb4c05eaeff21ead625931898cf5fd9a9fae1018e094112176d71",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "512239b3637db616e9bbbee4a8fad7fc3deeeabae4f94228c96ac32810125d25",
+      "by": "x2-reader"
      }
     }
    }
@@ -40233,13 +40233,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "fd5f914b1a76d152a045a85cea7acf245dbc3faba6c0d4a1cf45e950f85b5aba",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "849e8f7314c1518930f4e6beeeeb6ef2a450936075c8f7a41dfb6fe2e47a17f5",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "c9222d6291aa1777a06dc04ab755fc76233a0d48ddba7ec064e3a768a61808d2",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "43ea16bc29146603bb517358231f4268a9813c8245db136c3b330af804694032",
+      "by": "x2-reader"
      }
     }
    }
@@ -40447,13 +40447,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "9d68489b04bf9ff0cfb49506f958764de0e7c291533709e0620a4745aa86352e",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "e9d02ec55949cde3adec5fe81e988169513d0d34d69fa73f4dda5c4ad64e49c4",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "14688654727edc0ccaeffbc256d72715cc69c16f9096ee1898eaf4b69e60e54a",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "5e4ee7e578076e92994117eb4fc35bb3cc2f2a0e0421132c616d84cc88438179",
+      "by": "x2-reader"
      }
     }
    }
@@ -40661,13 +40661,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "2f6b9e586cdc6eed04dd5e8201788ae5243b5a078ad747957a13d8660c6f6c34",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "6ef7f86a175c7e80ece145e953df8ce22337e0f29e2b6e93951f1ebbead82cd4",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "41d3d01bcaa2434f5fec7f44d2ab242e0889f50bd0ef93271ca9f1e7283a12bc",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "bb5dde6f5cec6692c0ec0d9c13d2282fb031f645ecd239b4c81805086714c8d0",
+      "by": "x2-reader"
      }
     }
    }
@@ -40875,13 +40875,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "54439eab183301da4e2a0616b2a64aaeb8b409055f1fea1fa6a86687557760ec",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "0e258113c7d90ded2b5432883aad7a12237f8e89ad4d720b31f6873822c31100",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "d70fca287307f7dd73cace86aa2c453ad50b79dc1ee1b266a0bd3c859cf6f0ae",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "4daf989982229d24d80bcc4346f00dae3b450571c6466a7a54ce2648bf49b7e3",
+      "by": "x2-reader"
      }
     }
    }
@@ -41089,13 +41089,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "4d52742f7ccb61a8edd63f3a8d84ef7a118af71e15b37ab3eebd77068ab7bf27",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "51d83be4e342c3e240bfaaafdbeb8df57cbba8322164af9fedb09b9fc0ba593e",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "5ce9c385cd4902e509cca9107a3cc75a297f1b8391bd4ef9ab65f937a9aa6d21",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "52cc9e1de8c355b22cda3979cf88690bc8756e742fd720dcda155f344d9b5b9f",
+      "by": "x2-reader"
      }
     }
    }
@@ -41303,13 +41303,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "f5c0d05c1bcbd26ea166afa993130da9aec7c06d08a5141d37ecac803d28c3ab",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "ec832823cd8fd0fb45d7cb81f190bba7e580e9dead5cf5a552b4206fc2d6b6c7",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "c384cff54011ef7573b9cc1c994feba979e479d51cbc358aeb31bb69c05e1942",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "ff507ce2f71ddfc705cb36cfc76090b2d7b2001f5762f3b3763e767c2dc702d6",
+      "by": "x2-reader"
      }
     }
    }
@@ -41517,13 +41517,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "bb5df63dac2d7bcbdf6b54c710efebba46b404e87d8e841ebfbda4f1994150dc",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "aa79d0d829350d1a72782bb3231d3c954ed61e2b917ff1c627fd0ad48840aa8c",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "4d0249e91413b6795ada137710e7ab65ddf6f5113cafbd33a03a977d74a576e4",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "08e2d19c9bdcf09eb71b06feac62b6fb905c4bf19af1c42b61420916983f0a35",
+      "by": "x2-reader"
      }
     }
    }
@@ -41655,13 +41655,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "3936290887c8b765e87bb118e5b28415135fcd48aaaa0ea08fe55ef25c213e37",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "7517e8e0d5e16f71f855d98b6dac4ade0d3960f69d11c1e84f04bf871ef5effe",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "93d91b41ef983d64cdfc6ea8f2a4ac70360bd831f2425ad17e1fd8c4553392ea",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "15e51a208d973ec09b9e135dd04e5c1563768b995622b78c621efec412a036df",
+      "by": "x2-reader"
      }
     }
    }
@@ -41736,13 +41736,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "c78c9f53df4209bf2a395ee9d442f59b798779e7355339f2da9eedcd24befbbc",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "5247baa0dfe5c64e28ba589aff90cd569be0736f43a1a6fac599c49c1a57b5dd",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "7b31b3224cff975330ddbf2417cb59ad95d510e5e102cb5a7de3f7baeed29fd6",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "c1ca32e45abed19be2149a1f9308d62d86c3ab339cfd054616d23b9edf3f3569",
+      "by": "x2-reader"
      }
     }
    }
@@ -41958,13 +41958,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "5f7e03cdb737e2db28f89e8597deb5e7d39928deec0b46f141743545b663a3c3",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "40eccb91c98d16f7c5c1a1b3c3354afa8082e8ca9eb4e6776871b92b494b9bf0",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "d3d78e2e5e3c6bb0bf777b218f1c6fad254aa048de3a2d8e3a6c977a19db5605",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "371212e7e7e5508bb14b15c3150a1563651bcb7ba15ca8c7b7470304c6f18122",
+      "by": "x2-reader"
      }
     }
    }
@@ -42172,13 +42172,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "8d20f635bf17a25319cbc954479c34492d81fd6020f70d60ba712e2560a645a5",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "8e58f72ba1177e80d3fd58d6f42fa2fdb4e6f8de69c8939dddf640b323d7c3c5",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "1c3f194559fb5ff8923dfc0397be582a930cfb8b0998a234085ce38cf6177db1",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "a4ffbc4e05bfe0962a4d5231906c31280d43ba750eff46d3e291dc074d41e5ca",
+      "by": "x2-reader"
      }
     }
    }
@@ -42405,13 +42405,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "595feb258cdb4b9cca9e9db90b58c7ef9b21aaa7ae17a8c6bd4c2ed349d8cd2f",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "2db79828ab44df067a971ba9780af325bc174af2a2c936245d67ca49c3133a6f",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "773defd48dcfb30dfa95d94a6912124d8fd2995083997fb55d8c96c358f2f255",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "deb8cb232aecafe607e72c46cfba976ff8aa3998d30cc3646657cc330c51e0d2",
+      "by": "x2-reader"
      }
     }
    }
@@ -42809,13 +42809,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "859653a3566c7c5df7c993168d0528dad7b16ec1da58345a762475c0bf1be1c7",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "8712fc495d3574af738f860a7b4bae0edf037334af057df23798bcbbce22e04f",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "40dba27c7ebec120bbf67a22dfc2deacf905debc1610a0eba299b1431c01708d",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "f5a2988c3804063ed8d4cf2af2b118446761f31e8467de78412d2edfe086981f",
+      "by": "x2-reader"
      }
     }
    }
@@ -43023,13 +43023,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "15dbfc734b525fd69890839cd39287be396a20d559b4c11e318479e068772616",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "0f98b9ae91b97bff0ce53cc8ca815461f6b16e999e471f7d2007bcbe603f1563",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "e1eb2ba7ef888b850a21f96cb777ef18a4894f5bbebee9d7920470c024ba0678",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "87ff2d9c358c67b6d52d4b5347656f090b2fe6f20493bdc534ffeb4344da8165",
+      "by": "x2-reader"
      }
     }
    }
@@ -43047,13 +43047,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "653b1ed893606aff559e5cda8681f694bf1674bd38ec5cc33f5b5a272f83e515",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "32d2450b5b55427318c4e80868b0796238c053bb359ba602eef63f72fab3327e",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "1586cbcf7046a6ea6673fd3c9060720fd93eaff675e933d33f2a47644c296380",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "e615e35ad8716ec60a6bc4771a9a4abf865e0cb7c3ccb179201f9782b30c3c11",
+      "by": "x2-reader"
      }
     }
    }
@@ -43261,13 +43261,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "e7bb64a70e5099376b42695f780f811339c83736fe9fef895dc7c9cc41869cd2",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "81b1aa18ad6b9d96c3d45a2bbecdde73e4ce26a01cb41a7367b3f20ac398b4cb",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "4c8776465a51c30bfa5d127f9613de8b53276660ecede1d7a0a415f52364acf4",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "b973384a6204bd30c639f5d957312da537d450f4088d6993c719ade38294eacf",
+      "by": "x2-reader"
      }
     }
    }
@@ -43479,13 +43479,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "36dcdcf9976e382856d76fe601caa81695e02a04840a0ca63bf8e64c0e03688c",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "c2f80da3f3c39741b8ca15cbf3113f463076729a1b0a030bc87ab2ca3a03caa2",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "45169d4f7d965b82c55d00dc942236e3a9b1244f90b737c972813866dfebe977",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "f6077cb36d6fc6c10db46eb0e77522e4b1db21a92758b54c5b51281e8093cee8",
+      "by": "x2-reader"
      }
     }
    }
@@ -43674,13 +43674,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "25670e7752c841e3b8a8b68b9997900d7875b92b1a4fad357d0ec4f2c0dbcf1c",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "e28ef6bf5ba89bcc77186dceb66040fe9745f0a510b36ee0209cbded11021def",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "edd6ced910ed6d7ed5077025bda0184486749fd40e5fc1a21e43019ee3ec4404",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "a4a2c698119bdc9d2d92f3fc9ddd00dfa94d45f5be30a261c57b0741d3d86d3c",
+      "by": "x2-reader"
      }
     }
    }
@@ -43698,13 +43698,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "43077d0395aba96e80217dde663e089e79e8fea6e0eb7cc6a0a0b288d3ad3b2f",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "d0a311ea33885cd01d25e10340e95814e876c390aeeb0930c54331fdb42879ee",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "e723e0a6c9a6867fa7ef6f01e4144ab0e0378fb19d6b9ce561dfb022a0d63ac8",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "2d144515ca46198a7b93c02bd386ee34ad5c7080415bb6f91e0b079a541f90ac",
+      "by": "x2-reader"
      }
     }
    }
@@ -43893,13 +43893,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "f13ddc05de1a93e1a31e461690b0c8475ebda8c81d9f3fa251e02d7bab3ec381",
-    "by": "slice dx-doserr-01 reader",
-    "writer": "slice dx-doserr-01 writer",
+    "seal": "94aeefb189e06f642bbdf3af0843299e4e0d306dba3098735720d4b0a4aa2fe3",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "2": {
-      "digest": "918e9f953d91d5f8828de71b94afbafb502922b6cc2d7e987f55f93dca3839ef",
-      "by": "slice dx-doserr-01 reader"
+      "digest": "ee8fb2a6f9a57085edcf264db4aecd380508b59c2614196e0bec6d715712c79e",
+      "by": "x2-reader"
      }
     }
    }
@@ -69770,17 +69770,17 @@
     }
    },
    "dosbox-x": {
-    "seal": "c08cd98b53144d668c8e672748cbb3a3c7146c25b7bda5a6d43af51c4585bd56",
-    "by": "slice dx-g10-pas-01 reader",
-    "writer": "slice dx-g10-pas-01 writer",
+    "seal": "e80a4d4244dfe404e32b319f8c5439d0cb9fb4fe0402f9ee8673596c06dbf7f1",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "A": {
       "digest": "8b2a0278634baf22e913f9f8a48f42d03074539f039f2915e6b73933f01d6251",
       "by": "slice dx-g10-pas-01 reader"
      },
      "B": {
-      "digest": "04633f470812e16005d802beedde10045308b859d6e0f42bd711c9c8fcda7415",
-      "by": "slice dx-g10-pas-01 reader"
+      "digest": "e98210facb4b31374da5ce3637bb925cf970d4a99c7279ac318c2d818eddba18",
+      "by": "x2-reader"
      },
      "C": {
       "digest": "6e8cc04c397a7dc4c0ce54e3e66d4647fced38cbb6522413595e334c4715aaba",
@@ -77538,13 +77538,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "cac5a0af115c535698134fbab49b6978bfefa760ff232e51075fbad953d39d01",
-    "by": "slice dx-g10-vga_paradise-01 reader",
-    "writer": "slice dx-g10-vga_paradise-01 writer",
+    "seal": "89cd3a5aab024230e93fe9c02a2bb8ae15f86c2f5120cb1990c32c51e4170d1d",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "101": {
-      "digest": "d711bef1f5be7f43d6582955e5287c4d821c8a8bc9efc52d3ce225450255a77f",
-      "by": "slice dx-g10-vga_paradise-01 reader"
+      "digest": "649d1bbeb6ea44515d817af663cde7142aef3493496f0f03ed88f8982d27c159",
+      "by": "x2-reader"
      },
      "102": {
       "digest": "4b3876d4b961da110b132322e462f9653d95ff22acc9e33f055d6fd617f384e8",
@@ -85614,9 +85614,9 @@
     }
    },
    "dosbox-x": {
-    "seal": "ff8fa438bd9c61fa3a139d4101fda7191d39a26313517ef7fc05de51e44bf636",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
+    "seal": "e783be9f3e5c55e2c70075c5ec031100b8c18045e7a54a35d3e7854acd9549a0",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "5": {
       "digest": "d4ef07f7eae626e8ebcbcb9e8d951563c8766a7dcd93a2c2cd062ebdb527bc7c",
@@ -85627,8 +85627,8 @@
       "by": "slice dx-g8-vother-02 reader"
      },
      "7": {
-      "digest": "f2b4cd1de48dbec361b709b3247647b64af8d89cee200d86cdd34b79efa33ce1",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "4935324b540b038a1378e3a9ad6a56b9471a636beefe610517ffbf85343bb27b",
+      "by": "x2-reader"
      },
      "8": {
       "digest": "a7d877b226ffe11bd3098610a4399d0911a3b2e48b9fa6ac52a582b63f31fdb2",
@@ -85706,13 +85706,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "98bf4533af1c02a2de65cdce736091eadf0f3e0396125da3fa6620aaeab18b84",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
+    "seal": "4e3c83cb2660499548a405982361862cb5e7210cd52ffc90ba0802a1ff2744f6",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "5": {
-      "digest": "f015fd4a8c8ff3f85f38013e584503638b438e213a24802423b20c84727b933b",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "eb04139b39732fed9aca4b71959fea0a195e35b773bfb5186c65e015c4a795ff",
+      "by": "x2-reader"
      },
      "6": {
       "digest": "176c07cc32999215334d925fcc4c6c66557ab1e952d465cc43a47a4239b7dc4a",
@@ -85786,13 +85786,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "75bbefc2226c80b09c7e796a899398df2d8eb62f05f2fda73525d350eb0e4628",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
+    "seal": "0c7b44e1dbf99383e0a8ff9019f520929a34b6412defe47e7f8b07c079cfb34e",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "6": {
-      "digest": "952e305629b0dec73bbc6d035adf2b9dda2a909000efd27dc7087c883b6b7bff",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "c1ef269a685894ee650e8b8279ee03beb0c2a998c9c8f8fb961ff663630900fb",
+      "by": "x2-reader"
      },
      "7": {
       "digest": "fdce5a9044a1584425e3c198a3d62fada66261c5c00251a2f9f3e47e3e07a194",
@@ -85858,17 +85858,17 @@
     }
    },
    "dosbox-x": {
-    "seal": "1f85a8cbc3e13730f5264a925b1ef3490dbbe1151bcdff397b164a938cdb9d99",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
+    "seal": "d8f1f1ab03b6d12353119d202124cbb52a4ab355145cca5af4f2b2fa4011542a",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "4": {
-      "digest": "695901682cdd59941b2f9b81fc800be512b41a52e2aa19fa64540b7278683e5b",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "6085767d14eead28d66acafefa48a9c7188cc6ea4e1dcad6c55a2358d967da63",
+      "by": "x2-reader"
      },
      "5": {
-      "digest": "1320a800e2ada04c045eb43d929baddef18c482648d88643a45538198fa0e850",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "6cd6de37225f8d7857f5ce0e6f314c40ad4916f9b66a1d7e6afd633f75fce3e3",
+      "by": "x2-reader"
      }
     }
    }
@@ -85898,17 +85898,17 @@
     }
    },
    "dosbox-x": {
-    "seal": "ebfc3d6304500b407a42d95ecc7c543f1e2badfa1583d4564d5887770d97c1c5",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
+    "seal": "17ea3836bf70aad6d433ec7395bc377c3461afa88856abf4ea170431847947ac",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "5": {
-      "digest": "bb135cc6d6260d640e88ba946f3f31a4cb29cb3ef4a8f523b7094dbd90ba37b9",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "709c1c26e5910885af826eef0fd536b2f48d4cff87254fe511019f5ee04a715d",
+      "by": "x2-reader"
      },
      "6": {
-      "digest": "5f1a7cde68b58ab39186bcd69f42591471dc808d8aa9f1b664d93818f2281fd2",
-      "by": "slice dx-g8-vother-02 reader"
+      "digest": "d6d866b794a6749b78d8703428e39aab682dd307a5870bb8d57e0f46e665a5ad",
+      "by": "x2-reader"
      },
      "7": {
       "digest": "29e70bee1d4155c7df130b8ac56a48447cad479795aa384a286414583bab10ab",
@@ -86835,9 +86835,9 @@
     }
    },
    "dosbox-x": {
-    "seal": "2015daf8881e8540b914dc630687110615fa50ef7ff01217f846a0b75b6fcf92",
-    "by": "slice dx-g8-vother-01 reader",
-    "writer": "slice dx-g8-vother-01 writer",
+    "seal": "493ec2fa44a7e93a0302d38818c1435fa1a64e0ff81122deeb308c944c0471a7",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "10": {
       "digest": "4aa2b7a7b0328789023d743c63c6a0f36a6c813fed5099d56217dcb60ef2f571",
@@ -86848,8 +86848,8 @@
       "by": "slice dx-g8-vother-01 reader"
      },
      "6": {
-      "digest": "082df26de86ac6097598322bedf25e1da31425584a0d0a313ef2a2f22f3da5b7",
-      "by": "slice dx-g8-vother-01 reader"
+      "digest": "ceafa92ec902757bec2bd073cbdbfbf0363a1c9d21e0247b8e910e3cfbe02d03",
+      "by": "x2-reader"
      },
      "7": {
       "digest": "d72cd23b4015f36d7a06ff1350f689dcf55ab30986bf1d8ae9fe113625164004",
@@ -87394,17 +87394,17 @@
     }
    },
    "dosbox-x": {
-    "seal": "be95a12edf929fe3ae43569de87609a3c27aa93717f277e2aeb2e82393b2d43d",
-    "by": "slice dx-g10-wss-01 reader",
-    "writer": "slice dx-g10-wss-01 writer",
+    "seal": "ebeb236ef189e168cda2fb3679ff212b4d228eca8708acf0e5afd997ce505edc",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "5": {
       "digest": "00578a95e661b973cd058a69ef4d69bae57b33cea34b2e720336690e3048b4ec",
       "by": "slice dx-g10-wss-01 reader"
      },
      "6": {
-      "digest": "cb1ef99a74fe4adeb6df3439cb3087e26a806a2374d8c7bc8146a23b08a53597",
-      "by": "slice dx-g10-wss-01 reader"
+      "digest": "d5f85d11fcdb824bab0ccbc992df314895a73ab3043c4fedc386a5079d5f5412",
+      "by": "x2-reader"
      }
     }
    }
@@ -87558,13 +87558,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "32e2800ac6295bb5ea26d2925909014fa4fbe87fd1b356b5ea9f8a421438388a",
-    "by": "slice dx-g10-wss-01 reader",
-    "writer": "slice dx-g10-wss-01 writer",
+    "seal": "854780a0125c308379c3d6672137c4615d74fc4f9d0bbc01e40a4b1a74ea4211",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "4": {
-      "digest": "fa1f49e04a1be345b71140c0e277acc722da96e6c56ead3404cb85781ec8b0e3",
-      "by": "slice dx-g10-wss-01 reader"
+      "digest": "e2de241283e4f394eb4303c8ad682aa7f97e1b6d58ee76cf469c601897c62d61",
+      "by": "x2-reader"
      },
      "5": {
       "digest": "b6eab93ad26c53df841225151a95ad9dae46a43fa27d9867bf20d1456f0382e2",
@@ -87685,13 +87685,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "5099ee529555d83942c09406936a722156e54c3e1ab260e61803dce446ca2b90",
-    "by": "slice dx-g10-wss-01 reader",
-    "writer": "slice dx-g10-wss-01 writer",
+    "seal": "81b58e1b6fa7b7ca1c72ac058eb1be48829556208b488cb359982fb869773a36",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "5": {
-      "digest": "2612eea124b0e962d1b5f0988498deae409a255de3d7122b08c3223ca3f4a6cc",
-      "by": "slice dx-g10-wss-01 reader"
+      "digest": "81c4fb8ed20346d8fc6d9155d8f98b7fc6da1484805a03404313efd19ab037b8",
+      "by": "x2-reader"
      }
     }
    }
@@ -87951,13 +87951,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "e911943a002e30e37438f9e1070d9d8a2d1d00d993e51283facbe1b5133d3c6a",
-    "by": "slice dx-g10-wss-01 reader",
-    "writer": "slice dx-g10-wss-01 writer",
+    "seal": "b1805f6314264881b04f3cf4ba54256676648982b49980f55b256ff9633b619d",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "6": {
-      "digest": "84285f4dbc3c229a64ad5167b85beb0bf2bbe68e436fd2f26e6e27863ab64ee6",
-      "by": "slice dx-g10-wss-01 reader"
+      "digest": "a54aa9cc3a3a2c9b045195960ad35e6a4541b904592909072de57a988f07b520",
+      "by": "x2-reader"
      },
      "7": {
       "digest": "49a5f56c20e99802c0ccd67929c277ca3e7486a41a82219f6df1e9262ffc31fc",
@@ -88185,13 +88185,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "7c893ee1e8ce07f3f4ec97ff1ff3d1b2f4ddcae0df8cea32586dc8ab4f7647d3",
-    "by": "slice dx-g10-wss-01 reader",
-    "writer": "slice dx-g10-wss-01 writer",
+    "seal": "fa031f348d9d587fe3802bae02168a129d0c286fd775bd1dfadc3ecaa16c5596",
+    "by": "x2-reader",
+    "writer": "deepseek-flash x2",
     "rows": {
      "4": {
-      "digest": "54816fcbdef77860a4cfaa64eab1ac33ad42105676e6daa492eebd31246cb703",
-      "by": "slice dx-g10-wss-01 reader"
+      "digest": "d8266fbed8089c080f12364035be97a68873805609d250b06aad28c0649bca38",
+      "by": "x2-reader"
      }
     }
    }
@@ -102021,6 +102021,893 @@
      "114": {
       "digest": "adb59bd3610b91919f9a3476ad9067851729c0ab5e3f9c85ea03f60cb34ea880",
       "by": "slice dx-g10-vga_paradise-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:0",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "1f55c21e3dc9d85eb18d6fddf323bb91b7307676210be279c98d135b2844e629",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "0e60fee76015f7feb4dccad82f73b478ac5e8f16ad1cf53ff10f64e691f1fd26",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:1",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "48ffb084c345e52d04de476a76f678a0aa87b6ce0e262d582a35698e7c008df0",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "3ecc438b38efb4c05eaeff21ead625931898cf5fd9a9fae1018e094112176d71",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:2",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "8d20f635bf17a25319cbc954479c34492d81fd6020f70d60ba712e2560a645a5",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "1c3f194559fb5ff8923dfc0397be582a930cfb8b0998a234085ce38cf6177db1",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:3",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "859653a3566c7c5df7c993168d0528dad7b16ec1da58345a762475c0bf1be1c7",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "40dba27c7ebec120bbf67a22dfc2deacf905debc1610a0eba299b1431c01708d",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:4",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "15dbfc734b525fd69890839cd39287be396a20d559b4c11e318479e068772616",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "e1eb2ba7ef888b850a21f96cb777ef18a4894f5bbebee9d7920470c024ba0678",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:5",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "653b1ed893606aff559e5cda8681f694bf1674bd38ec5cc33f5b5a272f83e515",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "1586cbcf7046a6ea6673fd3c9060720fd93eaff675e933d33f2a47644c296380",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:6",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "e7bb64a70e5099376b42695f780f811339c83736fe9fef895dc7c9cc41869cd2",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "4c8776465a51c30bfa5d127f9613de8b53276660ecede1d7a0a415f52364acf4",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:7",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "36dcdcf9976e382856d76fe601caa81695e02a04840a0ca63bf8e64c0e03688c",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "45169d4f7d965b82c55d00dc942236e3a9b1244f90b737c972813866dfebe977",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:8",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "25670e7752c841e3b8a8b68b9997900d7875b92b1a4fad357d0ec4f2c0dbcf1c",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "edd6ced910ed6d7ed5077025bda0184486749fd40e5fc1a21e43019ee3ec4404",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:9",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "f13ddc05de1a93e1a31e461690b0c8475ebda8c81d9f3fa251e02d7bab3ec381",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "918e9f953d91d5f8828de71b94afbafb502922b6cc2d7e987f55f93dca3839ef",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:10",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "fd5f914b1a76d152a045a85cea7acf245dbc3faba6c0d4a1cf45e950f85b5aba",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "c9222d6291aa1777a06dc04ab755fc76233a0d48ddba7ec064e3a768a61808d2",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:11",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "9d68489b04bf9ff0cfb49506f958764de0e7c291533709e0620a4745aa86352e",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "14688654727edc0ccaeffbc256d72715cc69c16f9096ee1898eaf4b69e60e54a",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:12",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "2f6b9e586cdc6eed04dd5e8201788ae5243b5a078ad747957a13d8660c6f6c34",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "41d3d01bcaa2434f5fec7f44d2ab242e0889f50bd0ef93271ca9f1e7283a12bc",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:13",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "54439eab183301da4e2a0616b2a64aaeb8b409055f1fea1fa6a86687557760ec",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "d70fca287307f7dd73cace86aa2c453ad50b79dc1ee1b266a0bd3c859cf6f0ae",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:14",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "4d52742f7ccb61a8edd63f3a8d84ef7a118af71e15b37ab3eebd77068ab7bf27",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "5ce9c385cd4902e509cca9107a3cc75a297f1b8391bd4ef9ab65f937a9aa6d21",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:15",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "f5c0d05c1bcbd26ea166afa993130da9aec7c06d08a5141d37ecac803d28c3ab",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "c384cff54011ef7573b9cc1c994feba979e479d51cbc358aeb31bb69c05e1942",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:16",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "bb5df63dac2d7bcbdf6b54c710efebba46b404e87d8e841ebfbda4f1994150dc",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "4d0249e91413b6795ada137710e7ab65ddf6f5113cafbd33a03a977d74a576e4",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:17",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "3936290887c8b765e87bb118e5b28415135fcd48aaaa0ea08fe55ef25c213e37",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "93d91b41ef983d64cdfc6ea8f2a4ac70360bd831f2425ad17e1fd8c4553392ea",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:18",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "c78c9f53df4209bf2a395ee9d442f59b798779e7355339f2da9eedcd24befbbc",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "7b31b3224cff975330ddbf2417cb59ad95d510e5e102cb5a7de3f7baeed29fd6",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:19",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "5f7e03cdb737e2db28f89e8597deb5e7d39928deec0b46f141743545b663a3c3",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "d3d78e2e5e3c6bb0bf777b218f1c6fad254aa048de3a2d8e3a6c977a19db5605",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:21",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "595feb258cdb4b9cca9e9db90b58c7ef9b21aaa7ae17a8c6bd4c2ed349d8cd2f",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "773defd48dcfb30dfa95d94a6912124d8fd2995083997fb55d8c96c358f2f255",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "ibm-pc:error:80",
+   "part": "dosbox-x",
+   "rows": [
+    "2"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "43077d0395aba96e80217dde663e089e79e8fea6e0eb7cc6a0a0b288d3ad3b2f",
+    "by": "slice dx-doserr-01 reader",
+    "writer": "slice dx-doserr-01 writer",
+    "rows": {
+     "2": {
+      "digest": "e723e0a6c9a6867fa7ef6f01e4144ab0e0378fb19d6b9ce561dfb022a0d63ac8",
+      "by": "slice dx-doserr-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "fdc:register:0x01",
+   "part": "dosbox-x",
+   "rows": [
+    "103"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "4eb6d4368433f2507e403466118aba280e66ca4724892a9d5f0a5cc265e04e0a",
+    "by": "slice dx-g9-fdc-01 reader",
+    "writer": "slice dx-g9-fdc-01 writer",
+    "rows": {
+     "101": {
+      "digest": "70f53af0ebdfc3c8fd23a22a0677db2948ec95644d5e91072ea9266ab0b922b5",
+      "by": "slice dx-g9-fdc-01 reader"
+     },
+     "102": {
+      "digest": "8c831c8f2bfa2abfc9fd7c761e24b103a608248c79a30bb054de0d37ec7ba997",
+      "by": "slice dx-g9-fdc-01 reader"
+     },
+     "103": {
+      "digest": "4b7274192f7e827a3be8bbda78afe263835bf1c4de07c5d259dc1dca20f1061c",
+      "by": "slice dx-g9-fdc-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "fdc:register:0x02",
+   "part": "dosbox-x",
+   "rows": [
+    "103",
+    "104"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "2f673aec844437682a446c624f79bd64db8d7c90336cb1153cbd82c2b3ca1e1a",
+    "by": "slice dx-g9-fdc-01 reader",
+    "writer": "slice dx-g9-fdc-01 writer",
+    "rows": {
+     "101": {
+      "digest": "0258c4d36945215e739183fd37fbad4f2b7581cf71577e62bba3a0be6a05c612",
+      "by": "slice dx-g9-fdc-01 reader"
+     },
+     "102": {
+      "digest": "5080789a41da65bb610891e6df592e4c3752cac5bbe02aac801eb2eb17dc0d14",
+      "by": "slice dx-g9-fdc-01 reader"
+     },
+     "103": {
+      "digest": "9700a22080ea917aace8aa2acb29e27b7470b2375393252397eed86ca2bcb9ef",
+      "by": "slice dx-g9-fdc-01 reader"
+     },
+     "104": {
+      "digest": "958888a68708dfb4f5447722a3914101038df47d5308c6ad83e5355772cd548d",
+      "by": "slice dx-g9-fdc-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "pas:register:0x1000",
+   "part": "dosbox-x",
+   "rows": [
+    "B"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "c08cd98b53144d668c8e672748cbb3a3c7146c25b7bda5a6d43af51c4585bd56",
+    "by": "slice dx-g10-pas-01 reader",
+    "writer": "slice dx-g10-pas-01 writer",
+    "rows": {
+     "A": {
+      "digest": "8b2a0278634baf22e913f9f8a48f42d03074539f039f2915e6b73933f01d6251",
+      "by": "slice dx-g10-pas-01 reader"
+     },
+     "B": {
+      "digest": "04633f470812e16005d802beedde10045308b859d6e0f42bd711c9c8fcda7415",
+      "by": "slice dx-g10-pas-01 reader"
+     },
+     "C": {
+      "digest": "6e8cc04c397a7dc4c0ce54e3e66d4647fced38cbb6522413595e334c4715aaba",
+      "by": "slice dx-g10-pas-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_paradise:register:0x0B",
+   "part": "dosbox-x",
+   "rows": [
+    "101"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "cac5a0af115c535698134fbab49b6978bfefa760ff232e51075fbad953d39d01",
+    "by": "slice dx-g10-vga_paradise-01 reader",
+    "writer": "slice dx-g10-vga_paradise-01 writer",
+    "rows": {
+     "101": {
+      "digest": "d711bef1f5be7f43d6582955e5287c4d821c8a8bc9efc52d3ce225450255a77f",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "102": {
+      "digest": "4b3876d4b961da110b132322e462f9653d95ff22acc9e33f055d6fd617f384e8",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "103": {
+      "digest": "304dbd3849ab1eff6d906f448bf1ef5f3dbae0b2345bde1021b9c89d76e54372",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "104": {
+      "digest": "3f8314d4ab18fbc9b6752d5b871190fb91870e5301b36dac5752159084fd9463",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "105": {
+      "digest": "6f2a0a9f360c1090c44c53179fee00b09d0ad994eea4fc1c78e3d78a5da6b6e5",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "106": {
+      "digest": "3aabd39f4db6ab0c9e78c489df3e9025e90528688e22a977b5f323bff926a3b9",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "107": {
+      "digest": "4e1e5d4f51c674eabf6aca748c122f277fa602d27714a1f03f5945ee5834b863",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "108": {
+      "digest": "ecfa121f2da53e9c79200ab45643c67cb0d6e47370469f94a9842d0d1eec76c9",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "109": {
+      "digest": "8c478c2718c72aa02f051fa1935d4f22de241790b7c07b4caa7125a81b9f21a3",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "110": {
+      "digest": "de91e474075d5ff36fa06c58730baf6fa8bbce7e4b81bfe681c3afd4c4fef9eb",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "111": {
+      "digest": "17417d816744264e871f0ad1ff108258f7bc6033109306b72fdf2f78c42765da",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "112": {
+      "digest": "35b4365ad233a8ae8a23a9dac0526ff309f9e311f8423171457a57cfabf0558e",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     },
+     "113": {
+      "digest": "f354d81551d637d5b595ab94d41037a6c1e87ba334477970ac5eddbcc2319f1a",
+      "by": "slice dx-g10-vga_paradise-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x3D8",
+   "part": "dosbox-x",
+   "rows": [
+    "6"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "2015daf8881e8540b914dc630687110615fa50ef7ff01217f846a0b75b6fcf92",
+    "by": "slice dx-g8-vother-01 reader",
+    "writer": "slice dx-g8-vother-01 writer",
+    "rows": {
+     "10": {
+      "digest": "4aa2b7a7b0328789023d743c63c6a0f36a6c813fed5099d56217dcb60ef2f571",
+      "by": "slice dx-g8-vother-01 reader"
+     },
+     "5": {
+      "digest": "58ebf4159e10ec72a44510c8f16dd4dd59bc67b1ab6cf3978db88c238fabba53",
+      "by": "slice dx-g8-vother-01 reader"
+     },
+     "6": {
+      "digest": "082df26de86ac6097598322bedf25e1da31425584a0d0a313ef2a2f22f3da5b7",
+      "by": "slice dx-g8-vother-01 reader"
+     },
+     "7": {
+      "digest": "d72cd23b4015f36d7a06ff1350f689dcf55ab30986bf1d8ae9fe113625164004",
+      "by": "slice dx-g8-vother-01 reader"
+     },
+     "8": {
+      "digest": "17097b36a82277efa9f1382304dfe69a97be736d15729569c009f61dbbe0bc5f",
+      "by": "slice dx-g8-vother-01 reader"
+     },
+     "9": {
+      "digest": "d5f945a42c09d87f90b9cdd54be7ef6db5df6b879276ee8b1c5c613d047d6b89",
+      "by": "slice dx-g8-vother-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x04..0x05",
+   "part": "dosbox-x",
+   "rows": [
+    "7"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "ff8fa438bd9c61fa3a139d4101fda7191d39a26313517ef7fc05de51e44bf636",
+    "by": "slice dx-g8-vother-02 reader",
+    "writer": "slice dx-g8-vother-02 writer",
+    "rows": {
+     "5": {
+      "digest": "d4ef07f7eae626e8ebcbcb9e8d951563c8766a7dcd93a2c2cd062ebdb527bc7c",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "6": {
+      "digest": "f21aab1cfe574df8b4e09d614cb72b754c2d89568b33daf51badffe4ba5b3416",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "7": {
+      "digest": "f2b4cd1de48dbec361b709b3247647b64af8d89cee200d86cdd34b79efa33ce1",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "8": {
+      "digest": "a7d877b226ffe11bd3098610a4399d0911a3b2e48b9fa6ac52a582b63f31fdb2",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "9": {
+      "digest": "3f06c68525c15dfcdb6b02506c83d37fd3bb1247ddc420912238034208bbd1c0",
+      "by": "slice dx-g8-vother-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x07",
+   "part": "dosbox-x",
+   "rows": [
+    "5"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "98bf4533af1c02a2de65cdce736091eadf0f3e0396125da3fa6620aaeab18b84",
+    "by": "slice dx-g8-vother-02 reader",
+    "writer": "slice dx-g8-vother-02 writer",
+    "rows": {
+     "5": {
+      "digest": "f015fd4a8c8ff3f85f38013e584503638b438e213a24802423b20c84727b933b",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "6": {
+      "digest": "176c07cc32999215334d925fcc4c6c66557ab1e952d465cc43a47a4239b7dc4a",
+      "by": "slice dx-g8-vother-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x0A..0x0B",
+   "part": "dosbox-x",
+   "rows": [
+    "6"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "75bbefc2226c80b09c7e796a899398df2d8eb62f05f2fda73525d350eb0e4628",
+    "by": "slice dx-g8-vother-02 reader",
+    "writer": "slice dx-g8-vother-02 writer",
+    "rows": {
+     "6": {
+      "digest": "952e305629b0dec73bbc6d035adf2b9dda2a909000efd27dc7087c883b6b7bff",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "7": {
+      "digest": "fdce5a9044a1584425e3c198a3d62fada66261c5c00251a2f9f3e47e3e07a194",
+      "by": "slice dx-g8-vother-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x0E..0x0F",
+   "part": "dosbox-x",
+   "rows": [
+    "4",
+    "5"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "1f85a8cbc3e13730f5264a925b1ef3490dbbe1151bcdff397b164a938cdb9d99",
+    "by": "slice dx-g8-vother-02 reader",
+    "writer": "slice dx-g8-vother-02 writer",
+    "rows": {
+     "4": {
+      "digest": "695901682cdd59941b2f9b81fc800be512b41a52e2aa19fa64540b7278683e5b",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "5": {
+      "digest": "1320a800e2ada04c045eb43d929baddef18c482648d88643a45538198fa0e850",
+      "by": "slice dx-g8-vother-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x10..0x11:read",
+   "part": "dosbox-x",
+   "rows": [
+    "5",
+    "6"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "ebfc3d6304500b407a42d95ecc7c543f1e2badfa1583d4564d5887770d97c1c5",
+    "by": "slice dx-g8-vother-02 reader",
+    "writer": "slice dx-g8-vother-02 writer",
+    "rows": {
+     "5": {
+      "digest": "bb135cc6d6260d640e88ba946f3f31a4cb29cb3ef4a8f523b7094dbd90ba37b9",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "6": {
+      "digest": "5f1a7cde68b58ab39186bcd69f42591471dc808d8aa9f1b664d93818f2281fd2",
+      "by": "slice dx-g8-vother-02 reader"
+     },
+     "7": {
+      "digest": "29e70bee1d4155c7df130b8ac56a48447cad479795aa384a286414583bab10ab",
+      "by": "slice dx-g8-vother-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "wss:register:0x00..0x03",
+   "part": "dosbox-x",
+   "rows": [
+    "6"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "be95a12edf929fe3ae43569de87609a3c27aa93717f277e2aeb2e82393b2d43d",
+    "by": "slice dx-g10-wss-01 reader",
+    "writer": "slice dx-g10-wss-01 writer",
+    "rows": {
+     "5": {
+      "digest": "00578a95e661b973cd058a69ef4d69bae57b33cea34b2e720336690e3048b4ec",
+      "by": "slice dx-g10-wss-01 reader"
+     },
+     "6": {
+      "digest": "cb1ef99a74fe4adeb6df3439cb3087e26a806a2374d8c7bc8146a23b08a53597",
+      "by": "slice dx-g10-wss-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "wss:register:0x07",
+   "part": "dosbox-x",
+   "rows": [
+    "4"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "32e2800ac6295bb5ea26d2925909014fa4fbe87fd1b356b5ea9f8a421438388a",
+    "by": "slice dx-g10-wss-01 reader",
+    "writer": "slice dx-g10-wss-01 writer",
+    "rows": {
+     "4": {
+      "digest": "fa1f49e04a1be345b71140c0e277acc722da96e6c56ead3404cb85781ec8b0e3",
+      "by": "slice dx-g10-wss-01 reader"
+     },
+     "5": {
+      "digest": "b6eab93ad26c53df841225151a95ad9dae46a43fa27d9867bf20d1456f0382e2",
+      "by": "slice dx-g10-wss-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "wss:register:0x0A",
+   "part": "dosbox-x",
+   "rows": [
+    "5"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "5099ee529555d83942c09406936a722156e54c3e1ab260e61803dce446ca2b90",
+    "by": "slice dx-g10-wss-01 reader",
+    "writer": "slice dx-g10-wss-01 writer",
+    "rows": {
+     "5": {
+      "digest": "2612eea124b0e962d1b5f0988498deae409a255de3d7122b08c3223ca3f4a6cc",
+      "by": "slice dx-g10-wss-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "wss:register:0x11",
+   "part": "dosbox-x",
+   "rows": [
+    "6"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "e911943a002e30e37438f9e1070d9d8a2d1d00d993e51283facbe1b5133d3c6a",
+    "by": "slice dx-g10-wss-01 reader",
+    "writer": "slice dx-g10-wss-01 writer",
+    "rows": {
+     "6": {
+      "digest": "84285f4dbc3c229a64ad5167b85beb0bf2bbe68e436fd2f26e6e27863ab64ee6",
+      "by": "slice dx-g10-wss-01 reader"
+     },
+     "7": {
+      "digest": "49a5f56c20e99802c0ccd67929c277ca3e7486a41a82219f6df1e9262ffc31fc",
+      "by": "slice dx-g10-wss-01 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "wss:register:0x18",
+   "part": "dosbox-x",
+   "rows": [
+    "4"
+   ],
+   "by": "deepseek-flash x2",
+   "why": "the note named the emulator; the subject is the hardware",
+   "was": {
+    "seal": "7c893ee1e8ce07f3f4ec97ff1ff3d1b2f4ddcae0df8cea32586dc8ab4f7647d3",
+    "by": "slice dx-g10-wss-01 reader",
+    "writer": "slice dx-g10-wss-01 writer",
+    "rows": {
+     "4": {
+      "digest": "54816fcbdef77860a4cfaa64eab1ac33ad42105676e6daa492eebd31246cb703",
+      "by": "slice dx-g10-wss-01 reader"
      }
     }
    }

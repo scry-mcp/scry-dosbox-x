@@ -48,7 +48,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_NONE, with the same value.",
+     "text": "The code is named DOSERR_NONE, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -101,7 +101,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_FUNCTION_NUMBER_INVALID, with the same value.",
+     "text": "The code is named DOSERR_FUNCTION_NUMBER_INVALID, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -154,7 +154,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_FILE_NOT_FOUND, with the same value.",
+     "text": "The code is named DOSERR_FILE_NOT_FOUND, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -207,7 +207,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_PATH_NOT_FOUND, with the same value.",
+     "text": "The code is named DOSERR_PATH_NOT_FOUND, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -260,7 +260,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_TOO_MANY_OPEN_FILES, with the same value.",
+     "text": "The code is named DOSERR_TOO_MANY_OPEN_FILES, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -313,7 +313,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_ACCESS_DENIED, with the same value.",
+     "text": "The code is named DOSERR_ACCESS_DENIED, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -366,7 +366,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_INVALID_HANDLE, with the same value.",
+     "text": "The code is named DOSERR_INVALID_HANDLE, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -419,7 +419,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_MCB_DESTROYED, with the same value.",
+     "text": "The code is named DOSERR_MCB_DESTROYED, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -472,7 +472,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_INSUFFICIENT_MEMORY, with the same value.",
+     "text": "The code is named DOSERR_INSUFFICIENT_MEMORY, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -525,7 +525,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_MB_ADDRESS_INVALID, with the same value.",
+     "text": "The code is named DOSERR_MB_ADDRESS_INVALID, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -578,7 +578,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_ENVIRONMENT_INVALID, with the same value.",
+     "text": "The code is named DOSERR_ENVIRONMENT_INVALID, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -631,7 +631,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_FORMAT_INVALID, with the same value.",
+     "text": "The code is named DOSERR_FORMAT_INVALID, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -684,7 +684,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_ACCESS_CODE_INVALID, with the same value.",
+     "text": "The code is named DOSERR_ACCESS_CODE_INVALID, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -737,7 +737,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_DATA_INVALID, with the same value.",
+     "text": "The code is named DOSERR_DATA_INVALID, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -795,7 +795,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the value 14 both DOSERR_RESERVED and DOSERR_FIXUP_OVERFLOW.",
+     "text": "The value 14 carries both names, DOSERR_RESERVED and DOSERR_FIXUP_OVERFLOW.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -854,7 +854,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_INVALID_DRIVE, with the same value.",
+     "text": "The code is named DOSERR_INVALID_DRIVE, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -907,7 +907,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_REMOVE_CURRENT_DIRECTORY, with the same value.",
+     "text": "The code is named DOSERR_REMOVE_CURRENT_DIRECTORY, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -960,7 +960,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_NOT_SAME_DEVICE, with the same value.",
+     "text": "The code is named DOSERR_NOT_SAME_DEVICE, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -1013,7 +1013,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_NO_MORE_FILES, with the same value.",
+     "text": "The code is named DOSERR_NO_MORE_FILES, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -1066,7 +1066,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_WRITE_PROTECTED, with the same value.",
+     "text": "The code is named DOSERR_WRITE_PROTECTED, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -1154,7 +1154,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_DRIVE_NOT_READY, with the same value.",
+     "text": "The code is named DOSERR_DRIVE_NOT_READY, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
@@ -2905,7 +2905,7 @@
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
-     "text": "The emulator names the code DOSERR_FILE_ALREADY_EXISTS, with the same value.",
+     "text": "The code is named DOSERR_FILE_ALREADY_EXISTS, with the same value.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
