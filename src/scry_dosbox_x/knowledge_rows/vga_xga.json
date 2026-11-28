@@ -5257,7 +5257,7 @@
      "n": "3",
      "on": "write",
      "of": "doc",
-     "text": "Bits 31-0 are the comparison color; bit 9 of BEE8_EH set makes it 32-bit, cleared two 16-bit registers, and in 32 bpp the RSF flag selects the half.",
+     "text": "Bits 31-0 are the comparison color: with BEE8_EH bit 9 set for programmed I/O it is 32-bit, else two 16-bit registers, and in 32 bpp RSF selects the half.",
      "quotes": [
       {
        "ref": "datasheet:S3-Trio64.raw.txt",
@@ -7863,10 +7863,24 @@
      "variant": "virge"
     },
     {
+     "n": "5a",
+     "on": "is",
+     "of": "doc",
+     "text": "Line draw always proceeds from bottom to top.",
+     "quotes": [
+      {
+       "ref": "datasheet:S3-ViRGE.raw.txt",
+       "lines": "9454",
+       "sha": "40e952191c05601d4aca2ecf09ba252ee4a00cf7a8335d685cced79b113d1804"
+      }
+     ],
+     "variant": "virge"
+    },
+    {
      "n": "5",
      "on": "is",
      "of": "doc",
-     "text": "Line draw always proceeds from bottom to top; with the last pixel withheld, an upward line takes END0 from its start x and END1 one less from its end x.",
+     "text": "An upward line with the last pixel withheld takes END0 from its start x and END1 one less or one more than its end x by the drawing direction.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -8068,7 +8082,7 @@
      "n": "2",
      "on": "write",
      "of": "doc",
-     "text": "Bits 31-0 are the X start in S11.20 format: x1 left-shifted 20 plus half the X delta for an X major line.",
+     "text": "Bits 31-0 are the S11.20 X start: on an X major line x1 shifted 20 plus half the X delta, plus 0FFFFFH if negative; Y major x1 shifted 20.",
      "quotes": [
       {
        "ref": "datasheet:S3-ViRGE.raw.txt",
@@ -11378,7 +11392,7 @@
      "on": "read",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "DOSBox-X also reads MONO_PAT_0 back at xx = E8 of the 2D Line and 2D Polygon groups, which have no such register.",
+     "text": "DOSBox-X also reads MONO_PAT_0 back at xx = E8 of the 2D Line group, which have no such register.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
@@ -11451,7 +11465,7 @@
      "on": "read",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "DOSBox-X also reads MONO_PAT_1 back at xx = EC of the 2D Line and 2D Polygon groups, which have no such register.",
+     "text": "DOSBox-X also reads MONO_PAT_1 back at xx = EC of the 2D Line group, which have no such register.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
@@ -11524,7 +11538,7 @@
      "on": "read",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "DOSBox-X also reads PAT_BG_CLR back at xx = F0 of the 2D Line and 2D Polygon groups, which have no such register.",
+     "text": "DOSBox-X also reads PAT_BG_CLR back at xx = F0 of the 2D Line group, which have no such register.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_xga.cpp",
@@ -13263,7 +13277,7 @@
      "n": "2",
      "on": "read",
      "of": "doc",
-     "text": "A read of the register's bits 15-8 returns the reserved bits 15-12, or the reserved bits 15-14 when it holds the diagonal step constant, above the field's high bits.",
+     "text": "A read of the register's bits 15-8 returns the reserved bits 15-12, or the reserved bits 15-14 when it holds the diagonal step constant.",
      "quotes": [
       {
        "ref": "datasheet:S3-Trio64.raw.txt",
@@ -13286,7 +13300,7 @@
      "n": "3",
      "on": "write",
      "of": "doc",
-     "text": "A write of the register's bits 15-8 writes the reserved bits 15-12, or the reserved bits 15-14 when it holds the diagonal step constant, above the field's high bits.",
+     "text": "A write of the register's bits 15-8 writes the reserved bits 15-12, or the reserved bits 15-14 when it holds the diagonal step constant.",
      "quotes": [
       {
        "ref": "datasheet:S3-Trio64.raw.txt",

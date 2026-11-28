@@ -82839,28 +82839,28 @@
   },
   "vga_xga:register:0x8EE9": {
    "doc": {
-    "seal": "3705935de17957f7da4543d1e5bb84327df39ff1cc10a3e84865b2c7abda1179",
-    "by": "slice dx-g10-vga_xga-07 reader",
-    "writer": "slice dx-g10-vga_xga-07 writer",
+    "seal": "ae8bc3565d11083d075446964ea6cc6e43c10de47adb5b613b5050fd2a584c70",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "1": {
       "digest": "b4d7d8397e90289a85e7ad715097a4b944536f84c22a03877d5afe00d02fb969",
       "by": "slice dx-g10-vga_xga-07 reader"
      },
      "2": {
-      "digest": "88891c86b0407904b6ef66e97b7e875713e8c9d08354b1329677d5d0ae589a82",
-      "by": "slice dx-g10-vga_xga-07 reader"
+      "digest": "7c2e67b2517274d58d99039ab4367e354b7c261a244654fe28516184ae35fa60",
+      "by": "W1-BASE closing reader dx"
      },
      "3": {
-      "digest": "22741ca1d407815fc2442dc553ae0857a340a3d2aed4baca362dfe33a6399a4c",
-      "by": "slice dx-g10-vga_xga-07 reader"
+      "digest": "7323c0099dedad3ab689654ce2700d2db4f1ed6f0c3dfe545a398270e0881641",
+      "by": "W1-BASE closing reader dx"
      }
     }
    },
    "dosbox-x": {
-    "seal": "c8abaab9aa83bbbc7a599c3badda815df843cea159181dd0ed3ac5fa98f93975",
-    "by": "R3 reader",
-    "writer": "L1 dosbox-x writer",
+    "seal": "eba145d480aa4536a58472946378ede020e8550a8303586e8c445b442cdda1f8",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "4": {
       "digest": "29eccaa20f38037b2aa3735e9e16e5723c5524757163a40f71a7040200c67eef",
@@ -82868,7 +82868,7 @@
      },
      "5": {
       "digest": "399f101d8f4c3dc8f181802f1c3971186290da6eb66692dd3cb0facd141b2029",
-      "by": "R3 reader"
+      "by": "W1-BASE closing reader dx"
      }
     }
    }
@@ -83634,9 +83634,9 @@
   },
   "vga_xga:register:0xA96C": {
    "doc": {
-    "seal": "176b6143579be6e4a24d5575c9ae2cb278f4b8869b1bf454b409107286ba3ec2",
-    "by": "slice dx-g10-vga_xga-04 reader",
-    "writer": "slice dx-g10-vga_xga-04 writer",
+    "seal": "225d7479117bf64022b631a87402e6adbbf40f69a16066b63b3c6e9968e22283",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "1": {
       "digest": "fbbcf00fee7843ab389b98e4fd796d6b63cee8113f14b7f1f64c442e8cf3f22a",
@@ -83655,8 +83655,12 @@
       "by": "slice dx-g10-vga_xga-04 reader"
      },
      "5": {
-      "digest": "d9544d9c8b07d3de28883b8980ad30de05821e1d936baeba6502d3869cc78749",
-      "by": "slice dx-g10-vga_xga-04 reader"
+      "digest": "6734c2b644d717da609c10dfb9dd8e75ffc4ff88ef4268642883ab87c1727d59",
+      "by": "W1-BASE closing reader dx"
+     },
+     "5a": {
+      "digest": "3dd3a86ee4003b31b56cc0b737ea04ccaf19a4531fdf9466df69b579912ccf89",
+      "by": "W1-BASE closing reader dx"
      },
      "5b": {
       "digest": "a83e812b4660c843d630656523299b395bb0e3432711541a256e0be8a9a9286e",
@@ -83701,17 +83705,17 @@
   },
   "vga_xga:register:0xA974": {
    "doc": {
-    "seal": "db0ea34f46613bd262b28bb308913f751bfa3859098797c1ccd4303a5d8fa998",
-    "by": "slice dx-g10-vga_xga-04 reader",
-    "writer": "slice dx-g10-vga_xga-04 writer",
+    "seal": "8bdf8db60d7b03858d1665e164aa6f6552c8bb477fccb39645edcd13003d95ff",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "1": {
       "digest": "cc7b80b0f0d4af4661aa954bfd9f2159b9613686fe45901243cb178eff2299f7",
       "by": "slice dx-g10-vga_xga-04 reader"
      },
      "2": {
-      "digest": "706d09e425eaa3f39796c81ee6f9aa3dcd4b2d588777661d7ace51b2acd36f69",
-      "by": "slice dx-g10-vga_xga-04 reader"
+      "digest": "fcb1ed9f31edcd09c65ea02341d35d9d84ecf55226165964c4b5c910eb816029",
+      "by": "W1-BASE closing reader dx"
      },
      "3": {
       "digest": "2df4c41129069163b8cb33c59a3dfed1ae253cafad70493db12da3af8829e2b8",
@@ -83724,9 +83728,9 @@
     }
    },
    "dosbox-x": {
-    "seal": "e64fee5f1902b78592f4b49c1d76b75a439f8a0bf705d202bd68947dd220b64c",
-    "by": "slice dx-g10-vga_xga-04 reader",
-    "writer": "slice dx-g10-vga_xga-04 writer",
+    "seal": "01a8e564971b02e56c46a28299927ba07696cdb362efd7ed39c2f9c7ab8047f4",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {}
    }
   },
@@ -84034,9 +84038,9 @@
   },
   "vga_xga:register:0xB2E8": {
    "doc": {
-    "seal": "4e884429390682c1ca524fdd58fd6198b66f10eda6a21693e11b839ec79b05a3",
-    "by": "slice dx-g10-vga_xga-03 reader",
-    "writer": "slice dx-g10-vga_xga-03 writer",
+    "seal": "a55a78e50601c2f3ffe9d427890b2e948ecacdb4b15f556ef54236daed231927",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "1": {
       "digest": "63ffc285b339bb938128d80e2d2e5808f3997773c6f26634836194e98f7f788e",
@@ -84047,19 +84051,19 @@
       "by": "slice dx-g10-vga_xga-03 reader"
      },
      "3": {
-      "digest": "070d42a09dd4bc51a93742898e03e39fbdc146b140da55067d6abb95898a82e4",
-      "by": "slice dx-g10-vga_xga-03 reader"
+      "digest": "9052837ff9bbd038429444b7bd3840506f86fdeb94acc3d82af6affb784adaa5",
+      "by": "W1-BASE closing reader dx"
      }
     }
    },
    "dosbox-x": {
-    "seal": "97bf6466eac034591bf679994623cf7a23c6871f99780c5b242615718ad72239",
-    "by": "slice dx-g10-vga_xga-03 reader",
-    "writer": "slice dx-g10-vga_xga-03 writer",
+    "seal": "49cfa0ea652c896d84f1057d0dc66507e203e32e87b4aa576320cbd21f0bf09e",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "4": {
       "digest": "404a54902cd533a646af23d0508643486390744dc5ecda7b2ad652e6b956ed93",
-      "by": "slice dx-g10-vga_xga-03 reader"
+      "by": "W1-BASE closing reader dx"
      }
     }
    }
@@ -84510,13 +84514,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "5eacaf57631f72907284304f44c3c647b1725f72a205091ea4b48f7f8a2f9f5b",
-    "by": "slice dx-g10-vga_xga-06 reader",
-    "writer": "slice dx-g10-vga_xga-06 writer",
+    "seal": "b6dbb6d0fd01231f5e9989d97382acacdfe456e03fc5185ee6b061f5f1303fa2",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "3": {
-      "digest": "06c90d7fa1307a6a99116629af824c86803807c70657795229685a9bb71f5eb0",
-      "by": "slice dx-g10-vga_xga-06 reader"
+      "digest": "364df067912a38bec9968763b26c5adcddff4b73e8b8d8abbe749d680a253838",
+      "by": "W1-BASE closing reader dx"
      }
     }
    }
@@ -84538,13 +84542,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "bd5459b0185c009f6a1957f8ecc7ac7eaf5cbdb45b010efbaf003b5a7caa5363",
-    "by": "slice dx-g10-vga_xga-06 reader",
-    "writer": "slice dx-g10-vga_xga-06 writer",
+    "seal": "efb92b1c1184980d737bdc00354011925fa4a37f75aa8d94d02f15a4b8c05495",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "3": {
-      "digest": "b9c44f602500719a7c49df3254f67e18a9604fc637a59cfa5a1b401c890cc8eb",
-      "by": "slice dx-g10-vga_xga-06 reader"
+      "digest": "0cebba48c93bcbc11686bd2aac1e7c100b053a424c0c3f1bb3b3d8c3d27ffafc",
+      "by": "W1-BASE closing reader dx"
      }
     }
    }
@@ -84566,13 +84570,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "4ae9eef73e6372feedbf34c62ba9c09dcb1b27c880ba154c3dbf9fa6692556c0",
-    "by": "slice dx-g10-vga_xga-06 reader",
-    "writer": "slice dx-g10-vga_xga-06 writer",
+    "seal": "a92f7709b9935f54a7ed1a8bdcec4c5ee4c0eccbea38fd053aad1a9cb8cbeef2",
+    "by": "W1-BASE closing reader dx",
+    "writer": "W1-BASE writer",
     "rows": {
      "3": {
-      "digest": "8a31039aaaf493ea846a4c8f633f1a895820530826c45926fed64ae8dcc5d821",
-      "by": "slice dx-g10-vga_xga-06 reader"
+      "digest": "ea3a94bc9d09ae489ca089b756ea494a9df3898f9cb57666ef3d90b392bb58c9",
+      "by": "W1-BASE closing reader dx"
      }
     }
    }
@@ -102910,6 +102914,208 @@
       "by": "slice dx-g10-wss-01 reader"
      }
     }
+   }
+  },
+  {
+   "id": "vga_xga:register:0x8EE9",
+   "part": "doc",
+   "rows": [
+    "2",
+    "3"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the sentences said more than the cited reserved-bit lines: the field's high bits they named are not in the quote",
+   "was": {
+    "seal": "3705935de17957f7da4543d1e5bb84327df39ff1cc10a3e84865b2c7abda1179",
+    "by": "slice dx-g10-vga_xga-07 reader",
+    "writer": "slice dx-g10-vga_xga-07 writer",
+    "rows": {
+     "1": {
+      "digest": "b4d7d8397e90289a85e7ad715097a4b944536f84c22a03877d5afe00d02fb969",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "2": {
+      "digest": "88891c86b0407904b6ef66e97b7e875713e8c9d08354b1329677d5d0ae589a82",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     },
+     "3": {
+      "digest": "22741ca1d407815fc2442dc553ae0857a340a3d2aed4baca362dfe33a6399a4c",
+      "by": "slice dx-g10-vga_xga-07 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xA974",
+   "part": "doc",
+   "rows": [
+    "2"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the sentence gave the positive-delta value as if it covered every line",
+   "was": {
+    "seal": "db0ea34f46613bd262b28bb308913f751bfa3859098797c1ccd4303a5d8fa998",
+    "by": "slice dx-g10-vga_xga-04 reader",
+    "writer": "slice dx-g10-vga_xga-04 writer",
+    "rows": {
+     "1": {
+      "digest": "cc7b80b0f0d4af4661aa954bfd9f2159b9613686fe45901243cb178eff2299f7",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "2": {
+      "digest": "706d09e425eaa3f39796c81ee6f9aa3dcd4b2d588777661d7ace51b2acd36f69",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "3": {
+      "digest": "2df4c41129069163b8cb33c59a3dfed1ae253cafad70493db12da3af8829e2b8",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "4": {
+      "digest": "f9e1ac18784f7cbbbb4c1d6f8e99c7dca71eaf85a09f0d7de31b59dfe3b99e31",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xA96C",
+   "part": "doc",
+   "rows": [
+    "5"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the upward-line row stated one direction only; the traversal fact is now its own row",
+   "was": {
+    "seal": "176b6143579be6e4a24d5575c9ae2cb278f4b8869b1bf454b409107286ba3ec2",
+    "by": "slice dx-g10-vga_xga-04 reader",
+    "writer": "slice dx-g10-vga_xga-04 writer",
+    "rows": {
+     "1": {
+      "digest": "fbbcf00fee7843ab389b98e4fd796d6b63cee8113f14b7f1f64c442e8cf3f22a",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "2": {
+      "digest": "9cde36c0da413554edbe8c088f9d99776e22ddd230ec34a37e9a1ee60ae8b5a3",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "3": {
+      "digest": "a97b9b960c4386d6393393712233577e1d130253f77643dd3d1a8ed94a2cbfa7",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "4": {
+      "digest": "60399966465262859752c7a96d8bc069e7a815c90450d8ce2e754b8f92596521",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "5": {
+      "digest": "d9544d9c8b07d3de28883b8980ad30de05821e1d936baeba6502d3869cc78749",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     },
+     "5b": {
+      "digest": "a83e812b4660c843d630656523299b395bb0e3432711541a256e0be8a9a9286e",
+      "by": "slice dx-g10-vga_xga-04 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xB2E8",
+   "part": "doc",
+   "rows": [
+    "3"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the sentence stated more than its cited lines",
+   "was": {
+    "seal": "4e884429390682c1ca524fdd58fd6198b66f10eda6a21693e11b839ec79b05a3",
+    "by": "slice dx-g10-vga_xga-03 reader",
+    "writer": "slice dx-g10-vga_xga-03 writer",
+    "rows": {
+     "1": {
+      "digest": "63ffc285b339bb938128d80e2d2e5808f3997773c6f26634836194e98f7f788e",
+      "by": "slice dx-g10-vga_xga-03 reader"
+     },
+     "2": {
+      "digest": "7930a212a675e5778d7cd186e7fbefdade2c6478af940de113fed2c5d8fb214f",
+      "by": "slice dx-g10-vga_xga-03 reader"
+     },
+     "3": {
+      "digest": "070d42a09dd4bc51a93742898e03e39fbdc146b140da55067d6abb95898a82e4",
+      "by": "slice dx-g10-vga_xga-03 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xE8:read",
+   "part": "dosbox-x",
+   "rows": [
+    "3"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the note denied a register the 2D Polygon group documents",
+   "was": {
+    "seal": "5eacaf57631f72907284304f44c3c647b1725f72a205091ea4b48f7f8a2f9f5b",
+    "by": "slice dx-g10-vga_xga-06 reader",
+    "writer": "slice dx-g10-vga_xga-06 writer",
+    "rows": {
+     "3": {
+      "digest": "06c90d7fa1307a6a99116629af824c86803807c70657795229685a9bb71f5eb0",
+      "by": "slice dx-g10-vga_xga-06 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xEC:read",
+   "part": "dosbox-x",
+   "rows": [
+    "3"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the note denied a register the 2D Polygon group documents",
+   "was": {
+    "seal": "bd5459b0185c009f6a1957f8ecc7ac7eaf5cbdb45b010efbaf003b5a7caa5363",
+    "by": "slice dx-g10-vga_xga-06 reader",
+    "writer": "slice dx-g10-vga_xga-06 writer",
+    "rows": {
+     "3": {
+      "digest": "b9c44f602500719a7c49df3254f67e18a9604fc637a59cfa5a1b401c890cc8eb",
+      "by": "slice dx-g10-vga_xga-06 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xF0:read",
+   "part": "dosbox-x",
+   "rows": [
+    "3"
+   ],
+   "by": "W1-BASE corrector",
+   "why": "the note denied a register the 2D Polygon group documents",
+   "was": {
+    "seal": "4ae9eef73e6372feedbf34c62ba9c09dcb1b27c880ba154c3dbf9fa6692556c0",
+    "by": "slice dx-g10-vga_xga-06 reader",
+    "writer": "slice dx-g10-vga_xga-06 writer",
+    "rows": {
+     "3": {
+      "digest": "8a31039aaaf493ea846a4c8f633f1a895820530826c45926fed64ae8dcc5d821",
+      "by": "slice dx-g10-vga_xga-06 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vga_xga:register:0xA974",
+   "part": "dosbox-x",
+   "rows": [],
+   "by": "W1-BASE corrector",
+   "why": "the doc row 2 its agrees closures answer was rewritten",
+   "was": {
+    "seal": "e64fee5f1902b78592f4b49c1d76b75a439f8a0bf705d202bd68947dd220b64c",
+    "by": "slice dx-g10-vga_xga-04 reader",
+    "writer": "slice dx-g10-vga_xga-04 writer",
+    "rows": {}
    }
   }
  ]
