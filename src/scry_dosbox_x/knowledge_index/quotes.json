@@ -5068,6 +5068,8 @@
   ["dosbox-x:src/hardware/vga_other.cpp", "290-293", "f40c24ab4d99e5bd88de659e3d8d51ed656bcf1a892e99b9ea6336ad73b5f1c3"],
   ["dosbox-x:src/hardware/vga_other.cpp", "291-294", "3dc864c4cd244396515b513a73869359c4d1b42742669948a2c37f3e3be459ca"],
   ["dosbox-x:src/hardware/vga_other.cpp", "361-363", "b43e3d305b57fc26a4dd2b6239a02ee9dd44270a0b6cd454001ed73b186e3213"],
+  ["dosbox-x:src/hardware/vga_other.cpp", "366-368", "7fbdf5d5431b86a554c98cc2269b834fa602a2413a24af472c107971d56960d9"],
+  ["dosbox-x:src/hardware/vga_other.cpp", "374-376", "bf77eeb49f242280ba128ee61b1df8275ba76b77cc3a36b711abd4ff95a44ac2"],
   ["dosbox-x:src/hardware/vga_other.cpp", "379-384", "da31036b43a50b0d3a1728a21cfecfdaf3555c8f054e2d4598f9e33e2031123a"],
   ["dosbox-x:src/hardware/vga_other.cpp", "379-385", "8355d3fc652c9740b13d1c81080d879ad96f6298bc4de8e14ab1341740ef2004"],
   ["dosbox-x:src/hardware/vga_other.cpp", "380-383", "bdb1e06631dde7af3d91c8d0d72c87adab614c8067c89b5ec4f669ac4af69f17"],

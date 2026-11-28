@@ -86288,13 +86288,13 @@
     }
    },
    "dosbox-x": {
-    "seal": "6472fa354d09a6e7b9e0182c333e20547f02a3d550847df77f4358cba323028c",
-    "by": "w1-voz-reader",
-    "writer": "deepseek-flash w1-voz",
+    "seal": "8c8738b7c01c3a2f094480f031d8e8e30549524073786768f048025d5350205e",
+    "by": "W1-FIX-AUDIT reader dosbox",
+    "writer": "W1-FIX-AUDIT writer",
     "rows": {
      "6": {
-      "digest": "474d6ceba331f22f2c01c57055c5a331ddc4f80bdd8f09eed7160e68e6338246",
-      "by": "w1-voz-reader"
+      "digest": "eface5361bd895fb90665c5be7eba85e69cb3a6528d64f3e41fad0da96ced9a2",
+      "by": "W1-FIX-AUDIT reader dosbox"
      }
     }
    }
@@ -103881,6 +103881,26 @@
      "T": {
       "digest": "13f64896085255cb91c16884f748e726a19535e419061075d27fb35136382173",
       "by": "slice dx-d4-06 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "vother:register:0x3B4",
+   "part": "dosbox-x",
+   "rows": [
+    "6"
+   ],
+   "by": "W1-FIX-AUDIT writer",
+   "why": "the row said 'it' instead of what is stored and what is ORed",
+   "was": {
+    "seal": "6472fa354d09a6e7b9e0182c333e20547f02a3d550847df77f4358cba323028c",
+    "by": "w1-voz-reader",
+    "writer": "deepseek-flash w1-voz",
+    "rows": {
+     "6": {
+      "digest": "474d6ceba331f22f2c01c57055c5a331ddc4f80bdd8f09eed7160e68e6338246",
+      "by": "w1-voz-reader"
      }
     }
    }

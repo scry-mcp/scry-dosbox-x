@@ -183,7 +183,7 @@
      "on": "write",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "On MCGA the CRTC remembers a written bit 5 in a static and ORs it into the data register's reads.",
+     "text": "MCGA stores 0x40 when a written index has bit 5 set, else 0x00, and ORs it into every data read: 0x00-0x0F, 0x10 and unhandled indices (0x00).",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_other.cpp",
@@ -194,6 +194,16 @@
        "ref": "dosbox-x:src/hardware/vga_other.cpp",
        "lines": "361-363",
        "sha": "b43e3d305b57fc26a4dd2b6239a02ee9dd44270a0b6cd454001ed73b186e3213"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "366-368",
+       "sha": "7fbdf5d5431b86a554c98cc2269b834fa602a2413a24af472c107971d56960d9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "374-376",
+       "sha": "bf77eeb49f242280ba128ee61b1df8275ba76b77cc3a36b711abd4ff95a44ac2"
       }
      ]
     }
