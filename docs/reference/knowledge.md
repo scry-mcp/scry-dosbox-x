@@ -286,7 +286,7 @@ What a number is called on the machine and what the base knows of it: a port, ve
 DOS or BIOS call, IRQ, memory address, input, device, register or command. One match, or an
 `id`, answers the entry: its `rows`, the document's first with each emulator's `verdicts`,
 then the emulators' notes (`vs`); `id=<id>#<n>`: a row, with URLs. More: a list. No session
-is needed except for a device by tag, inputs and memory.
+except for a tag, inputs or memory.
 
 `id`: an entry's id. `kind`: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`,
 `device`, `register` or `command`; empty searches all. `key`: the number as a reply prints it,
@@ -305,7 +305,7 @@ session (`no_session`).
 
 Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `served`,
 `held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
-`unconfirmed` lists ids held back.
+`unconfirmed` lists ids held back. `kinds` on `no_channel`.
 
 Scopes: am9517a, chip, disney, fdc, gameblaster, gameport, ibm-pc, ide, imfc, innova, ins8250, kbc8042, keys, lpt, mc146818, mc6845, mpu401, pas, pci, pic8259, pit8253, ps1, saa1099, sblaster, sn76496, tandy, vattr, vcrtc, vga_ati, vga_paradise, vga_s3, vga_tseng, vga_xga, vgfx, vmisc, vother, vseq, wss, ym3812, ymf262, z80.
 
