@@ -201,7 +201,7 @@ The bytes come from the debugger's `MEMDUMPBIN` of exactly that range, and a dum
 - [`write`](write.md#write)
 - [`watch_add`](breakpoints.md#watch_add)
 - [`find`](#find)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 
 <details><summary>The contract your client receives</summary>
 
@@ -351,7 +351,7 @@ Each listing is checked line by line against the debugger's own code pane, and i
 
 - [`call_stack`](#call_stack)
 - [`step`](run.md#step)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`comment_write`](comments.md#comment_write)
 - [`read_memory`](#read_memory)
 - [`breakpoint_at`](breakpoints.md#breakpoint_at)
@@ -485,7 +485,7 @@ The chain ends at a saved frame pointer that is zero or does not rise, or at a f
 - [`registers`](#registers)
 - [`trace`](run.md#trace)
 - [`step`](run.md#step)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`run_to`](run.md#run_to)
 
 <details><summary>The contract your client receives</summary>

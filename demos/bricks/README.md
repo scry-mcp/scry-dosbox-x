@@ -258,7 +258,7 @@ A freeze is the debugger putting a byte back after every instruction. The game t
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
 | [Run](../../docs/reference/run.md) | `resume`, `run_for`, `stop` |
-| [Names](../../docs/reference/names.md) | `symbols_load` |
+| [Symbols](../../docs/reference/symbols.md) | `symbols_load` |
 | [Read](../../docs/reference/read.md) | `disassemble`, `read_memory` |
 | [Breakpoints](../../docs/reference/breakpoints.md) | `breakpoint_at`, `watch_add`, `declaration_clear` |
 | [Input](../../docs/reference/input.md) | `send_keys`, `send_mouse` |
@@ -272,7 +272,7 @@ Each group is a page of the reference. Some of the names need a word:
 - Run: the tools that let the program run and stop it again.
 - Breakpoints: breakpoints and watches.
 - Sequences: the tools that run several calls as one.
-- Names: the tool that loads a symbol table.
+- Symbols: the tool that loads a symbol table.
 
 ## The transcript
 

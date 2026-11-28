@@ -218,7 +218,7 @@ A symbol missing from the loaded symbol table is saved `unresolved`, not refused
 - [`breakpoint_interrupt`](#breakpoint_interrupt)
 - [`declaration_list`](#declaration_list)
 - [`declaration_clear`](#declaration_clear)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`watch_add`](#watch_add)
 
 <details><summary>The contract your client receives</summary>
@@ -973,7 +973,7 @@ On `freeze`:
 - [`declaration_list`](#declaration_list)
 - [`declaration_clear`](#declaration_clear)
 - [`breakpoint_at`](#breakpoint_at)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`scan`](scan.md#scan)
 - [`memdump`](read.md#memdump)
 

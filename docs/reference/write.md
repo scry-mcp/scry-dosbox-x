@@ -229,7 +229,7 @@ The write marks the session: the `session` block of every later reply carries `a
 
 - [`read_memory`](read.md#read_memory)
 - [`set_register`](#set_register)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`memdump`](read.md#memdump)
 
 <details><summary>The contract your client receives</summary>

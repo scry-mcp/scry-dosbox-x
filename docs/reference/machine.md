@@ -323,9 +323,9 @@ The debugger writes the table to a file, `MCPIVT.TXT`, which the server reads an
 
 - [`machine_map`](#machine_map)
 - [`breakpoint_interrupt`](breakpoints.md#breakpoint_interrupt)
-- [`symbols_find`](names.md#symbols_find)
+- [`symbols_find`](symbols.md#symbols_find)
 - [`disassemble`](read.md#disassemble)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 
 <details><summary>The contract your client receives</summary>
 

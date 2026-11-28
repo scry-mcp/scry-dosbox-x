@@ -274,7 +274,7 @@ One address shows one comment, however it is spelled: `start`, `0824:000B` and `
 
 - [`comment_list`](#comment_list)
 - [`disassemble`](read.md#disassemble)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`declaration_list`](breakpoints.md#declaration_list)
 
 <details><summary>The contract your client receives</summary>

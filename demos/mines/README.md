@@ -593,7 +593,7 @@ Reply, 2 of 12 fields:
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
 | [Run](../../docs/reference/run.md) | `resume`, `run_to`, `run_for` |
-| [Names](../../docs/reference/names.md) | `symbols_load` |
+| [Symbols](../../docs/reference/symbols.md) | `symbols_load` |
 | [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `read_memory` |
 | [Input](../../docs/reference/input.md) | `send_mouse` |
 | [Sequences](../../docs/reference/sequences.md) | `perform` |
@@ -607,7 +607,7 @@ Each group is a page of the reference. Some of the names need a word:
 - Run: the tools that let the program run and stop it again.
 - Sequences: the tools that run several calls as one.
 - Machine: the program's log and the map of what DOS loaded.
-- Names: the tool that loads a symbol table.
+- Symbols: the tool that loads a symbol table.
 
 ## The transcript
 

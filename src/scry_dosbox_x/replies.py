@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, NotRequired, Required
+from typing import Annotated, Any, Required
 
 from scry_core import knowledge_tool, media_replies, tool_replies
 from scry_core import promote as core_promote
@@ -12,15 +12,6 @@ from scry_core.overlay import OverlayReply
 from scry_core.reply_contract import OmitEmpty, When
 from scry_core.reply_schema import RunEnvelope
 from typing_extensions import TypedDict
-
-
-class DosboxInstruction(StopInstruction):
-    """The stop's instruction, with what the decoder adds on this platform."""
-
-    bytes_from: str
-    code_bits: int
-    flow: str
-    note_live: NotRequired[bool]
 
 
 class DosboxEnvelope(RunEnvelope, total=False):
@@ -283,7 +274,7 @@ class ResumeReply(DosboxEnvelope, total=False):
     e9: dict[str, Any]
     enrichment: dict[str, Any]
     frame: int | dict[str, Any]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     pc: str
     regs: dict[str, Any]
     output: Required[str]
@@ -301,7 +292,7 @@ class WaitReply(DosboxEnvelope, total=False):
     e9: dict[str, Any]
     enrichment: dict[str, Any]
     frame: int | dict[str, Any]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     pc: str | dict[str, Any]
     regs: dict[str, Any]
     stop_seq: int
@@ -322,7 +313,7 @@ class RunForStop(DosboxEnvelope, total=False):
     frame: int | dict[str, Any]
     frame_after: Required[int | dict[str, Any]]
     frame_before: Required[int | dict[str, Any]]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     pc: str | dict[str, Any]
     polls: Required[int]
     regs: dict[str, Any]
@@ -374,7 +365,7 @@ class RunToReply(DosboxEnvelope, tool_replies.DisarmFields, total=False):
     e9: dict[str, Any]
     enrichment: dict[str, Any]
     frame: int | dict[str, Any]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     pc: str
     ref: str
     regs: dict[str, Any]
@@ -432,7 +423,7 @@ class ScreenWaitReply(DosboxEnvelope, tool_replies.StopWaitFields, total=False):
     enrichment: dict[str, Any]
     entries: int
     frame: Annotated[int | dict[str, Any], When("unless the predicate was already true")]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     line: str
     palette: str
     pc: str
@@ -463,7 +454,7 @@ class ParkedPost(TypedDict, total=False):
     cpu_mode: Annotated[str | dict[str, Any], FROM_A_STOPPED_MACHINE]
     e9: Annotated[dict[str, Any], FROM_A_STOPPED_MACHINE]
     frame: Annotated[int | dict[str, Any], FROM_A_STOPPED_MACHINE]
-    instruction: Annotated[DosboxInstruction, FROM_A_STOPPED_MACHINE]
+    instruction: Annotated[StopInstruction, FROM_A_STOPPED_MACHINE]
     pc: Annotated[str | dict[str, Any], FROM_A_STOPPED_MACHINE]
     polls: Annotated[int, FROM_A_STOPPED_MACHINE]
     regs: Annotated[dict[str, Any], FROM_A_STOPPED_MACHINE]
@@ -629,7 +620,7 @@ class StepReply(DosboxEnvelope, total=False):
     e9: dict[str, Any]
     enrichment: dict[str, Any]
     frame: int | dict[str, Any]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     instructions_completed: Required[int]
     mode: str
     moved: Required[bool]
@@ -646,7 +637,7 @@ class StopReply(DosboxEnvelope, total=False):
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     frame: int | dict[str, Any]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     interrupted: Required[bool]
     pc: str
     regs: dict[str, Any]
@@ -706,7 +697,7 @@ class TraceReply(DosboxEnvelope, total=False):
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     frame: int | dict[str, Any]
-    instruction: DosboxInstruction
+    instruction: StopInstruction
     pc: str
     regs: dict[str, Any]
     stop_seq: int

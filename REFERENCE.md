@@ -13,21 +13,22 @@ A path in an example that starts with `./` stands for the folder of your clone, 
 <!-- scry-reference:begin index -->
 - [Session](docs/reference/session.md): Checking the DOSBox-X build, starting a session, asking what state it is in, finding its window and ending it. [`build_check`](docs/reference/session.md#build_check), [`start`](docs/reference/session.md#start), [`status`](docs/reference/session.md#status), [`window`](docs/reference/session.md#window), [`close`](docs/reference/session.md#close)
 - [Machine](docs/reference/machine.md): What the DOS machine holds at a stop (memory blocks, drivers, interrupt vectors) and what the program and the emulator write to the log. [`machine_map`](docs/reference/machine.md#machine_map), [`interrupt_vectors`](docs/reference/machine.md#interrupt_vectors), [`log`](docs/reference/machine.md#log), [`log_wait`](docs/reference/machine.md#log_wait)
-- [Read](docs/reference/read.md): Reading what the stopped program holds: memory, registers, code, and which of its screens is showing. [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`screen_map_find`](docs/reference/read.md#screen_map_find), [`screen_map_write`](docs/reference/read.md#screen_map_write)
-- [Screen](docs/reference/screen.md): Reading what the screen shows at a stop: its text or its picture, its colours, and a short hash of it. [`palette`](docs/reference/screen.md#palette), [`screen_view`](docs/reference/screen.md#screen_view), [`screen_signature`](docs/reference/screen.md#screen_signature)
-- [Scan](docs/reference/scan.md): Finding the address of a value nobody has named yet. [`scan`](docs/reference/scan.md#scan)
-- [Write](docs/reference/write.md): Changing the machine: memory, a register, and any command the debugger takes. [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write), [`debug`](docs/reference/write.md#debug)
-- [Hardware](docs/reference/hardware.md): The hardware behind the cpu: I/O ports, the interrupt controllers and the A20 line. [`port`](docs/reference/hardware.md#port), [`pic`](docs/reference/hardware.md#pic), [`a20`](docs/reference/hardware.md#a20)
+- [Symbols](docs/reference/symbols.md): Load your program's symbol table and look up a name or an address in it. [`symbols_load`](docs/reference/symbols.md#symbols_load), [`symbols_find`](docs/reference/symbols.md#symbols_find)
+- [Knowledge](docs/reference/knowledge.md): Ask the knowledge base what a number is called, and what DOSBox-X does about it. [`knowledge_find`](docs/reference/knowledge.md#knowledge_find)
 - [Run](docs/reference/run.md): The tools that let the program run and stop it again. [`run_to`](docs/reference/run.md#run_to), [`run_for`](docs/reference/run.md#run_for), [`trace`](docs/reference/run.md#trace), [`screen_wait`](docs/reference/run.md#screen_wait), [`step`](docs/reference/run.md#step), [`resume`](docs/reference/run.md#resume), [`wait`](docs/reference/run.md#wait), [`stop`](docs/reference/run.md#stop)
 - [Breakpoints](docs/reference/breakpoints.md): Breakpoints and watches the server saves by name and sets again in later sessions. [`breakpoint_at`](docs/reference/breakpoints.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/breakpoints.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/breakpoints.md#regpoint_add), [`watch_add`](docs/reference/breakpoints.md#watch_add), [`declaration_list`](docs/reference/breakpoints.md#declaration_list), [`declaration_clear`](docs/reference/breakpoints.md#declaration_clear)
-- [States](docs/reference/states.md): Saved states: the whole emulated machine written to a file, listed, and loaded back. [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
-- [Names](docs/reference/names.md): Load your program's symbol table, look up a name or an address, and ask the knowledge base what a number is called. [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find), [`knowledge_find`](docs/reference/names.md#knowledge_find)
+- [Read](docs/reference/read.md): Reading what the stopped program holds: memory, registers, code, and which of its screens is showing. [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`screen_map_find`](docs/reference/read.md#screen_map_find), [`screen_map_write`](docs/reference/read.md#screen_map_write)
+- [Screen](docs/reference/screen.md): Reading what the screen shows at a stop: its text or its picture, its colours, and a short hash of it. [`palette`](docs/reference/screen.md#palette), [`screen_view`](docs/reference/screen.md#screen_view), [`screen_signature`](docs/reference/screen.md#screen_signature)
+- [Write](docs/reference/write.md): Changing the machine: memory, a register, and any command the debugger takes. [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write), [`debug`](docs/reference/write.md#debug)
+- [Scan](docs/reference/scan.md): Finding the address of a value nobody has named yet. [`scan`](docs/reference/scan.md#scan)
+- [Project](docs/reference/project.md): Saving what a session learned into the repository's `.scry/` folder, after a review. [`promote`](docs/reference/project.md#promote)
 - [Comments](docs/reference/comments.md): Notes on addresses of the program, saved with the breakpoints and shown in the disassembly. [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
-- [Input](docs/reference/input.md): Sending keys, mouse buttons and pointer moves to the DOS program, and checking that it reacted. [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse)
+- [States](docs/reference/states.md): Saved states: the whole emulated machine written to a file, listed, and loaded back. [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
 - [Captures](docs/reference/captures.md): Saving the screen and the sound to files: a still, a series of frames, a video, a recording, and the list of them. [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot), [`record`](docs/reference/captures.md#record), [`audio_record`](docs/reference/captures.md#audio_record)
 - [Files](docs/reference/files.md): Comparing pictures and recordings on disk, in numbers, and checking a file the DOS program wrote. [`image_compare`](docs/reference/files.md#image_compare), [`audio_compare`](docs/reference/files.md#audio_compare), [`guest_file`](docs/reference/files.md#guest_file)
 - [Sequences](docs/reference/sequences.md): Running several calls as one: a list of steps, an input with its check, and a session written as a replay script. [`perform`](docs/reference/sequences.md#perform), [`perform_export`](docs/reference/sequences.md#perform_export), [`drive`](docs/reference/sequences.md#drive)
-- [Project](docs/reference/project.md): Saving what a session learned into the repository's `.scry/` folder, after a review. [`promote`](docs/reference/project.md#promote)
+- [Hardware](docs/reference/hardware.md): The hardware behind the cpu: I/O ports, the interrupt controllers and the A20 line. [`port`](docs/reference/hardware.md#port), [`pic`](docs/reference/hardware.md#pic), [`a20`](docs/reference/hardware.md#a20)
+- [Input](docs/reference/input.md): Sending keys, mouse buttons and pointer moves to the DOS program, and checking that it reacted. [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse)
 <!-- scry-reference:end index -->
 
 ## The session
@@ -183,7 +184,7 @@ A segmented address is `SSSS:OOOOOOOO`, under `seg_off`, or `address` in a stop'
 
 A `ref` you give is matched and saved in upper case, as `SSSS:OOOO` up to `FFFF` and `SSSS:OOOOOOOO` past it: `814:10b` is `0814:010B`. One spelling stays the debugger's own, a breakpoint as its `BPLIST` shows it: `run_to`'s `target`, a row's `entry`.
 
-The tools: [Names](docs/reference/names.md).
+The tools: [Symbols](docs/reference/symbols.md).
 
 ## Knowledge base
 
@@ -199,7 +200,7 @@ A reply calls a number by its name where the server knows one, so you do not loo
 
 The DOS and BIOS entries are checked against [Ralf Brown's Interrupt List](https://www.cs.cmu.edu/~ralf/files.html), with thanks. The list's page holds it and its licence.
 
-The tools: [Names](docs/reference/names.md).
+The tools: [Knowledge](docs/reference/knowledge.md).
 
 ## Breakpoints and watches
 

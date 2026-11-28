@@ -410,7 +410,7 @@ On Windows a start in front brings its window forward once it is up, and `window
 - [`status`](#status)
 - [`window`](#window)
 - [`close`](#close)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 - [`promote`](project.md#promote)
 
 <details><summary>The contract your client receives</summary>
@@ -626,7 +626,7 @@ At a stop it also sets the breakpoints that were declared while the program ran,
 - [`close`](#close)
 - [`stop`](run.md#stop)
 - [`declaration_list`](breakpoints.md#declaration_list)
-- [`symbols_load`](names.md#symbols_load)
+- [`symbols_load`](symbols.md#symbols_load)
 
 <details><summary>The contract your client receives</summary>
 
