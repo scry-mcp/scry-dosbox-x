@@ -145,7 +145,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "2",
-     "text": "In PC-AT mode the emulator's read handler leaves the case and returns 0xFF, so the register reads all ones.",
+     "text": "In PC-AT mode the FDC's read handler leaves the case and returns 0xFF, so the register reads all ones.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -180,7 +180,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "5",
-     "text": "In Model 30 mode bit 7 carries the interrupt; the emulator returns bit 4 only at track 0, 1 in bits 3 and 0, and 0 in DRQ and STEP.",
+     "text": "In Model 30 mode bit 7 carries the interrupt; the FDC returns bit 4 only at track 0, 1 in bits 3 and 0, and 0 in DRQ and STEP.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -296,7 +296,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "2",
-     "text": "In PC-AT mode the emulator's read handler leaves the case and returns 0xFF, so the register reads all ones.",
+     "text": "In PC-AT mode the FDC's read handler leaves the case and returns 0xFF, so the register reads all ones.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -895,7 +895,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "2",
-     "text": "The emulator's data port hands each accepted byte directly to fdc_data_write, which stores it as a command byte or parameter, guarded only by its ready flags.",
+     "text": "The FDC's data port hands each accepted byte directly to fdc_data_write, which stores it as a command byte or parameter, guarded only by its ready flags.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",
@@ -1101,7 +1101,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "1",
-     "text": "In PC-AT mode the emulator returns 1 in bits 6 to 0 instead of leaving them tristated.",
+     "text": "In PC-AT mode the FDC returns 1 in bits 6 to 0 instead of leaving them tristated.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/floppy.cpp",

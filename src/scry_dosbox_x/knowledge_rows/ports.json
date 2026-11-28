@@ -18379,7 +18379,7 @@
      "n": "S",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A write of 020Ch-020Fh stores nothing: the emulator's one-byte write body is empty.",
+     "text": "A write of 020Ch-020Fh stores nothing: IO_WriteBlocked's body is empty.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/iohandler.cpp",
@@ -22276,7 +22276,7 @@
      "n": "S",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A write of 026Eh stores nothing: the emulator's one-byte write body is empty.",
+     "text": "A write of 026Eh stores nothing: IO_WriteBlocked's body is empty.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/iohandler.cpp",
@@ -22291,7 +22291,7 @@
      "n": "T",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A write of 026Fh stores nothing: the emulator's one-byte write body is empty.",
+     "text": "A write of 026Fh stores nothing: IO_WriteBlocked's body is empty.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/iohandler.cpp",
@@ -27123,7 +27123,7 @@
      "n": "S",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A write of 030Ch-030Fh stores nothing: the emulator's one-byte write body is empty.",
+     "text": "A write of 030Ch-030Fh stores nothing: IO_WriteBlocked's body is empty.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/iohandler.cpp",
@@ -27503,7 +27503,7 @@
      "n": "S",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A write of 0320h-0321h stores nothing: the emulator's one-byte write body is empty.",
+     "text": "A write of 0320h-0321h stores nothing: IO_WriteBlocked's body is empty.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/iohandler.cpp",
@@ -27518,7 +27518,7 @@
      "n": "T",
      "on": "write",
      "of": "dosbox-x",
-     "text": "A write of 0322h-0323h stores nothing: the emulator's one-byte write body is empty.",
+     "text": "A write of 0322h-0323h stores nothing: IO_WriteBlocked's body is empty.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/iohandler.cpp",

@@ -5945,7 +5945,7 @@
      "on": "is",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The emulator's own clock setter also writes the N and R values when a VGA mode asks for a frequency.",
+     "text": "The S3 clock setter also writes the N and R values when a VGA mode asks for a frequency.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_s3.cpp",
@@ -6099,7 +6099,7 @@
      "on": "is",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The emulator's own clock setter also writes the M value when a VGA mode asks for a frequency.",
+     "text": "The S3 clock setter also writes the M value when a VGA mode asks for a frequency.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_s3.cpp",

@@ -1348,7 +1348,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "2",
-     "text": "BX indexes the emulator's own Files[] handle table: its comment says the entry number should coincide with the file handle.",
+     "text": "BX indexes the Files[] handle table, whose comment says the entry number should coincide with the file handle.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_misc.cpp",

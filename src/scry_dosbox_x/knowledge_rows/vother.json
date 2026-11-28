@@ -183,7 +183,7 @@
      "on": "write",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "On MCGA the emulator remembers a written bit 5 in a static and ORs it into the data register's reads.",
+     "text": "On MCGA the CRTC remembers a written bit 5 in a static and ORs it into the data register's reads.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_other.cpp",

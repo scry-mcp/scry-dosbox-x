@@ -4596,7 +4596,7 @@
      "on": "out buffer",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "The bytes of the emulator's own driver structure, sizeof(mouse) of them, are copied to ES:DX.",
+     "text": "The bytes of the driver structure, sizeof(mouse) of them, are copied to ES:DX.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/mouse.cpp",
@@ -4760,7 +4760,7 @@
      "on": "out state",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "The bytes at ES:DX, sizeof(mouse) of them, are copied over the emulator's own driver structure.",
+     "text": "The bytes at ES:DX, sizeof(mouse) of them, are copied over the driver structure.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/mouse.cpp",

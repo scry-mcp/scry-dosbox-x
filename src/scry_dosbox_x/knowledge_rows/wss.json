@@ -1521,7 +1521,7 @@
     {
      "on": "read",
      "of": "dosbox-x",
-     "text": "The emulator's read of this register answers the ACI countdown and stores no COR or PUR bit.",
+     "text": "The CS4231's read of this register answers the ACI countdown and stores no COR or PUR bit.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",
@@ -2295,7 +2295,7 @@
     {
      "on": "bit 0",
      "of": "dosbox-x",
-     "text": "The emulator's case stores DACZ and acts on TE alone; the output is zero while MCE is set and the DAC data otherwise.",
+     "text": "The CS4231's case stores DACZ and acts on TE alone; the output is zero while MCE is set and the DAC data otherwise.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",
@@ -2315,7 +2315,7 @@
     {
      "on": "bit 1",
      "of": "dosbox-x",
-     "text": "The emulator's case stores SPE and acts on TE alone.",
+     "text": "The CS4231's case stores SPE and acts on TE alone.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",
@@ -2495,7 +2495,7 @@
     {
      "on": "bit 1",
      "of": "dosbox-x",
-     "text": "The emulator's case stores XTALE and acts on APAR alone, and no line of that branch reaches a crystal.",
+     "text": "The CS4231's case stores XTALE and acts on APAR alone, and no line of that branch reaches a crystal.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/cs4231.cpp",

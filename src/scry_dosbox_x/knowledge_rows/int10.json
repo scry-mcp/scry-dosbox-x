@@ -21150,7 +21150,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "3",
-     "text": "DI is the offset handed to the writer, and ES is not used: the characters come from the emulator's own text segment.",
+     "text": "DI is the offset handed to the writer, and ES is not used: the characters come from the text segment GetTextSeg returns.",
      "quotes": [
       {
        "ref": "dosbox-x:src/ints/int10.cpp",

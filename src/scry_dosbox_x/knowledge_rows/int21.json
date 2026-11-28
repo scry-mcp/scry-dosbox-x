@@ -7922,7 +7922,7 @@
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A drive in the SDA that differs from the emulator's current drive is logged as an error, and the current drive is the one returned.",
+     "text": "A drive in the SDA that differs from the current drive is logged as an error, and the current drive is the one returned.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -36371,7 +36371,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "8",
-     "text": "The call is refused unless the emulator's own share setting is enabled.",
+     "text": "The call is refused unless enable_share_exe is set.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -42004,7 +42004,7 @@
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A code page the emulator does not know is refused with error 0x02.",
+     "text": "A code page isSupportedCP rejects is refused with error 0x02.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -45946,7 +45946,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "9",
-     "text": "The handler performs the search itself under the emulator's own DOS.",
+     "text": "The handler performs the search itself through DOS_FindFirst.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -46168,7 +46168,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "7",
-     "text": "The handler makes the search itself under the emulator's own DOS.",
+     "text": "The handler makes the search itself through DOS_FindNext.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",

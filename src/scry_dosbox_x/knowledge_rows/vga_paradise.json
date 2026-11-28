@@ -1108,7 +1108,7 @@
      "of": "dosbox-x",
      "vs": "differs",
      "row": "11",
-     "text": "A write stores bit 3 only, so no value of the memory map field reaches the emulator.",
+     "text": "A write stores bit 3 only, so the memory map field never changes.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_paradise.cpp",

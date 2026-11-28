@@ -980,7 +980,7 @@
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The handler also keeps a copy of the field in the emulator's configuration.",
+     "text": "The handler also keeps a copy of the field in the VGA configuration.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
@@ -2338,7 +2338,7 @@
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The handler also keeps a copy of the field in the emulator's configuration, for the read comparison.",
+     "text": "The handler also keeps a copy of the field in the VGA configuration, for the read comparison.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
